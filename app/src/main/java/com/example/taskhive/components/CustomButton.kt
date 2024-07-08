@@ -27,6 +27,8 @@ import com.example.taskhive.ui.theme.appColor
 fun CustomButton(
     text: String,
     trailingIcon: ImageVector? = null,
+    textColor: Color = Color.White,
+    backgroundColor: Color = appColor,
 ) {
     Box(
         modifier =
