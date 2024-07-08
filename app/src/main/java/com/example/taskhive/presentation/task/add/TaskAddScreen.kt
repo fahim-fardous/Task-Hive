@@ -6,10 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import com.example.taskhive.R
 import com.example.taskhive.components.CardWithRow
 import com.example.taskhive.components.CommonCard
+import com.example.taskhive.components.CustomButton
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
 
@@ -63,61 +62,52 @@ private fun TaskAddScreenSkeletonPreview() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskAddScreenSkeleton() {
-    Scaffold(topBar = {
-        CenterAlignedTopAppBar(
-            title = {
-                Text(
-                    text = "Add Project",
-                    fontWeight = FontWeight.Bold,
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.Black,
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Add Project",
+                        fontWeight = FontWeight.Bold,
                     )
-                }
-            },
-            actions = {
-                BadgedBox(modifier = Modifier.padding(end = 8.dp), badge = {
-                    Badge(
-                        containerColor = appColor,
-                        modifier = Modifier.size(10.dp),
-                    )
-                }) {
-                    Icon(
-                        Icons.Filled.Notifications,
-                        contentDescription = "Notifications",
-                        tint = Color.Black,
-                        modifier = Modifier.padding(start = 8.dp),
-                    )
-                }
-            },
-            
-        )
-    },
+                },
+                navigationIcon = {
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.Black,
+                        )
+                    }
+                },
+                actions = {
+                    BadgedBox(modifier = Modifier.padding(end = 8.dp), badge = {
+                        Badge(
+                            containerColor = appColor,
+                            modifier = Modifier.size(10.dp),
+                        )
+                    }) {
+                        Icon(
+                            Icons.Filled.Notifications,
+                            contentDescription = "Notifications",
+                            tint = Color.Black,
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
+                },
+            )
+        },
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
-            Box(
-                modifier =
-                Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
-                    .background(color = appColor, shape = RoundedCornerShape(8.dp))
-                    .padding(12.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(text = "Add Project", color = Color.White, fontWeight = FontWeight.Bold)
-            }
-        }) { innerPadding ->
+            CustomButton(text = "Add Project", trailingIcon = null)
+        },
+    ) { innerPadding ->
         Column(
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-                    .padding(16.dp),
+            Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             CardWithRow(
@@ -157,21 +147,23 @@ fun TaskAddScreenSkeleton() {
             ) {
                 Row(
                     modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
+                    val painter = painterResource(id = R.drawable.change_logo)
                     Image(
-                        painter = painterResource(id = R.drawable.change_logo),
+                        painter = painter,
                         contentDescription = "logo",
                         modifier =
                             Modifier
-                                .size(48.dp)
-                                .clip(RectangleShape)
-                                .weight(1f),
-                        contentScale = ContentScale.None,
+                                .size(64.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .weight(1f, fill = false)
+                                .aspectRatio(painter.intrinsicSize.width / painter.intrinsicSize.height),
+                        contentScale = ContentScale.Fit,
                     )
                     Box(
                         modifier =
@@ -190,7 +182,6 @@ fun TaskAddScreenSkeleton() {
                     }
                 }
             }
-            //Spacer(modifier = Modifier.height(128.dp))
         }
     }
 }
