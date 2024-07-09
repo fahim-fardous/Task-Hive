@@ -47,8 +47,12 @@ import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
 
 @Composable
-fun TaskAddScreen() {
-    TaskAddScreenSkeleton()
+fun TaskAddScreen(
+    goBack:()->Unit
+) {
+    TaskAddScreenSkeleton(
+        goBack = goBack
+    )
 }
 
 @Preview(showBackground = true)
@@ -61,7 +65,9 @@ private fun TaskAddScreenSkeletonPreview() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskAddScreenSkeleton() {
+fun TaskAddScreenSkeleton(
+    goBack: () -> Unit = {},
+) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -72,7 +78,7 @@ fun TaskAddScreenSkeleton() {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(onClick = { goBack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",

@@ -63,6 +63,8 @@ dependencies {
     implementation(libs.androidx.material.icons.core)
     // Optional - Add full set of material icons
     implementation(libs.androidx.material.icons.extended)
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
