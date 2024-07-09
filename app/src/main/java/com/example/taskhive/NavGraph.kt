@@ -42,9 +42,7 @@ fun MainNavHost(navController: NavHostController) {
             TaskListScreen()
         }
         composable(Screen.TaskAdd.route) {
-            TaskAddScreen(
-                {navController.popBackStack()},
-            )
+            TaskAddScreen { navController.popBackStack() }
         }
         composable(Screen.Notes.route) {
             NoteScreen()
