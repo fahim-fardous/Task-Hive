@@ -84,9 +84,9 @@ fun ProgressCard(
 @Preview(showBackground = true)
 @Composable
 private fun ProgressCardPreview() {
-   Scaffold {innerPadding->
-       Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
-           ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f)
+    Scaffold { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
+            ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f)
         }
     }
 }
