@@ -39,8 +39,8 @@ fun ContentItem(date: CalendarUiModel.Date) {
         Column(
             modifier =
                 Modifier
-                    .width(50.dp)
-                    .height(70.dp)
+                    .width(60.dp)
+                    .height(80.dp)
                     .padding(2.dp),
             verticalArrangement = Arrangement.SpaceEvenly,
         ) {

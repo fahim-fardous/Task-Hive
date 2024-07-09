@@ -39,7 +39,7 @@ fun ProgressType(
         Text(
             text = text,
             color = if (isSelected) Color.White else appColor,
-            fontWeight = if (isSelected) FontWeight.Bold else null,
+            fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
         )
     }
