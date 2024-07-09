@@ -47,14 +47,12 @@ import com.example.taskhive.ui.theme.appColor
 @Composable
 fun HomeScreen(goToAddTask: () -> Unit) {
     HomeScreenSkeleton(
-        goToAddTask = goToAddTask
+        goToAddTask = goToAddTask,
     )
 }
 
 @Composable
-fun HomeScreenSkeleton(
-    goToAddTask: () -> Unit = {},
-) {
+fun HomeScreenSkeleton(goToAddTask: () -> Unit = {}) {
     Scaffold(
         topBar = {
             Row(
@@ -105,9 +103,13 @@ fun HomeScreenSkeleton(
                 }
             }
         },
-        floatingActionButtonPosition = FabPosition.Center,
+        floatingActionButtonPosition = FabPosition.End,
         floatingActionButton = {
-            FloatingActionButton(onClick = { goToAddTask() }) {
+            FloatingActionButton(
+                onClick = { goToAddTask() },
+                containerColor = appColor,
+                shape = CircleShape,
+            ) {
                 Icon(
                     Icons.Filled.Add,
                     contentDescription = "Add",
