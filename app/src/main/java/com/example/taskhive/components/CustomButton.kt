@@ -1,6 +1,7 @@
 package com.example.taskhive.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -25,6 +27,7 @@ import com.example.taskhive.ui.theme.appColor
 
 @Composable
 fun CustomButton(
+    onClick: () -> Unit = {},
     text: String,
     trailingIcon: ImageVector? = null,
     textColor: Color = Color.White,
@@ -36,7 +39,9 @@ fun CustomButton(
             .padding(16.dp)
             .fillMaxWidth()
             .background(color = appColor, shape = RoundedCornerShape(8.dp))
-            .padding(12.dp),
+            .padding(12.dp).clickable {
+                onClick()
+            },
         contentAlignment = Alignment.Center,
     ) {
         Row(

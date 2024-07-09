@@ -25,7 +25,9 @@ import com.example.taskhive.R
 import com.example.taskhive.components.CustomButton
 
 @Composable
-fun OnBoardScreen() {
+fun OnBoardScreen(
+    goToHome: () -> Unit = {},
+) {
     Column(
         modifier =
             Modifier
@@ -55,7 +57,7 @@ fun OnBoardScreen() {
             style = MaterialTheme.typography.bodyMedium,
         )
         Spacer(modifier = Modifier.height(64.dp))
-        CustomButton(text = "Let's Start", trailingIcon = Icons.AutoMirrored.Filled.ArrowForward)
+        CustomButton(onClick = { goToHome() }, text = "Let's Start", trailingIcon = Icons.AutoMirrored.Filled.ArrowForward)
     }
 }
 

@@ -14,18 +14,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,15 +39,14 @@ import com.example.taskhive.R
 import com.example.taskhive.components.CardWithRow
 import com.example.taskhive.components.CommonCard
 import com.example.taskhive.components.CustomButton
+import com.example.taskhive.components.TopBar
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
 
 @Composable
-fun TaskAddScreen(
-    goBack:()->Unit
-) {
+fun TaskAddScreen(goBack: () -> Unit) {
     TaskAddScreenSkeleton(
-        goBack = goBack
+        goBack = goBack,
     )
 }
 
@@ -65,42 +60,14 @@ private fun TaskAddScreenSkeletonPreview() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskAddScreenSkeleton(
-    goBack: () -> Unit = {},
-) {
+fun TaskAddScreenSkeleton(goBack: () -> Unit = {}) {
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Add Project",
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { goBack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.Black,
-                        )
-                    }
-                },
-                actions = {
-                    BadgedBox(modifier = Modifier.padding(end = 8.dp), badge = {
-                        Badge(
-                            containerColor = appColor,
-                            modifier = Modifier.size(10.dp),
-                        )
-                    }) {
-                        Icon(
-                            Icons.Filled.Notifications,
-                            contentDescription = "Notifications",
-                            tint = Color.Black,
-                            modifier = Modifier.padding(start = 8.dp),
-                        )
-                    }
-                },
+            TopBar(
+                onClick = { goBack() },
+                leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                title = "Add Project",
+                trailingIcon = Icons.Filled.Notifications,
             )
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -110,10 +77,10 @@ fun TaskAddScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(16.dp),
+                Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             CardWithRow(
@@ -153,9 +120,9 @@ fun TaskAddScreenSkeleton(
             ) {
                 Row(
                     modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
