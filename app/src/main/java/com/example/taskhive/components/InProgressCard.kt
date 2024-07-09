@@ -4,11 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Backpack
@@ -18,6 +20,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,7 +44,7 @@ fun InProgressCard(
     Box(
         modifier =
             Modifier
-                .width(250.dp)
+                .width(220.dp)
                 .background(
                     if (id % 2 == 0) Color(0xFFE6F2FE) else Color(0xFFFEE8E0),
                     shape = RoundedCornerShape(16.dp),
@@ -85,20 +88,20 @@ fun InProgressCard(
                 text = projectName,
                 color = Color.Black,
                 fontWeight = FontWeight.Medium,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.titleMedium,
                 fontSize = 18.sp,
                 maxLines = 2,
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp),
+                        .padding(top = 2.dp),
             )
 
             LinearProgressIndicator(
                 modifier =
                     Modifier
                         .padding(top = 16.dp)
-                        .height(12.dp)
+                        .height(8.dp)
                         .clip(RoundedCornerShape(4.dp))
                         .fillMaxWidth(),
                 progress = { progress },
@@ -118,10 +121,19 @@ fun InProgressCard(
 @Preview(showBackground = true)
 @Composable
 private fun InProgressCardPreview() {
-    InProgressCard(
-        taskGroup = "Task Group",
-        projectName = "Grocery shopping app design",
-        progress = 0.5f,
-        id = 0,
-    )
+    Scaffold { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
+            LazyRow {
+                items(5) { id ->
+                    InProgressCard(
+                        taskGroup = "Task Group",
+                        projectName = "Grocery shopping app design",
+                        progress = 0.5f,
+                        id = id,
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                }
+            }
+        }
+    }
 }

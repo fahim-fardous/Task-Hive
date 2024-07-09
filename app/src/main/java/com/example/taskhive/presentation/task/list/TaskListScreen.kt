@@ -52,31 +52,31 @@ fun TaskListScreenSkeleton() {
         topBar = {
             Row(
                 modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.my_img),
                     contentDescription = "my photo",
                     modifier =
-                    Modifier
-                        .size(48.dp)
-                        .clip(
-                            CircleShape,
-                        ),
+                        Modifier
+                            .size(48.dp)
+                            .clip(
+                                CircleShape,
+                            ),
                     contentScale = ContentScale.Crop,
                 )
                 Column(
                     modifier =
-                    Modifier
-                        .padding(start = 16.dp)
-                        .weight(1f),
+                        Modifier
+                            .padding(start = 16.dp)
+                            .weight(1f),
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text(text = "Hello!", style = MaterialTheme.typography.bodySmall)
+                    Text(text = "Hello!", style = MaterialTheme.typography.bodyMedium)
                     Text(
                         text = "Fahim",
                         style = MaterialTheme.typography.bodyLarge,
@@ -101,10 +101,10 @@ fun TaskListScreenSkeleton() {
     ) { innerPadding ->
         Column(
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(16.dp),
+                Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .padding(16.dp),
         ) {
             ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f)
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -117,13 +117,13 @@ fun TaskListScreenSkeleton() {
                 )
                 Box(
                     modifier =
-                    Modifier
-                        .padding(top = 16.dp, start = 8.dp)
-                        .background(
-                            color = Color(0xFFEDE8FE),
-                            shape = CircleShape,
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                        Modifier
+                            .padding(top = 16.dp, start = 8.dp)
+                            .size(24.dp)
+                            .background(
+                                color = Color(0xFFEDE8FE),
+                                shape = CircleShape,
+                            ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -162,13 +162,13 @@ fun TaskListScreenSkeleton() {
                 )
                 Box(
                     modifier =
-                    Modifier
-                        .padding(top = 16.dp, start = 8.dp)
-                        .background(
-                            color = Color(0xFFEDE8FE),
-                            shape = CircleShape,
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                        Modifier
+                            .padding(top = 16.dp, start = 8.dp)
+                            .size(24.dp)
+                            .background(
+                                color = Color(0xFFEDE8FE),
+                                shape = CircleShape,
+                            ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -187,8 +187,13 @@ fun TaskListScreenSkeleton() {
                         bottom = 16.dp,
                     ),
             ) {
-                items(4){id->
-                    TaskGroup(project = "Office Project", numberOfTask = 23, progress = 0.6f, id = id)
+                items(4) { id ->
+                    TaskGroup(
+                        project = "Office Project",
+                        numberOfTask = 23,
+                        progress = 0.6f,
+                        id = id,
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
