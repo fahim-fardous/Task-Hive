@@ -110,42 +110,11 @@ fun Task(
 @Preview(showBackground = true)
 @Composable
 private fun TaskPreview() {
-    Scaffold { innerPadding ->
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-            verticalArrangement = Arrangement.spacedBy(18.dp),
-        ) {
-            Task(
-                taskGroup = "Office Project",
-                projectName = "Task Management and To do app design",
-                taskName = "Market Research",
-                endTime = "10:00 AM",
-                status = "In Progress",
-            )
-            Task(
-                taskGroup = "Office Project",
-                projectName = "Grocery shopping app design",
-                taskName = "Market Research",
-                endTime = "10:00 AM",
-                status = "Done",
-            )
-            Task(
-                taskGroup = "Office Project",
-                projectName = "Grocery shopping app design",
-                taskName = "Market Research",
-                endTime = "10:00 AM",
-                status = "Done",
-            )
-            Task(
-                taskGroup = "Office Project",
-                projectName = "Grocery shopping app design",
-                taskName = "Market Research",
-                endTime = "10:00 AM",
-                status = "Done",
-            )
-        }
-    }
+    Task(
+        taskGroup = "Office Project",
+        projectName = "Task Management and To do app design",
+        taskName = "Market Research",
+        endTime = "10:00 AM",
+        status = "In Progress",
+    )
 }
