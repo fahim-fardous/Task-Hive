@@ -50,7 +50,9 @@ fun MainNavHost(navController: NavHostController) {
             )
         }
         composable(Screen.TaskList.route) {
-            TaskListScreen()
+            TaskListScreen(
+                goBack = { navController.popBackStack() },
+            )
         }
         composable(Screen.TaskAdd.route) {
             TaskAddScreen { navController.popBackStack() }

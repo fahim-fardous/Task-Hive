@@ -28,8 +28,10 @@ import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.utils.MockData
 
 @Composable
-fun TaskListScreen() {
-    TaskListScreenSkeleton()
+fun TaskListScreen(
+    goBack:()->Unit = {}
+) {
+    TaskListScreenSkeleton(goBack = goBack)
 }
 
 @Preview(showBackground = true)
@@ -41,13 +43,15 @@ private fun TaskListScreenSkeletonPreview() {
 }
 
 @Composable
-fun TaskListScreenSkeleton() {
+fun TaskListScreenSkeleton(
+    goBack:()->Unit = {}
+) {
     var selectedIndex by remember { mutableStateOf(0) }
     Scaffold(
         topBar =
             {
                 TopBar(
-                    onClick = { /*TODO*/ },
+                    onClick = { goBack() },
                     leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
                     title = "Today's Task",
                     trailingIcon = Icons.Filled.Notifications,
