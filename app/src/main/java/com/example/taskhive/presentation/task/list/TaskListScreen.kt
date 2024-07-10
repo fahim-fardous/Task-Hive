@@ -29,7 +29,7 @@ import com.example.taskhive.utils.MockData
 
 @Composable
 fun TaskListScreen(
-    goBack:()->Unit = {}
+    goBack:()->Unit
 ) {
     TaskListScreenSkeleton(goBack = goBack)
 }
@@ -38,7 +38,7 @@ fun TaskListScreen(
 @Composable
 private fun TaskListScreenSkeletonPreview() {
     TaskHiveTheme {
-        TaskListScreen()
+        TaskListScreenSkeleton()
     }
 }
 

@@ -96,7 +96,7 @@ fun HomeIndexScreenSkeleton(
                 )
             }
             composable(HomeTabScreen.TaskList.route) {
-                TaskListScreen()
+                TaskListScreen(goBack = { navController.popBackStack() })
             }
             composable(HomeTabScreen.Notes.route) {
                 NoteScreen()
