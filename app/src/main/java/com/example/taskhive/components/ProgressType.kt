@@ -1,6 +1,7 @@
 package com.example.taskhive.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,9 @@ fun ProgressType(
                 .background(
                     color = if (isSelected) appColor else Color(0xFFECE7FE),
                     shape = RoundedCornerShape(8.dp),
-                ).padding(horizontal = 16.dp, vertical = 4.dp),
+                ).padding(horizontal = 16.dp, vertical = 4.dp).clickable {
+                    onClick()
+                },
         contentAlignment = Alignment.Center,
     ) {
         Text(

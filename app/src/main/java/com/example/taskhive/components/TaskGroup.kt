@@ -1,7 +1,6 @@
 package com.example.taskhive.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,12 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Backpack
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -37,35 +32,18 @@ fun TaskGroup(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.elevatedCardElevation(2.dp),
         colors =
-        CardDefaults.elevatedCardColors(
-            containerColor = Color.White,
-        ),
-    )  {
+            CardDefaults.elevatedCardColors(
+                containerColor = Color.White,
+            ),
+    ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Card(
-                colors =
-                    CardDefaults.cardColors(
-                        containerColor =
-                            if (id % 2 == 0) {
-                                Color(0xFFFEE3F1)
-                            } else {
-                                Color(0xFFECE3FE)
-                            },
-                    ),
-            ) {
-                Icon(
-                    if (id % 2 == 0) Icons.Filled.Backpack else Icons.Filled.Person,
-                    contentDescription = "icon",
-                    modifier =
-                        Modifier
-                            .size(40.dp)
-                            .padding(4.dp),
-                    tint = if (id % 2 == 0) Color(0xFFF378B7) else Color(0xFF9160F3),
-                )
-            }
+            TaskGroupIcon(taskGroup = "Office Project", size = 40.dp, padding = 4.dp)
             Column(
                 modifier =
                     Modifier
@@ -87,7 +65,7 @@ fun TaskGroup(
                 textSize = 12.sp,
                 tracColor = Color.LightGray,
                 textColor = Color.Black,
-                fontWeight = FontWeight.Normal
+                fontWeight = FontWeight.Normal,
             )
         }
     }
