@@ -76,12 +76,13 @@ fun TaskListScreenSkeleton() {
             }
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn {
-                items(5) {
+                items(5) {id->
                     Task(
                         taskGroup = "Grocery shopping app design",
                         projectName = "Market Research",
                         endTime = "10:00 AM",
                         status = "Done",
+                        id = id
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }

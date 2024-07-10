@@ -40,8 +40,10 @@ fun Task(
 ) {
     Card(
         shape = RoundedCornerShape(8.dp),
-        modifier = Modifier
-            .fillMaxWidth().height(120.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(120.dp),
         elevation = CardDefaults.elevatedCardElevation(2.dp),
         colors =
             CardDefaults.elevatedCardColors(
@@ -50,9 +52,9 @@ fun Task(
     ) {
         Row(
             modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -76,37 +78,53 @@ fun Task(
                     Text(text = endTime, color = appColor)
                 }
             }
-            Column(horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 Card(
                     colors =
-                    CardDefaults.cardColors(
-                        containerColor =
-                        if (id % 2 == 0) {
-                            Color(0xFFFEE3F1)
-                        } else {
-                            Color(0xFFECE3FE)
-                        },
-                    ),
+                        CardDefaults.cardColors(
+                            containerColor =
+                                if (id % 2 == 0) {
+                                    Color(0xFFFEE3F1)
+                                } else {
+                                    Color(0xFFECE3FE)
+                                },
+                        ),
                 ) {
                     Icon(
                         if (id % 2 == 0) Icons.Filled.Backpack else Icons.Filled.Person,
                         contentDescription = "icon",
                         modifier =
-                        Modifier
-                            .size(30.dp)
-                            .padding(4.dp),
+                            Modifier
+                                .size(30.dp)
+                                .padding(4.dp),
                         tint = if (id % 2 == 0) Color(0xFFF378B7) else Color(0xFF9160F3),
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                Box(modifier = Modifier
-                    .background(color = Color(0xFFECE7FE), shape = RoundedCornerShape(8.dp))
-                    .padding(horizontal = 8.dp)
-                    .padding(horizontal = 2.dp, vertical = 1.dp)){
-                    Text(text = "Done", color = appColor, fontSize = 12.sp)
+                Box(
+                    modifier =
+                        Modifier
+                            .background(
+                                color =
+                                    if (id % 2 == 0) {
+                                        Color(0xFFECE7FE)
+                                    } else {
+                                        Color(
+                                            0xFFE2F1FE,
+                                        )
+                                    },
+                                shape = RoundedCornerShape(8.dp),
+                            ).padding(horizontal = 8.dp)
+                            .padding(horizontal = 2.dp, vertical = 1.dp),
+                ) {
+                    Text(
+                        text = if (id % 2 == 0) "Done" else "To-do",
+                        color = if (id % 2 == 0) appColor else Color(0xFF0086FE),
+                        fontSize = 12.sp,
+                    )
                 }
-
             }
         }
     }
