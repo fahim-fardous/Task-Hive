@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.taskhive.ui.theme.appColor
 
@@ -32,6 +33,7 @@ fun CustomButton(
     trailingIcon: ImageVector? = null,
     textColor: Color = Color.White,
     backgroundColor: Color = appColor,
+    marginStart: Dp = 0.dp
 ) {
     Box(
         modifier =
@@ -52,7 +54,7 @@ fun CustomButton(
                 text = text,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).padding(start = marginStart),
                 textAlign = TextAlign.Center,
             )
             if (trailingIcon != null) {

@@ -76,7 +76,7 @@ fun TaskGroup(
                 Text(
                     text = "$numberOfTask tasks",
                     color = Color(0xFF6E6A7C),
-                    modifier = Modifier.padding(top = 4.dp),
+                    modifier = Modifier.padding(top = 6.dp),
                 )
             }
             CircularProgressWithText(
@@ -84,7 +84,7 @@ fun TaskGroup(
                 color = if (id % 2 == 0) Color(0xFFF378B7) else Color(0xFF9160F3),
                 strokeWidth = 8f,
                 size = 70.dp,
-                textSize = 16.sp,
+                textSize = 12.sp,
                 tracColor = Color.LightGray,
                 textColor = Color.Black,
                 fontWeight = FontWeight.Normal
