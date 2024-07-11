@@ -107,7 +107,7 @@ fun Task(
     }
 }
 
-@Preview(showBackground = true)
+@Preview()
 @Composable
 private fun TaskPreview() {
     Task(

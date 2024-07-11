@@ -25,6 +25,7 @@ fun TaskGroup(
     project: String,
     numberOfTask: Int,
     progress: Float,
+    selectedIcon:Int = 0,
     id: Int = 0,
 ) {
     Card(
@@ -58,7 +59,7 @@ fun TaskGroup(
                 )
             }
             CircularProgressWithText(
-                progress = .7f,
+                progress = progress,
                 color = if (id % 2 == 0) Color(0xFFF378B7) else Color(0xFF9160F3),
                 strokeWidth = 8f,
                 size = 70.dp,

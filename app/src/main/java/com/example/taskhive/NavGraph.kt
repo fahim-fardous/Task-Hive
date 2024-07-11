@@ -2,14 +2,16 @@ package com.example.taskhive
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.taskhive.presentation.home.HomeScreen
 import com.example.taskhive.presentation.home.index.HomeIndexScreen
 import com.example.taskhive.presentation.notes.NoteScreen
 import com.example.taskhive.presentation.onboard.OnBoardScreen
 import com.example.taskhive.presentation.profile.ProfileScreen
-import com.example.taskhive.presentation.task.add.TaskAddScreen
+import com.example.taskhive.presentation.project.add.ProjectAddScreen
 import com.example.taskhive.presentation.task.list.TaskListScreen
 
 sealed class Screen(
@@ -19,9 +21,11 @@ sealed class Screen(
 
     data object OnBoard : Screen("onboard")
 
-    data object TaskList : Screen("task/list")
+    data object TaskList : Screen("task/list/{projectId}")
 
     data object TaskAdd : Screen("task/add")
+
+    data object ProjectAdd : Screen("project/add")
 
     data object Notes : Screen("notes")
 
@@ -35,7 +39,15 @@ fun MainNavHost(navController: NavHostController) {
     NavHost(navController = navController, startDestination = Screen.OnBoard.route) {
         composable(Screen.Home.route) {
             HomeScreen(
-                goToAddTask = { navController.navigate(Screen.TaskAdd.route) },
+                goToAddProject = { navController.navigate(Screen.ProjectAdd.route) },
+                goToTaskList = { projectId ->
+                    navController.navigate(
+                        Screen.TaskList.route.replace(
+                            "{projectId}",
+                            "$projectId",
+                        ),
+                    )
+                },
             )
         }
         composable(Screen.OnBoard.route) {
@@ -49,8 +61,18 @@ fun MainNavHost(navController: NavHostController) {
                 },
             )
         }
+        composable(
+            route = Screen.TaskList.route,
+            arguments = listOf(navArgument("projectId") { type = NavType.IntType }),
+        ) { backStackEntry ->
+            TaskListScreen(
+                goBack = { navController.popBackStack() },
+                goToAddTask = { navController.navigate(Screen.TaskAdd.route) },
+                projectId = backStackEntry.arguments?.getInt("projectId"),
+            )
+        }
         composable(Screen.TaskAdd.route) {
-            TaskAddScreen { navController.popBackStack() }
+            ProjectAddScreen { navController.popBackStack() }
         }
         composable(Screen.Notes.route) {
             NoteScreen()

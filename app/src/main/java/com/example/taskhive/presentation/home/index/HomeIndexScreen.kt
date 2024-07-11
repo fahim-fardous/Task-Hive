@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,7 +35,10 @@ import com.example.taskhive.presentation.task.list.TaskListScreen
 @Composable
 fun HomeIndexScreen(goToAddTask: () -> Unit) {
     val navController = rememberNavController()
-    HomeIndexScreenSkeleton(navController = navController, goToAddTask = goToAddTask)
+    HomeIndexScreenSkeleton(
+        navController = navController,
+        goToAddTask = goToAddTask
+    )
 }
 
 @Composable
@@ -55,7 +57,7 @@ fun HomeIndexScreenSkeleton(
     Scaffold(
         Modifier,
         bottomBar = {
-            NavigationBar() {
+            NavigationBar {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
                 items.forEach { screen ->
@@ -92,11 +94,23 @@ fun HomeIndexScreenSkeleton(
         ) {
             composable(HomeTabScreen.Home.route) {
                 HomeScreen(
-                    goToAddTask = goToAddTask,
+                    goToAddProject = goToAddTask,
+                    goToTaskList = { projectId ->
+                        navController.navigate(
+                            HomeTabScreen.TaskList.route.replace(
+                                "projectId",
+                                "$projectId",
+                            ),
+                        )
+                    },
                 )
             }
             composable(HomeTabScreen.TaskList.route) {
-                TaskListScreen(goBack = { navController.popBackStack() })
+                TaskListScreen(
+                    goBack = { navController.popBackStack() },
+                    goToAddTask = { goToAddTask() },
+                    projectId = null,
+                )
             }
             composable(HomeTabScreen.Notes.route) {
                 NoteScreen()
@@ -125,7 +139,8 @@ private sealed class HomeTabScreen(
 ) {
     data object Home : HomeTabScreen("home_screen", "Home", Icons.Filled.Home)
 
-    data object TaskList : HomeTabScreen("task_list_screen", "Task List", Icons.Filled.CalendarMonth)
+    data object TaskList :
+        HomeTabScreen("task_list_screen/{projectId", "Task List", Icons.Filled.CalendarMonth)
 
     data object Notes : HomeTabScreen("notes_screen", "Notes", Icons.AutoMirrored.Filled.Note)
 
