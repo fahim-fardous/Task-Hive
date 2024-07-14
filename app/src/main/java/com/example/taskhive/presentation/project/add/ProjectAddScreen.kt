@@ -1,28 +1,37 @@
 package com.example.taskhive.presentation.project.add
 
 import android.content.Context
+import android.icu.util.Calendar
+import android.icu.util.TimeZone
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Backpack
-import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +51,11 @@ import com.example.taskhive.components.SelectableIcon
 import com.example.taskhive.components.TopBar
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.ui.theme.TaskHiveTheme
+import com.example.taskhive.utils.SelectableProperties.backgroundColors
+import com.example.taskhive.utils.SelectableProperties.colors
+import com.example.taskhive.utils.SelectableProperties.icons
+import com.example.taskhive.utils.getReadableDate
+import java.util.Date
 
 @Composable
 fun ProjectAddScreen(goBack: () -> Unit) {
@@ -70,41 +84,20 @@ private fun TaskAddScreenSkeletonPreview() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProjectAddScreenSkeleton(
     goBack: () -> Unit = {},
     saveProject: (Project, Context) -> Unit = { _, _ -> },
 ) {
+    val context = LocalContext.current
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    val context = LocalContext.current
-    val icons =
-        listOf(
-            Icons.Filled.Backpack,
-            Icons.Filled.Person,
-            Icons.Filled.Book,
-            Icons.Filled.Home,
-            Icons.Filled.ShoppingCart,
-        )
-    val colors =
-        listOf(
-            Color(0xFFF378B7),
-            Color(0xFF9160F3),
-            Color(0xFFFE9042),
-            Color.Green,
-            Color.Magenta,
-        )
-    val borderColors =
-        listOf(
-            Color(0xFFFDE2F1),
-            Color(0xFFECE3FE),
-            Color(0xFFFEE5D3),
-            Color(0xFFD7FDD9),
-            Color(0xFFFCE4EC),
-        )
+    var endDate by remember { mutableStateOf<Date?>(null) }
     var selectedIcon by remember { mutableIntStateOf(0) }
     var selectedColor by remember { mutableIntStateOf(0) }
     var selectedBorderColor by remember { mutableIntStateOf(0) }
+    var showDatePickerDialog by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopBar(
@@ -119,6 +112,17 @@ fun ProjectAddScreenSkeleton(
             CustomButton(
                 onClick =
                     {
+                        saveProject(
+                            Project(
+                                name = name,
+                                description = description,
+                                selectedIcon = selectedIcon,
+                                selectedIconColor = selectedColor,
+                                selectedBorderColor = selectedBorderColor,
+                                endDate = Date(System.currentTimeMillis() + 86400000),
+                            ),
+                            context,
+                        )
                     },
                 text = "Add Project",
                 trailingIcon = null,
@@ -133,6 +137,7 @@ fun ProjectAddScreenSkeleton(
                     .padding(16.dp),
         ) {
             CommonCard(
+                modifier = Modifier.fillMaxWidth(),
                 value = name,
                 onValueChange = { name = it },
                 label = "Project Name",
@@ -140,11 +145,26 @@ fun ProjectAddScreenSkeleton(
             )
             Spacer(modifier = Modifier.height(24.dp))
             CommonCard(
+                modifier = Modifier.fillMaxWidth(),
                 value = description,
                 onValueChange = { description = it },
                 label = "Description",
                 lines = 5,
             )
+            Spacer(modifier = Modifier.height(24.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                CommonCard(
+                    modifier = Modifier.weight(1f),
+                    value = endDate.getReadableDate(),
+                    onValueChange = { },
+                    label = "End Time",
+                    lines = 1,
+                    readOnly = true,
+                )
+                FloatingActionButton(onClick = { showDatePickerDialog = true }) {
+                    Icon(Icons.Filled.Add, contentDescription = "Add time")
+                }
+            }
             Spacer(modifier = Modifier.height(24.dp))
             Text(text = "Select an icon", color = Color.Black, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
@@ -177,14 +197,76 @@ fun ProjectAddScreenSkeleton(
             )
             Spacer(modifier = Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                items(borderColors) { color ->
+                items(backgroundColors) { color ->
                     SelectableColor(
-                        onClick = { selectedBorderColor = borderColors.indexOf(color) },
+                        onClick = { selectedBorderColor = backgroundColors.indexOf(color) },
                         color = color,
-                        isSelected = selectedBorderColor == borderColors.indexOf(color),
+                        isSelected = selectedBorderColor == backgroundColors.indexOf(color),
                     )
                 }
             }
+        }
+    }
+
+    // -----------------------------------------------------------------------------------
+    // Dialog
+    // -----------------------------------------------------------------------------------
+
+    if (showDatePickerDialog) {
+        val initialSelectedDate =
+            remember {
+                val localCalender = Calendar.getInstance()
+                val utcCalender = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                utcCalender.clear()
+                utcCalender.set(
+                    localCalender.get(Calendar.YEAR),
+                    localCalender.get(Calendar.MONTH),
+                    localCalender.get(Calendar.DATE),
+                )
+                utcCalender.timeInMillis
+            }
+
+        val datePickerState =
+            rememberDatePickerState(
+                initialSelectedDateMillis = initialSelectedDate,
+                selectableDates =
+                    object : SelectableDates {
+                        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+
+                        override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis >= calendar.timeInMillis
+
+                        override fun isSelectableYear(year: Int): Boolean = year >= calendar.get(Calendar.YEAR)
+                    },
+            )
+        val datePickerConfirmButtonEnabled =
+            remember {
+                derivedStateOf { datePickerState.selectedDateMillis != null }
+            }
+
+        DatePickerDialog(onDismissRequest = { showDatePickerDialog = false }, confirmButton = {
+            TextButton(
+                onClick = {
+                    showDatePickerDialog = false
+
+                    datePickerState.selectedDateMillis?.let {
+                        endDate = Date(it)
+                    }
+                },
+                enabled = datePickerConfirmButtonEnabled.value,
+            ) {
+                Text(text = "OK")
+            }
+        }, dismissButton = {
+            TextButton(onClick = { showDatePickerDialog = false }) {
+                Text(text = "Cancel")
+            }
+        }) {
+            DatePicker(state = datePickerState, title = {
+                Text(
+                    text = "Task Date",
+                    Modifier.padding(start = 24.dp, end = 12.dp, top = 16.dp),
+                )
+            })
         }
     }
 }

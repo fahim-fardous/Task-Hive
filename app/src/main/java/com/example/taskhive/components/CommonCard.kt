@@ -3,6 +3,7 @@ package com.example.taskhive.components
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,16 +24,18 @@ import com.example.taskhive.ui.theme.hintColor
 
 @Composable
 fun CommonCard(
+    modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
     lines: Int = 1,
     height: Dp = 200.dp,
+    readOnly: Boolean = false,
 ) {
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier =
-            Modifier.fillMaxWidth(),
+        modifier,
         elevation = CardDefaults.elevatedCardElevation(4.dp),
         colors =
             CardDefaults.elevatedCardColors(
@@ -67,6 +71,7 @@ fun CommonCard(
                 )
             },
             maxLines = lines,
+            readOnly = readOnly,
         )
     }
 }

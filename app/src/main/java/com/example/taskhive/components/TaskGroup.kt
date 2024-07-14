@@ -1,6 +1,7 @@
 package com.example.taskhive.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,15 +23,20 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun TaskGroup(
+    onClick: () -> Unit,
     project: String,
     numberOfTask: Int,
     progress: Float,
     selectedIcon:Int = 0,
+    selectedIconColor:Int = 0,
+    selectedBorderColor:Int = 0,
     id: Int = 0,
 ) {
     Card(
         shape = RoundedCornerShape(8.dp),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable {
+            onClick()
+        },
         elevation = CardDefaults.elevatedCardElevation(2.dp),
         colors =
             CardDefaults.elevatedCardColors(
@@ -44,7 +50,7 @@ fun TaskGroup(
                     .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TaskGroupIcon(taskGroup = "Office Project", size = 40.dp, padding = 4.dp)
+            TaskGroupIcon(selectedIcon, selectedIconColor, selectedBorderColor, size = 40.dp, padding = 4.dp)
             Column(
                 modifier =
                     Modifier
@@ -81,6 +87,6 @@ private fun TaskGroupPreview() {
                 .fillMaxSize()
                 .background(color = Color.Black),
     ) {
-        TaskGroup(project = "Office Project", numberOfTask = 23, progress = 0.6f)
+        TaskGroup(project = "Office Project", numberOfTask = 23, progress = 0.6f, onClick = {})
     }
 }

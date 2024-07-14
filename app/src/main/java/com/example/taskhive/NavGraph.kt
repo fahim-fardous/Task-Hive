@@ -12,6 +12,7 @@ import com.example.taskhive.presentation.notes.NoteScreen
 import com.example.taskhive.presentation.onboard.OnBoardScreen
 import com.example.taskhive.presentation.profile.ProfileScreen
 import com.example.taskhive.presentation.project.add.ProjectAddScreen
+import com.example.taskhive.presentation.task.add.TaskAddScreen
 import com.example.taskhive.presentation.task.list.TaskListScreen
 
 sealed class Screen(
@@ -21,9 +22,13 @@ sealed class Screen(
 
     data object OnBoard : Screen("onboard")
 
-    data object TaskList : Screen("task/list/{projectId}")
+    data object TaskList : Screen("task/list/{projectId}") {
+        fun createRoute(projectId: Int?) = route.replaceFirst("{projectId}", "$projectId")
+    }
 
-    data object TaskAdd : Screen("task/add")
+    data object TaskAdd : Screen("task/add/{projectId}") {
+        fun createRoute(projectId: Int) = route.replaceFirst("{projectId}", "$projectId")
+    }
 
     data object ProjectAdd : Screen("project/add")
 
@@ -42,9 +47,8 @@ fun MainNavHost(navController: NavHostController) {
                 goToAddProject = { navController.navigate(Screen.ProjectAdd.route) },
                 goToTaskList = { projectId ->
                     navController.navigate(
-                        Screen.TaskList.route.replace(
-                            "{projectId}",
-                            "$projectId",
+                        Screen.TaskList.createRoute(
+                            projectId = projectId,
                         ),
                     )
                 },
@@ -67,12 +71,27 @@ fun MainNavHost(navController: NavHostController) {
         ) { backStackEntry ->
             TaskListScreen(
                 goBack = { navController.popBackStack() },
-                goToAddTask = { navController.navigate(Screen.TaskAdd.route) },
+                goToAddTask = { projectId ->
+                    navController.navigate(
+                        Screen.TaskAdd.createRoute(
+                            projectId = projectId,
+                        ),
+                    )
+                },
                 projectId = backStackEntry.arguments?.getInt("projectId"),
             )
         }
-        composable(Screen.TaskAdd.route) {
+        composable(Screen.ProjectAdd.route) {
             ProjectAddScreen { navController.popBackStack() }
+        }
+        composable(
+            route = Screen.TaskAdd.route,
+            arguments = listOf(navArgument("projectId") { type = NavType.IntType }),
+        ) {
+            TaskAddScreen(
+                goBack = { navController.popBackStack() },
+                projectId = navController.currentBackStackEntry?.arguments?.getInt("projectId")!!,
+            )
         }
         composable(Screen.Notes.route) {
             NoteScreen()
@@ -81,7 +100,14 @@ fun MainNavHost(navController: NavHostController) {
             ProfileScreen()
         }
         composable(Screen.HomeIndex.route) {
-            HomeIndexScreen(goToAddTask = { navController.navigate(Screen.TaskAdd.route) })
+            HomeIndexScreen(
+                goToAddProject = { navController.navigate(Screen.ProjectAdd.route) },
+                goToTaskList = { projectId ->
+                    navController.navigate(
+                        Screen.TaskList.createRoute(projectId),
+                    )
+                },
+            )
         }
     }
 }

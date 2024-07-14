@@ -8,6 +8,7 @@ import com.example.taskhive.domain.model.Project
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.Date
 
 class HomeViewModel:ViewModel() {
     private val _projects = MutableStateFlow<List<Project>>(emptyList())
@@ -17,7 +18,7 @@ class HomeViewModel:ViewModel() {
     val count: StateFlow<Int> = _count
 
     fun getProjects(context:Context) = viewModelScope.launch{
-        val response = AppDatabase(context).projectDao().getAllProjects()
+        val response = AppDatabase(context).projectDao().getAllProjects(Date())
         if(response.isNotEmpty()){
             _projects.value = response
         }

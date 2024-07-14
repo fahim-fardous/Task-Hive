@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,7 +15,6 @@ import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,12 +28,13 @@ import com.example.taskhive.ui.theme.appColor
 
 @Composable
 fun Task(
-    taskGroup: String,
     projectName: String,
     taskName: String,
     endTime: String,
     status: String,
-    id: Int = 0,
+    icon: Int = 0,
+    iconColor: Int = 0,
+    backgroundColor: Int = 0,
 ) {
     Card(
         shape = RoundedCornerShape(8.dp),
@@ -92,7 +91,13 @@ fun Task(
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.End,
             ) {
-                TaskGroupIcon(taskGroup = taskGroup, size = 30.dp, padding = 4.dp)
+                TaskGroupIcon(
+                    icon = icon,
+                    iconColor = iconColor,
+                    backgroundColor = backgroundColor,
+                    size = 30.dp,
+                    padding = 4.dp,
+                )
                 Spacer(modifier = Modifier.weight(1f))
                 StatusBadge(
                     status = status,
@@ -111,7 +116,6 @@ fun Task(
 @Composable
 private fun TaskPreview() {
     Task(
-        taskGroup = "Office Project",
         projectName = "Task Management and To do app design",
         taskName = "Market Research",
         endTime = "10:00 AM",

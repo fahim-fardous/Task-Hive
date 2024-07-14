@@ -1,8 +1,8 @@
 package com.example.taskhive.domain.model
 
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.Date
 
 @Entity(tableName = "projects")
 data class Project(
@@ -10,7 +10,8 @@ data class Project(
     val id: Int = 0,
     val name: String,
     val description: String,
-    val selectedIcon:String,
+    val endDate:Date,
+    val selectedIcon: Int,
     val selectedIconColor: Int,
-    val selectedBorderColor:Int
+    val selectedBorderColor: Int,
 )

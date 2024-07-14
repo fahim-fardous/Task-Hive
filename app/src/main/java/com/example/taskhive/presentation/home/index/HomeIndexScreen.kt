@@ -33,18 +33,23 @@ import com.example.taskhive.presentation.profile.ProfileScreen
 import com.example.taskhive.presentation.task.list.TaskListScreen
 
 @Composable
-fun HomeIndexScreen(goToAddTask: () -> Unit) {
+fun HomeIndexScreen(
+    goToAddProject: () -> Unit,
+    goToTaskList: (Int?) -> Unit,
+) {
     val navController = rememberNavController()
     HomeIndexScreenSkeleton(
         navController = navController,
-        goToAddTask = goToAddTask
+        goToAddProject = goToAddProject,
+        goToTaskList = goToTaskList,
     )
 }
 
 @Composable
 fun HomeIndexScreenSkeleton(
     navController: NavHostController,
-    goToAddTask: () -> Unit = {},
+    goToAddProject: () -> Unit = {},
+    goToTaskList: (Int?) -> Unit = {},
 ) {
     val items =
         listOf(
@@ -94,22 +99,15 @@ fun HomeIndexScreenSkeleton(
         ) {
             composable(HomeTabScreen.Home.route) {
                 HomeScreen(
-                    goToAddProject = goToAddTask,
-                    goToTaskList = { projectId ->
-                        navController.navigate(
-                            HomeTabScreen.TaskList.route.replace(
-                                "projectId",
-                                "$projectId",
-                            ),
-                        )
+                    goToAddProject = { goToAddProject() },
+                    goToTaskList = {projectId->
+                        goToTaskList(projectId)
                     },
                 )
             }
             composable(HomeTabScreen.TaskList.route) {
                 TaskListScreen(
-                    goBack = { navController.popBackStack() },
-                    goToAddTask = { goToAddTask() },
-                    projectId = null,
+                    goBack = { navController.popBackStack() }
                 )
             }
             composable(HomeTabScreen.Notes.route) {

@@ -38,7 +38,7 @@ fun CustomButton(
     Box(
         modifier =
         Modifier
-            .padding(16.dp)
+            .padding(24.dp)
             .fillMaxWidth()
             .background(color = appColor, shape = RoundedCornerShape(8.dp))
             .padding(12.dp).clickable {

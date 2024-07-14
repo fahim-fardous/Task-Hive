@@ -10,13 +10,10 @@ data class Task(
     val id: Int,
     val title: String,
     val description: String,
-    //val plannedStartTime: Date,
-    //val plannedEntTime: Date,
-    //val actualStartTime: Date,
-    //val actualEntTime: Date,
-    val logo: Int,
-    val status: String,
-    val time:String,
+    val plannedStartTime: Date? = null,
+    val plannedEndTime: Date? = null,
+    val actualStartTime: Date? = null,
+    val actualEndTime: Date? = null,
     val projectId: Int,
     val taskStatus: TaskStatus = TaskStatus.TODO
 )
