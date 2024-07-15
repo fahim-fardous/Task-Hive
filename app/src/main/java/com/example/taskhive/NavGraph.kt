@@ -1,19 +1,26 @@
 package com.example.taskhive
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.taskhive.presentation.home.HomeScreen
+import com.example.taskhive.presentation.home.HomeViewModel
 import com.example.taskhive.presentation.home.index.HomeIndexScreen
 import com.example.taskhive.presentation.notes.NoteScreen
 import com.example.taskhive.presentation.onboard.OnBoardScreen
 import com.example.taskhive.presentation.profile.ProfileScreen
 import com.example.taskhive.presentation.project.add.ProjectAddScreen
+import com.example.taskhive.presentation.project.add.ProjectAddViewModel
 import com.example.taskhive.presentation.task.add.TaskAddScreen
+import com.example.taskhive.presentation.task.add.TaskAddViewModel
+import com.example.taskhive.presentation.task.edit.TaskEditScreen
+import com.example.taskhive.presentation.task.edit.TaskEditViewModel
 import com.example.taskhive.presentation.task.list.TaskListScreen
+import com.example.taskhive.presentation.task.list.TaskListViewModel
 
 sealed class Screen(
     val route: String,
@@ -30,6 +37,10 @@ sealed class Screen(
         fun createRoute(projectId: Int) = route.replaceFirst("{projectId}", "$projectId")
     }
 
+    data object TaskEdit: Screen("task/edit/{taskId}") {
+        fun createRoute(taskId: Int) = route.replaceFirst("{taskId}", "$taskId")
+    }
+
     data object ProjectAdd : Screen("project/add")
 
     data object Notes : Screen("notes")
@@ -43,6 +54,7 @@ sealed class Screen(
 fun MainNavHost(navController: NavHostController) {
     NavHost(navController = navController, startDestination = Screen.OnBoard.route) {
         composable(Screen.Home.route) {
+            val viewModel:HomeViewModel = hiltViewModel()
             HomeScreen(
                 goToAddProject = { navController.navigate(Screen.ProjectAdd.route) },
                 goToTaskList = { projectId ->
@@ -52,6 +64,7 @@ fun MainNavHost(navController: NavHostController) {
                         ),
                     )
                 },
+                viewModel = viewModel
             )
         }
         composable(Screen.OnBoard.route) {
@@ -65,10 +78,15 @@ fun MainNavHost(navController: NavHostController) {
                 },
             )
         }
+        composable(Screen.ProjectAdd.route) {
+            val viewModel:ProjectAddViewModel = hiltViewModel()
+            ProjectAddScreen(goBack = {navController.popBackStack()}, viewModel = viewModel)
+        }
         composable(
             route = Screen.TaskList.route,
             arguments = listOf(navArgument("projectId") { type = NavType.IntType }),
         ) { backStackEntry ->
+            val viewModel:TaskListViewModel = hiltViewModel()
             TaskListScreen(
                 goBack = { navController.popBackStack() },
                 goToAddTask = { projectId ->
@@ -78,19 +96,33 @@ fun MainNavHost(navController: NavHostController) {
                         ),
                     )
                 },
+                goToTaskEdit = { taskId ->
+                    navController.navigate(Screen.TaskEdit.createRoute(taskId = taskId))
+                },
                 projectId = backStackEntry.arguments?.getInt("projectId"),
+                viewModel = viewModel
             )
-        }
-        composable(Screen.ProjectAdd.route) {
-            ProjectAddScreen { navController.popBackStack() }
         }
         composable(
             route = Screen.TaskAdd.route,
             arguments = listOf(navArgument("projectId") { type = NavType.IntType }),
         ) {
+            val viewModel:TaskAddViewModel = hiltViewModel()
             TaskAddScreen(
                 goBack = { navController.popBackStack() },
                 projectId = navController.currentBackStackEntry?.arguments?.getInt("projectId")!!,
+                viewModel = viewModel
+            )
+        }
+        composable(
+            route = Screen.TaskEdit.route,
+            arguments = listOf(navArgument("taskId") { type = NavType.IntType }),
+        ) { backStackEntry ->
+            val viewModel:TaskEditViewModel = hiltViewModel()
+            TaskEditScreen(
+                goBack = { navController.popBackStack() },
+                taskId = backStackEntry.arguments?.getInt("taskId")!!,
+                viewModel = viewModel
             )
         }
         composable(Screen.Notes.route) {

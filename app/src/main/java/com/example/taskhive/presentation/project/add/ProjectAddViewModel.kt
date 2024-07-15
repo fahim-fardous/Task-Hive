@@ -5,11 +5,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskhive.data.local.AppDatabase
 import com.example.taskhive.domain.model.Project
+import com.example.taskhive.domain.repository.ProjectRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ProjectAddViewModel : ViewModel() {
+@HiltViewModel
+class ProjectAddViewModel @Inject constructor(
+    private val projectRepository: ProjectRepository
+) : ViewModel() {
     private val _showMessage = MutableStateFlow<String?>(null)
     val showMessage: StateFlow<String?> = _showMessage
 
@@ -26,10 +32,9 @@ class ProjectAddViewModel : ViewModel() {
 
     fun saveProject(
         project: Project,
-        context: Context,
     ) = viewModelScope.launch {
         if (!isValid(project.name, project.description)) return@launch
-        AppDatabase(context).projectDao().saveProject(project)
+        projectRepository.saveProject(project)
         _showMessage.value = "Project saved"
     }
 }

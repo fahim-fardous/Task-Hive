@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -28,9 +29,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.taskhive.presentation.home.HomeScreen
+import com.example.taskhive.presentation.home.HomeViewModel
 import com.example.taskhive.presentation.notes.NoteScreen
 import com.example.taskhive.presentation.profile.ProfileScreen
 import com.example.taskhive.presentation.task.list.TaskListScreen
+import com.example.taskhive.presentation.task.list.TaskListViewModel
 
 @Composable
 fun HomeIndexScreen(
@@ -98,16 +101,20 @@ fun HomeIndexScreenSkeleton(
             Modifier.padding(innerPadding),
         ) {
             composable(HomeTabScreen.Home.route) {
+                val viewModel: HomeViewModel = hiltViewModel()
                 HomeScreen(
                     goToAddProject = { goToAddProject() },
                     goToTaskList = {projectId->
                         goToTaskList(projectId)
                     },
+                    viewModel = viewModel
                 )
             }
             composable(HomeTabScreen.TaskList.route) {
+                val viewModel: TaskListViewModel = hiltViewModel()
                 TaskListScreen(
-                    goBack = { navController.popBackStack() }
+                    goBack = { navController.popBackStack() },
+                    viewModel = viewModel
                 )
             }
             composable(HomeTabScreen.Notes.route) {

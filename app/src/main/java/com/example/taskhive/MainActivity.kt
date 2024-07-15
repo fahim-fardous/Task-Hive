@@ -9,7 +9,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.taskhive.presentation.MainScreen
 import com.example.taskhive.presentation.home.HomeScreen
 import com.example.taskhive.ui.theme.TaskHiveTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

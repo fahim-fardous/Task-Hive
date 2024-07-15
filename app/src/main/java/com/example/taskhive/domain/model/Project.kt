@@ -2,6 +2,7 @@ package com.example.taskhive.domain.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.taskhive.presentation.home.model.ProjectUiModel
 import java.util.Date
 
 @Entity(tableName = "projects")
@@ -14,4 +15,14 @@ data class Project(
     val selectedIcon: Int,
     val selectedIconColor: Int,
     val selectedBorderColor: Int,
+)
+
+fun Project.toProjectUiModel() = ProjectUiModel(
+    id = id,
+    name = name,
+    description = description,
+    endDate = endDate,
+    selectedIcon = selectedIcon,
+    selectedIconColor = selectedIconColor,
+    selectedBorderColor = selectedBorderColor,
 )

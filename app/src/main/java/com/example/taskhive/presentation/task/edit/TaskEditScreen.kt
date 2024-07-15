@@ -1,4 +1,4 @@
-package com.example.taskhive.presentation.task.add
+package com.example.taskhive.presentation.task.edit
 
 import android.icu.util.Calendar
 import androidx.compose.foundation.layout.Arrangement
@@ -15,7 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -33,12 +33,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.components.CommonCard
 import com.example.taskhive.components.CustomButton
+import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.TimePickerDialog
 import com.example.taskhive.components.TopBar
 import com.example.taskhive.utils.HelperFunctions.convert24HourTo12Hour
@@ -47,31 +49,22 @@ import com.example.taskhive.utils.toDate
 import java.util.Date
 
 @Composable
-fun TaskAddScreen(
+fun TaskEditScreen(
     goBack: () -> Unit,
-    projectId: Int,
-    viewModel: TaskAddViewModel = hiltViewModel(),
+    taskId: Int,
+    viewModel: TaskEditViewModel = hiltViewModel(),
 ) {
-    val showMessage by viewModel.showMessage.collectAsState()
-    LaunchedEffect(showMessage) {
-        if (showMessage != null) {
-            if (showMessage == "Task saved") {
-                goBack()
-            }
-        }
+    LaunchedEffect(Unit) {
+        viewModel.getTaskById(taskId)
     }
-
-    TaskAddScreenSkeleton(
+    val task by viewModel.task.collectAsState()
+    TaskEditScreenSkeleton(
         goBack = goBack,
+        title = task?.title,
+        description = task?.description,
+        startTime = task?.plannedStartTime,
+        endTime = task?.plannedEndTime,
         saveTask = { title, description, startTime, endTime ->
-            viewModel.saveTask(
-                id = 0,
-                title = title,
-                description = description,
-                plannedStartTime = startTime ?: Date(),
-                plannedEndTime = endTime ?: Date(),
-                projectId = projectId,
-            )
         },
     )
 }
@@ -79,29 +72,33 @@ fun TaskAddScreen(
 @Preview
 @Composable
 private fun TaskAddScreenSkeletonPreview() {
-    TaskAddScreenSkeleton()
+    TaskEditScreenSkeleton()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskAddScreenSkeleton(
+fun TaskEditScreenSkeleton(
+    title: String? = null,
+    description: String? = null,
+    startTime: Date? = null,
+    endTime: Date? = null,
     goBack: () -> Unit = {},
-    saveTask: (String, String, Date?, Date?) -> Unit = { _, _, _, _ -> },
+    saveTask: (String?, String?, Date?, Date?) -> Unit = { _, _, _, _ -> },
 ) {
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var startTime by remember { mutableStateOf<Date?>(null) }
-    var endTime by remember { mutableStateOf<Date?>(null) }
-    var showStartTimePickerDialog by remember { mutableStateOf(false) }
-    var showEndTimePickerDialog by remember { mutableStateOf(false) }
+    var newTitle by remember { mutableStateOf(title) }
+    var newdescription by remember { mutableStateOf(description) }
+    var newStartTime by remember { mutableStateOf<Date?>(startTime) }
+    var newEndTime by remember { mutableStateOf<Date?>(endTime) }
+    var newShowStartTimePickerDialog by remember { mutableStateOf(false) }
+    var newShowEndTimePickerDialog by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopBar(
                 onClick = { goBack() },
                 leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                title = "Add Task",
-                trailingIcon = Icons.Filled.Notifications,
-                isBadgeVisible = true
+                title = "Edit Task",
+                trailingIcon = Icons.Filled.Delete,
+                isBadgeVisible = false,
             )
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -110,13 +107,13 @@ fun TaskAddScreenSkeleton(
                 onClick =
                     {
                         saveTask(
-                            title,
-                            description,
-                            startTime,
-                            endTime,
+                            newTitle,
+                            newdescription,
+                            newStartTime,
+                            newEndTime,
                         )
                     },
-                text = "Add Task",
+                text = "Edit Task",
                 trailingIcon = null,
             )
         },
@@ -131,16 +128,16 @@ fun TaskAddScreenSkeleton(
         ) {
             CommonCard(
                 modifier = Modifier.fillMaxWidth(),
-                value = title,
-                onValueChange = { title = it },
+                value = newTitle ?: "",
+                onValueChange = { newTitle = it },
                 label = "Task Title",
                 lines = 1,
             )
             Spacer(modifier = Modifier.height(24.dp))
             CommonCard(
                 modifier = Modifier.fillMaxWidth(),
-                value = description,
-                onValueChange = { description = it },
+                value = newdescription ?: "",
+                onValueChange = { newdescription = it },
                 label = "Description",
                 lines = 5,
             )
@@ -154,7 +151,7 @@ fun TaskAddScreenSkeleton(
                     lines = 1,
                     readOnly = true,
                 )
-                FloatingActionButton(onClick = { showStartTimePickerDialog = true }) {
+                FloatingActionButton(onClick = { newShowStartTimePickerDialog = true }) {
                     Icon(Icons.Filled.Add, contentDescription = "Add time")
                 }
             }
@@ -168,9 +165,17 @@ fun TaskAddScreenSkeleton(
                     lines = 1,
                     readOnly = true,
                 )
-                FloatingActionButton(onClick = { showEndTimePickerDialog = true }) {
+                FloatingActionButton(onClick = { newShowEndTimePickerDialog = true }) {
                     Icon(Icons.Filled.Add, contentDescription = "Add time")
                 }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(text = "Task Status", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ProgressType(onClick = {}, text = "To-do", true)
+                ProgressType(onClick = {}, text = "In Progress", false)
+                ProgressType(onClick = {}, text = "Done", false)
             }
         }
     }
@@ -179,7 +184,7 @@ fun TaskAddScreenSkeleton(
     // Dialog
     // -----------------------------------------------------------------------------------
 
-    if (showStartTimePickerDialog) {
+    if (newShowStartTimePickerDialog) {
         val calendar = Calendar.getInstance()
         val timePickerState =
             rememberTimePickerState(
@@ -189,21 +194,21 @@ fun TaskAddScreenSkeleton(
             )
         TimePickerDialog(
             onDismissRequest = {
-                showStartTimePickerDialog = false
+                newShowStartTimePickerDialog = false
             },
             confirmButton = {
                 TextButton(onClick = {
                     val hour = timePickerState.hour
                     val minute = timePickerState.minute
-                    startTime = convert24HourTo12Hour("$hour:$minute").toDate()
-                    showStartTimePickerDialog = false
+                    newStartTime = convert24HourTo12Hour("$hour:$minute").toDate()
+                    newShowStartTimePickerDialog = false
                 }) {
                     Text(text = "Ok")
                 }
             },
             dismissButton = {
                 TextButton(onClick = {
-                    showStartTimePickerDialog = false
+                    newShowStartTimePickerDialog = false
                 }) {
                     Text(text = "Cancel")
                 }
@@ -213,7 +218,7 @@ fun TaskAddScreenSkeleton(
         }
     }
 
-    if (showEndTimePickerDialog) {
+    if (newShowEndTimePickerDialog) {
         val calendar = Calendar.getInstance()
         val timePickerState =
             rememberTimePickerState(
@@ -223,21 +228,21 @@ fun TaskAddScreenSkeleton(
             )
         TimePickerDialog(
             onDismissRequest = {
-                showEndTimePickerDialog = false
+                newShowEndTimePickerDialog = false
             },
             confirmButton = {
                 TextButton(onClick = {
                     val hour = timePickerState.hour
                     val minute = timePickerState.minute
-                    endTime = convert24HourTo12Hour("$hour:$minute").toDate()
-                    showEndTimePickerDialog = false
+                    newEndTime = convert24HourTo12Hour("$hour:$minute").toDate()
+                    newShowEndTimePickerDialog = false
                 }) {
                     Text(text = "Ok")
                 }
             },
             dismissButton = {
                 TextButton(onClick = {
-                    showEndTimePickerDialog = false
+                    newShowEndTimePickerDialog = false
                 }) {
                     Text(text = "Cancel")
                 }

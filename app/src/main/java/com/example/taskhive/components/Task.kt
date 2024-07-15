@@ -1,5 +1,6 @@
 package com.example.taskhive.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,7 @@ import com.example.taskhive.ui.theme.appColor
 
 @Composable
 fun Task(
+    onClick: () -> Unit = {},
     projectName: String,
     taskName: String,
     endTime: String,
@@ -39,9 +41,12 @@ fun Task(
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(160.dp),
+        Modifier
+            .fillMaxWidth()
+            .height(160.dp)
+            .clickable {
+                onClick()
+            },
         elevation = CardDefaults.elevatedCardElevation(2.dp),
         colors =
             CardDefaults.elevatedCardColors(
@@ -50,9 +55,9 @@ fun Task(
     ) {
         Row(
             modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalAlignment = Alignment.Top,
         ) {
             Column(
@@ -66,6 +71,7 @@ fun Task(
                     text = projectName,
                     color = Color(0xFF6E6A7C),
                     overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Medium,
                     maxLines = 2,
                 )
                 Text(

@@ -43,26 +43,25 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import com.example.taskhive.R
-import com.example.taskhive.Screen
 import com.example.taskhive.components.InProgressCard
 import com.example.taskhive.components.ProgressCard
 import com.example.taskhive.components.TaskGroup
-import com.example.taskhive.domain.model.Project
+import com.example.taskhive.presentation.home.model.ProjectUiModel
 import com.example.taskhive.ui.theme.appColor
-import java.util.Date
 
 @Composable
 fun HomeScreen(
     goToAddProject: () -> Unit,
     goToTaskList: (Int?) -> Unit = {},
+    viewModel: HomeViewModel = hiltViewModel(),
 ) {
-    val viewModel: HomeViewModel = viewModel()
+    // TODO show task count for every project
     val context = LocalContext.current
     LaunchedEffect(Unit) {
-        viewModel.getProjects(context)
+        viewModel.getProjects()
     }
     LaunchedEffect(viewModel.count) {
         viewModel.getNumberOfProject(context)
@@ -74,7 +73,6 @@ fun HomeScreen(
         projects = projects,
         numberOfProject = numberOfProject,
         goToTaskList = { projectId ->
-            println(projectId.toString())
             goToTaskList(projectId)
         },
     )
@@ -83,37 +81,36 @@ fun HomeScreen(
 @Composable
 fun HomeScreenSkeleton(
     goToAddProject: () -> Unit = {},
-    projects: List<Project> = emptyList(),
+    projects: List<ProjectUiModel> = emptyList(),
     numberOfProject: Int = 0,
     goToTaskList: (Int?) -> Unit = {},
+    viewModel: HomeViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
-    val currentDate = Date()
     Scaffold(
         topBar = {
             Row(
                 modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.my_img),
                     contentDescription = "my photo",
                     modifier =
-                    Modifier
-                        .size(48.dp)
-                        .clip(
-                            CircleShape,
-                        ),
+                        Modifier
+                            .size(48.dp)
+                            .clip(
+                                CircleShape,
+                            ),
                     contentScale = ContentScale.Crop,
                 )
                 Column(
                     modifier =
-                    Modifier
-                        .padding(start = 16.dp)
-                        .weight(1f),
+                        Modifier
+                            .padding(start = 16.dp)
+                            .weight(1f),
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
@@ -156,10 +153,10 @@ fun HomeScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(16.dp),
+                Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .padding(16.dp),
         ) {
             ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f)
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -172,13 +169,13 @@ fun HomeScreenSkeleton(
                 )
                 Box(
                     modifier =
-                    Modifier
-                        .padding(top = 16.dp, start = 8.dp)
-                        .size(24.dp)
-                        .background(
-                            color = Color(0xFFEDE8FE),
-                            shape = CircleShape,
-                        ),
+                        Modifier
+                            .padding(top = 16.dp, start = 8.dp)
+                            .size(24.dp)
+                            .background(
+                                color = Color(0xFFEDE8FE),
+                                shape = CircleShape,
+                            ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -250,7 +247,7 @@ fun HomeScreenSkeleton(
                             goToTaskList(project.id)
                         },
                         project = project.name,
-                        numberOfTask = 0,
+                        numberOfTask = project.numberOfTask,
                         progress = 0.0f,
                         selectedIcon = project.selectedIcon,
                         selectedIconColor = project.selectedIconColor,

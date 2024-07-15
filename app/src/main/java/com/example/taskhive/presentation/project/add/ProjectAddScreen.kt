@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.components.CommonCard
 import com.example.taskhive.components.CustomButton
@@ -58,8 +59,7 @@ import com.example.taskhive.utils.getReadableDate
 import java.util.Date
 
 @Composable
-fun ProjectAddScreen(goBack: () -> Unit) {
-    val viewModel: ProjectAddViewModel = viewModel()
+fun ProjectAddScreen(goBack: () -> Unit, viewModel: ProjectAddViewModel = hiltViewModel()) {
     val showMessage by viewModel.showMessage.collectAsState()
     LaunchedEffect(showMessage) {
         if (showMessage != null) {
@@ -70,8 +70,8 @@ fun ProjectAddScreen(goBack: () -> Unit) {
     }
     ProjectAddScreenSkeleton(
         goBack = goBack,
-        saveProject = { project, context ->
-            viewModel.saveProject(project, context)
+        saveProject = { project ->
+            viewModel.saveProject(project)
         },
     )
 }
@@ -88,9 +88,8 @@ private fun TaskAddScreenSkeletonPreview() {
 @Composable
 fun ProjectAddScreenSkeleton(
     goBack: () -> Unit = {},
-    saveProject: (Project, Context) -> Unit = { _, _ -> },
+    saveProject: (Project) -> Unit = { _ -> },
 ) {
-    val context = LocalContext.current
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var endDate by remember { mutableStateOf<Date?>(null) }
@@ -120,8 +119,7 @@ fun ProjectAddScreenSkeleton(
                                 selectedIconColor = selectedColor,
                                 selectedBorderColor = selectedBorderColor,
                                 endDate = Date(System.currentTimeMillis() + 86400000),
-                            ),
-                            context,
+                            )
                         )
                     },
                 text = "Add Project",

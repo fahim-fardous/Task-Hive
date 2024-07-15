@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
 
 @Dao
@@ -14,6 +15,12 @@ interface TaskDao {
     @Query("SELECT * FROM tasks")
     suspend fun getAllTasks(): List<Task>
 
-    @Query("SELECT * FROM tasks WHERE projectId = :projectId")
-    suspend fun getTaskByProjectId(projectId: Int): List<Task>
+    @Query("SELECT * FROM tasks WHERE project = :project")
+    suspend fun getTaskByProject(project: Project): List<Task>
+
+    @Query("SELECT COUNT(*) FROM tasks WHERE project = :project")
+    suspend fun getTaskCountByProject(project: Project): Int
+
+    @Query("SELECT * FROM tasks WHERE id = :taskId")
+    suspend fun getTaskById(taskId: Int): Task
 }

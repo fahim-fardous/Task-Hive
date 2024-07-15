@@ -15,9 +15,6 @@ interface ProjectDao {
     @Query("SELECT * FROM projects WHERE endDate >= :currentDate")
     suspend fun getAllProjects(currentDate:Date): List<Project>
 
-    @Query("SELECT COUNT(*) FROM tasks WHERE projectId = :projectId")
-    suspend fun getTaskCount(projectId: Int): Int
-
     @Query("SELECT COUNT(*) FROM projects")
     suspend fun getProjectCount(): Int
 

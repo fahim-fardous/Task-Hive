@@ -24,6 +24,7 @@ fun TopBar(
     leadingIcon: ImageVector,
     title: String,
     trailingIcon: ImageVector,
+    isBadgeVisible: Boolean = false,
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -42,12 +43,21 @@ fun TopBar(
             }
         },
         actions = {
-            BadgedBox(modifier = Modifier.padding(end = 8.dp), badge = {
-                Badge(
-                    containerColor = appColor,
-                    modifier = Modifier.size(10.dp),
-                )
-            }) {
+            if (isBadgeVisible) {
+                BadgedBox(modifier = Modifier.padding(end = 8.dp), badge = {
+                    Badge(
+                        containerColor = appColor,
+                        modifier = Modifier.size(10.dp),
+                    )
+                }) {
+                    Icon(
+                        trailingIcon,
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier.padding(start = 8.dp),
+                    )
+                }
+            } else {
                 Icon(
                     trailingIcon,
                     contentDescription = null,

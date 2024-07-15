@@ -29,13 +29,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.components.CalendarCard
 import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.Task
 import com.example.taskhive.components.TopBar
-import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.domain.model.TaskStatus
+import com.example.taskhive.presentation.task.model.TaskUiModel
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
 import com.example.taskhive.utils.getReadableTime
@@ -44,20 +46,20 @@ import com.example.taskhive.utils.getReadableTime
 fun TaskListScreen(
     goBack: () -> Unit,
     goToAddTask: (Int) -> Unit = {},
+    goToTaskEdit: (Int) -> Unit = {},
     projectId: Int? = null,
+    viewModel: TaskListViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
-    val viewModel: TaskListViewModel = viewModel()
     LaunchedEffect(Unit) {
         if (projectId != null) {
-            viewModel.getTasksById(projectId, context)
+            viewModel.getTasksById(projectId)
         } else {
-            viewModel.getAllTasks(context)
+            viewModel.getAllTasks()
         }
     }
     LaunchedEffect(projectId) {
         if (projectId != null) {
-            viewModel.getProjectById(projectId, context)
+            viewModel.getProjectById(projectId)
         }
     }
     val tasks by viewModel.tasks.collectAsState()
@@ -67,7 +69,7 @@ fun TaskListScreen(
         goToAddTask = goToAddTask,
         projectId = projectId,
         tasks = tasks,
-        project = project,
+        goEditTask = goToTaskEdit,
     )
 }
 
@@ -83,21 +85,21 @@ private fun TaskListScreenSkeletonPreview() {
 fun TaskListScreenSkeleton(
     goBack: () -> Unit = {},
     goToAddTask: (Int) -> Unit = {},
+    goEditTask: (Int) -> Unit = {},
     projectId: Int? = null,
-    tasks: List<Task> = emptyList(),
-    project: Project? = null,
+    tasks: List<TaskUiModel> = emptyList(),
 ) {
     var selectedIndex by remember { mutableIntStateOf(0) }
     Scaffold(
         topBar =
-            {
-                TopBar(
-                    onClick = { goBack() },
-                    leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                    title = "Today's Task",
-                    trailingIcon = Icons.Filled.Notifications,
-                )
-            },
+        {
+            TopBar(
+                onClick = { goBack() },
+                leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                title = "Today's Task",
+                trailingIcon = Icons.Filled.Notifications,
+            )
+        },
         floatingActionButtonPosition = FabPosition.End,
         floatingActionButton = {
             if (projectId != null) {
@@ -117,9 +119,9 @@ fun TaskListScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .padding(16.dp),
+            Modifier
+                .padding(innerPadding)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             CalendarCard()
@@ -149,7 +151,7 @@ fun TaskListScreenSkeleton(
                 item {
                     ProgressType(
                         onClick = { selectedIndex = 3 },
-                        text = "Completed",
+                        text = "Done",
                         isSelected = selectedIndex == 3,
                     )
                 }
@@ -157,17 +159,29 @@ fun TaskListScreenSkeleton(
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn {
                 items(
-                    tasks,
+                    when(selectedIndex){
+                        0 -> tasks
+                        1 -> tasks.filter { it.taskStatus == TaskStatus.TODO }
+                        2 -> tasks.filter { it.taskStatus == TaskStatus.IN_PROGRESS }
+                        3 -> tasks.filter { it.taskStatus == TaskStatus.DONE }
+                        else -> tasks
+                    }
                 ) { task ->
                     Task(
-                        projectName = project?.name ?: "",
+                        onClick = { goEditTask(task.id) },
+                        projectName = task.project.name,
                         taskName = task.title,
                         endTime = task.plannedEndTime.getReadableTime(),
-                        status = task.taskStatus.name,
-                        icon = project?.selectedIcon ?: 0,
-                        iconColor = project?.selectedIconColor ?: 0,
-                        backgroundColor = project?.selectedBorderColor ?: 0,
-                    )
+                        status = when (task.taskStatus) {
+                            TaskStatus.TODO -> "To-do"
+                            TaskStatus.IN_PROGRESS -> "In Progress"
+                            TaskStatus.DONE -> "Done"
+                        },
+                        icon = task.project.selectedIcon,
+                        iconColor = task.project.selectedIconColor,
+                        backgroundColor = task.project.selectedBorderColor,
+
+                        )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }

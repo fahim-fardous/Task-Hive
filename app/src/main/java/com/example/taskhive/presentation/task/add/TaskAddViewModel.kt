@@ -3,44 +3,70 @@ package com.example.taskhive.presentation.task.add
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.taskhive.data.local.AppDatabase
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.domain.model.TaskStatus
+import com.example.taskhive.domain.repository.ProjectRepository
+import com.example.taskhive.domain.repository.TaskRepository
 import com.example.taskhive.utils.getReadableTime
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Date
+import javax.inject.Inject
 
-class TaskAddViewModel : ViewModel() {
-    private val _showMessage = MutableStateFlow<String?>(null)
-    val showMessage = _showMessage.asStateFlow()
+@HiltViewModel
+class TaskAddViewModel
+    @Inject
+    constructor(
+        private val projectRepository: ProjectRepository,
+        private val taskRepository: TaskRepository,
+    ) : ViewModel() {
+        private val _showMessage = MutableStateFlow<String?>(null)
+        val showMessage = _showMessage.asStateFlow()
 
-    private fun isValid(
-        name: String,
-        description: String,
-        plannedStartTime: String,
-        plannedEndTime: String,
-    ): Boolean {
-        if (name.isBlank() || description.isBlank() || plannedStartTime.isBlank() || plannedEndTime.isBlank()) {
-            _showMessage.value = "Fill all the fields"
-            return false
+        private fun isValid(
+            name: String,
+            description: String,
+            plannedStartTime: String,
+            plannedEndTime: String,
+        ): Boolean {
+            if (name.isBlank() || description.isBlank() || plannedStartTime.isBlank() || plannedEndTime.isBlank()) {
+                _showMessage.value = "Fill all the fields"
+                return false
+            }
+            return true
         }
-        return true
-    }
 
-    fun saveTask(
-        task: Task,
-        context: Context,
-    ) = viewModelScope.launch {
-        if (!isValid(
-                task.title,
-                task.description,
-                task.plannedStartTime.getReadableTime(),
-                task.plannedEndTime.getReadableTime(),
+        fun saveTask(
+            id: Int,
+            title: String,
+            description: String,
+            plannedStartTime: Date,
+            plannedEndTime: Date,
+            projectId: Int,
+        ) = viewModelScope.launch {
+            if (!isValid(
+                    title,
+                    description,
+                    plannedStartTime.getReadableTime(),
+                    plannedEndTime.getReadableTime(),
+                )
+            ) {
+                return@launch
+            }
+            val project = projectRepository.getProjectById(projectId)
+            taskRepository.saveTask(
+                Task(
+                    id = id,
+                    title = title,
+                    description = description,
+                    plannedStartTime = plannedStartTime,
+                    plannedEndTime = plannedEndTime,
+                    project = project,
+                    taskStatus = TaskStatus.TODO,
+                ),
             )
-        ) {
-            return@launch
+            _showMessage.value = "Task saved"
         }
-        AppDatabase(context).taskDao().saveTask(task)
-        _showMessage.value = "Task saved"
     }
-}

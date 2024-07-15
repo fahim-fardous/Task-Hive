@@ -59,7 +59,7 @@ fun TaskGroup(
             ) {
                 Text(text = project, color = Color.Black)
                 Text(
-                    text = "$numberOfTask tasks",
+                    text = if(numberOfTask > 1) "$numberOfTask tasks" else "$numberOfTask task",
                     color = Color(0xFF6E6A7C),
                     modifier = Modifier.padding(top = 6.dp),
                 )
