@@ -2,6 +2,7 @@ package com.example.taskhive.domain.repository
 
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.domain.model.TaskStatus
 
 interface TaskRepository {
     suspend fun saveTask(task: Task): Long
@@ -13,4 +14,7 @@ interface TaskRepository {
     suspend fun getTaskCountByProject(project: Project): Int
 
     suspend fun getTaskById(id: Int): Task
+
+    suspend fun getCompletedTaskCount(taskStatus: TaskStatus): Int
+
 }

@@ -1,6 +1,7 @@
 package com.example.taskhive.domain.repository
 
 import com.example.taskhive.domain.model.Project
+import com.example.taskhive.domain.model.TaskStatus
 import java.util.Date
 
 interface ProjectRepository {
@@ -11,4 +12,6 @@ interface ProjectRepository {
     suspend fun getProjectCount(): Int
 
     suspend fun getProjectById(projectId: Int): Project
+
+
 }

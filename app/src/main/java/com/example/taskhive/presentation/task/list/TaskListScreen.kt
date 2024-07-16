@@ -26,16 +26,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.components.CalendarCard
 import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.Task
 import com.example.taskhive.components.TopBar
-import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.presentation.task.model.TaskUiModel
 import com.example.taskhive.ui.theme.TaskHiveTheme
@@ -63,7 +60,6 @@ fun TaskListScreen(
         }
     }
     val tasks by viewModel.tasks.collectAsState()
-    val project by viewModel.project.collectAsState()
     TaskListScreenSkeleton(
         goBack = goBack,
         goToAddTask = goToAddTask,

@@ -3,6 +3,7 @@ package com.example.taskhive.data
 import com.example.taskhive.data.local.AppDatabase
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.domain.repository.TaskRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -36,5 +37,10 @@ class TaskRepositoryImp
         override suspend fun getTaskById(id: Int): Task =
             withContext(Dispatchers.IO) {
                 db.taskDao().getTaskById(id)
+            }
+
+        override suspend fun getCompletedTaskCount(taskStatus: TaskStatus): Int =
+            withContext(Dispatchers.IO) {
+                db.taskDao().getNumberOfCompletedTask(taskStatus)
             }
     }

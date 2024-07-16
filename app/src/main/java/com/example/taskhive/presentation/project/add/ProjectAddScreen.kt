@@ -1,6 +1,5 @@
 package com.example.taskhive.presentation.project.add
 
-import android.content.Context
 import android.icu.util.Calendar
 import android.icu.util.TimeZone
 import androidx.compose.foundation.layout.Arrangement
@@ -39,12 +38,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.components.CommonCard
 import com.example.taskhive.components.CustomButton
 import com.example.taskhive.components.SelectableColor

@@ -1,9 +1,8 @@
 package com.example.taskhive.presentation.home
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.taskhive.data.local.AppDatabase
+import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.domain.model.toProjectUiModel
 import com.example.taskhive.domain.repository.ProjectRepository
 import com.example.taskhive.domain.repository.TaskRepository
@@ -16,35 +15,43 @@ import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
-    private val projectRepository: ProjectRepository,
-    private val taskRepository: TaskRepository,
-) : ViewModel() {
-    private val _projects = MutableStateFlow<List<ProjectUiModel>>(emptyList())
-    val projects: StateFlow<List<ProjectUiModel>> = _projects
+class HomeViewModel
+    @Inject
+    constructor(
+        private val projectRepository: ProjectRepository,
+        private val taskRepository: TaskRepository,
+    ) : ViewModel() {
+        private val _projects = MutableStateFlow<List<ProjectUiModel>>(emptyList())
+        val projects: StateFlow<List<ProjectUiModel>> = _projects
 
-    private val _count = MutableStateFlow(0)
-    val count: StateFlow<Int> = _count
+        private val _count = MutableStateFlow(0)
+        val count: StateFlow<Int> = _count
 
-    fun getProjects() =
-        viewModelScope.launch {
-            val response = projectRepository.getAllProjects(Date())
-            if (response.isNotEmpty()) {
-                _projects.value =
-                    response.map {
-                        it.toProjectUiModel().copy(numberOfTask = getTaskCount(it.id))
-                    }
+        fun getProjects() =
+            viewModelScope.launch {
+                val completedTaskCount = taskRepository.getCompletedTaskCount(TaskStatus.DONE)
+
+                val response = projectRepository.getAllProjects(Date())
+                if (response.isNotEmpty()) {
+                    _projects.value =
+                        response.map {
+                            val totalTaskCount = getTaskCount(it.id)
+                            it.toProjectUiModel().copy(
+                                numberOfTask = totalTaskCount,
+                                progress = if (totalTaskCount > 0) (completedTaskCount.toFloat() / totalTaskCount.toFloat()) else 0f,
+                            )
+                        }
+                }
             }
-        }
 
-    fun getNumberOfProject(context: Context) =
-        viewModelScope.launch {
-            val response = AppDatabase(context).projectDao().getProjectCount()
-            _count.value = response
-        }
+        fun getNumberOfProject() =
+            viewModelScope.launch {
+                val response = projectRepository.getProjectCount()
+                _count.value = response
+            }
 
-    private suspend fun getTaskCount(projectId: Int): Int {
-        val project = projectRepository.getProjectById(projectId)
-        return taskRepository.getTaskCountByProject(project)
+        private suspend fun getTaskCount(projectId: Int): Int {
+            val project = projectRepository.getProjectById(projectId)
+            return taskRepository.getTaskCountByProject(project)
+        }
     }
-}

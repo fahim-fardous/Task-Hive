@@ -23,5 +23,4 @@ class TaskEditViewModel @Inject constructor(
         _task.value = response.toTaskUiModel(
         )
     }
-
 }

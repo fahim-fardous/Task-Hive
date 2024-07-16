@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.domain.model.TaskStatus
 
 @Dao
 interface TaskDao {
@@ -23,4 +24,7 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     suspend fun getTaskById(taskId: Int): Task
+
+    @Query("SELECT COUNT(*) FROM tasks LEFT JOIN projects ON tasks.project = project WHERE taskStatus = :taskStatus")
+    suspend fun getNumberOfCompletedTask(taskStatus: TaskStatus): Int
 }

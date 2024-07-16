@@ -1,7 +1,7 @@
 package com.example.taskhive.presentation.onboard
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.FabPosition
@@ -44,14 +47,15 @@ fun OnBoardScreen(goToHome: () -> Unit = {}) {
             Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(state = rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(64.dp))
             Image(
                 painter = painterResource(id = R.drawable.onboard),
                 contentDescription = null,
-                modifier = Modifier.size(300.dp),
+                modifier = Modifier.fillMaxWidth(fraction = .8f),
             )
             Spacer(modifier = Modifier.height(64.dp))
             Text(
@@ -59,12 +63,12 @@ fun OnBoardScreen(goToHome: () -> Unit = {}) {
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(fraction = .8f),
             )
             Text(
-                text = "This productive tool is designed to help \n you better manage your task \n project-wise conveniently",
+                text = "This productive tool is designed to help you better manage your task \n project-wise conveniently",
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 16.dp),
+                modifier = Modifier.padding(top = 16.dp).fillMaxWidth(fraction = .7f),
                 color = Color(0xFF6E6A7C),
                 style = MaterialTheme.typography.bodyMedium,
             )

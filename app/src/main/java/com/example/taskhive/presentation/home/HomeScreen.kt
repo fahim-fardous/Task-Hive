@@ -38,13 +38,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.R
 import com.example.taskhive.components.InProgressCard
 import com.example.taskhive.components.ProgressCard
@@ -58,13 +56,11 @@ fun HomeScreen(
     goToTaskList: (Int?) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
-    // TODO show task count for every project
-    val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.getProjects()
     }
     LaunchedEffect(viewModel.count) {
-        viewModel.getNumberOfProject(context)
+        viewModel.getNumberOfProject()
     }
     val projects by viewModel.projects.collectAsState()
     val numberOfProject by viewModel.count.collectAsState()
@@ -84,7 +80,6 @@ fun HomeScreenSkeleton(
     projects: List<ProjectUiModel> = emptyList(),
     numberOfProject: Int = 0,
     goToTaskList: (Int?) -> Unit = {},
-    viewModel: HomeViewModel = hiltViewModel(),
 ) {
     Scaffold(
         topBar = {
@@ -248,7 +243,7 @@ fun HomeScreenSkeleton(
                         },
                         project = project.name,
                         numberOfTask = project.numberOfTask,
-                        progress = 0.0f,
+                        progress = project.progress,
                         selectedIcon = project.selectedIcon,
                         selectedIconColor = project.selectedIconColor,
                         selectedBorderColor = project.selectedBorderColor,

@@ -32,6 +32,7 @@ fun CommonCard(
     height: Dp = 200.dp,
     readOnly: Boolean = false,
 ) {
+    println("It is $value value")
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier =
@@ -53,7 +54,9 @@ fun CommonCard(
                     unfocusedIndicatorColor = Color.Transparent,
                 ),
             modifier =
-                Modifier.fillMaxWidth().then(
+            Modifier
+                .fillMaxWidth()
+                .then(
                     if (lines > 1) Modifier.height(height) else Modifier,
                 ),
             textStyle =

@@ -14,7 +14,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
@@ -43,6 +42,8 @@ import com.example.taskhive.components.CustomButton
 import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.TimePickerDialog
 import com.example.taskhive.components.TopBar
+import com.example.taskhive.domain.model.TaskStatus
+import com.example.taskhive.presentation.task.model.TaskUiModel
 import com.example.taskhive.utils.HelperFunctions.convert24HourTo12Hour
 import com.example.taskhive.utils.getReadableTime
 import com.example.taskhive.utils.toDate
@@ -60,10 +61,7 @@ fun TaskEditScreen(
     val task by viewModel.task.collectAsState()
     TaskEditScreenSkeleton(
         goBack = goBack,
-        title = task?.title,
-        description = task?.description,
-        startTime = task?.plannedStartTime,
-        endTime = task?.plannedEndTime,
+        task = task,
         saveTask = { title, description, startTime, endTime ->
         },
     )
@@ -78,19 +76,19 @@ private fun TaskAddScreenSkeletonPreview() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskEditScreenSkeleton(
-    title: String? = null,
-    description: String? = null,
-    startTime: Date? = null,
-    endTime: Date? = null,
+    task: TaskUiModel? = null,
     goBack: () -> Unit = {},
-    saveTask: (String?, String?, Date?, Date?) -> Unit = { _, _, _, _ -> },
+    saveTask: (String, String, Date?, Date?) -> Unit = { _, _, _, _ -> },
 ) {
-    var newTitle by remember { mutableStateOf(title) }
-    var newdescription by remember { mutableStateOf(description) }
-    var newStartTime by remember { mutableStateOf<Date?>(startTime) }
-    var newEndTime by remember { mutableStateOf<Date?>(endTime) }
+    var newTitle by remember { mutableStateOf("") }
+    var newDescription by remember { mutableStateOf("") }
+    var newStartTime by remember { mutableStateOf(task?.plannedStartTime) }
+    var newEndTime by remember { mutableStateOf(task?.plannedEndTime) }
     var newShowStartTimePickerDialog by remember { mutableStateOf(false) }
     var newShowEndTimePickerDialog by remember { mutableStateOf(false) }
+    var newTaskStatus by remember { mutableStateOf(task?.taskStatus) }
+    newTitle = task?.title.toString()
+    newDescription = task?.description.toString()
     Scaffold(
         topBar = {
             TopBar(
@@ -108,7 +106,7 @@ fun TaskEditScreenSkeleton(
                     {
                         saveTask(
                             newTitle,
-                            newdescription,
+                            newDescription,
                             newStartTime,
                             newEndTime,
                         )
@@ -128,7 +126,7 @@ fun TaskEditScreenSkeleton(
         ) {
             CommonCard(
                 modifier = Modifier.fillMaxWidth(),
-                value = newTitle ?: "",
+                value = newTitle,
                 onValueChange = { newTitle = it },
                 label = "Task Title",
                 lines = 1,
@@ -136,8 +134,8 @@ fun TaskEditScreenSkeleton(
             Spacer(modifier = Modifier.height(24.dp))
             CommonCard(
                 modifier = Modifier.fillMaxWidth(),
-                value = newdescription ?: "",
-                onValueChange = { newdescription = it },
+                value = newDescription,
+                onValueChange = { newDescription = it },
                 label = "Description",
                 lines = 5,
             )
@@ -145,7 +143,7 @@ fun TaskEditScreenSkeleton(
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 CommonCard(
                     modifier = Modifier.weight(1f),
-                    value = startTime.getReadableTime(),
+                    value = task?.plannedStartTime.getReadableTime(),
                     onValueChange = { },
                     label = "Start Time",
                     lines = 1,
@@ -159,7 +157,7 @@ fun TaskEditScreenSkeleton(
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 CommonCard(
                     modifier = Modifier.weight(1f),
-                    value = endTime.getReadableTime(),
+                    value = task?.plannedEndTime.getReadableTime(),
                     onValueChange = { },
                     label = "End Time",
                     lines = 1,
@@ -173,9 +171,21 @@ fun TaskEditScreenSkeleton(
             Text(text = "Task Status", fontWeight = FontWeight.Bold, fontSize = 14.sp)
             Spacer(modifier = Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ProgressType(onClick = {}, text = "To-do", true)
-                ProgressType(onClick = {}, text = "In Progress", false)
-                ProgressType(onClick = {}, text = "Done", false)
+                ProgressType(
+                    onClick = { newTaskStatus = TaskStatus.TODO },
+                    text = "To-do",
+                    newTaskStatus == TaskStatus.TODO,
+                )
+                ProgressType(
+                    onClick = { newTaskStatus = TaskStatus.IN_PROGRESS },
+                    text = "In Progress",
+                    newTaskStatus == TaskStatus.IN_PROGRESS,
+                )
+                ProgressType(
+                    onClick = { newTaskStatus = TaskStatus.DONE },
+                    text = "Done",
+                    newTaskStatus == TaskStatus.DONE,
+                )
             }
         }
     }

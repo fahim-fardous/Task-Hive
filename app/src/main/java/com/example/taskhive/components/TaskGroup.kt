@@ -32,11 +32,14 @@ fun TaskGroup(
     selectedBorderColor:Int = 0,
     id: Int = 0,
 ) {
+    println(progress)
     Card(
         shape = RoundedCornerShape(8.dp),
-        modifier = Modifier.fillMaxWidth().clickable {
-            onClick()
-        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onClick()
+            },
         elevation = CardDefaults.elevatedCardElevation(2.dp),
         colors =
             CardDefaults.elevatedCardColors(
@@ -45,17 +48,17 @@ fun TaskGroup(
     ) {
         Row(
             modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TaskGroupIcon(selectedIcon, selectedIconColor, selectedBorderColor, size = 40.dp, padding = 4.dp)
             Column(
                 modifier =
-                    Modifier
-                        .weight(1f)
-                        .padding(start = 16.dp),
+                Modifier
+                    .weight(1f)
+                    .padding(start = 16.dp),
             ) {
                 Text(text = project, color = Color.Black)
                 Text(
@@ -83,9 +86,9 @@ fun TaskGroup(
 private fun TaskGroupPreview() {
     Column(
         modifier =
-            Modifier
-                .fillMaxSize()
-                .background(color = Color.Black),
+        Modifier
+            .fillMaxSize()
+            .background(color = Color.Black),
     ) {
         TaskGroup(project = "Office Project", numberOfTask = 23, progress = 0.6f, onClick = {})
     }
