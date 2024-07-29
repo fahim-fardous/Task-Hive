@@ -131,13 +131,10 @@ fun TaskListScreenSkeleton(
             if (projectId != null) {
                 FloatingActionButton(
                     onClick = { goToAddTask(projectId) },
-                    containerColor = appColor,
-                    shape = CircleShape,
                 ) {
                     Icon(
                         Icons.Filled.Add,
                         contentDescription = "Add",
-                        tint = Color.White,
                     )
                 }
             }

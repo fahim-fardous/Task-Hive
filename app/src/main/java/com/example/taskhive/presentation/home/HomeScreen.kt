@@ -88,8 +88,6 @@ fun HomeScreenSkeleton(
     numberOfProject: Int = 0,
     goToTaskList: (Int?) -> Unit = {},
 ) {
-    val context = LocalContext.current
-    val currentDate = Date()
     Scaffold(
         topBar = {
             Row(
@@ -144,12 +142,10 @@ fun HomeScreenSkeleton(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { goToAddProject() },
-                containerColor = appColor,
             ) {
                 Icon(
                     Icons.Filled.Add,
                     contentDescription = "Add",
-                    tint = Color.White,
                 )
             }
         },
