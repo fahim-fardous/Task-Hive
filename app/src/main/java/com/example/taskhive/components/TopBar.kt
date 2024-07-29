@@ -1,15 +1,24 @@
 package com.example.taskhive.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -23,9 +32,13 @@ fun TopBar(
     onClick: () -> Unit,
     leadingIcon: ImageVector,
     title: String,
-    trailingIcon: ImageVector,
-    isBadgeVisible: Boolean = false,
+    trailingIcon: ImageVector? = null,
+    goToLogListScreen: () -> Unit = {},
+    onNotificationClick: () -> Unit = {},
 ) {
+    var showMoreMenu by remember {
+        mutableStateOf(false)
+    }
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -43,27 +56,51 @@ fun TopBar(
             }
         },
         actions = {
-            if (isBadgeVisible) {
-                BadgedBox(modifier = Modifier.padding(end = 8.dp), badge = {
-                    Badge(
-                        containerColor = appColor,
-                        modifier = Modifier.size(10.dp),
-                    )
-                }) {
+            if (trailingIcon != null) {
+                if (trailingIcon == Icons.Filled.Notifications) {
+                    BadgedBox(modifier = Modifier.padding(end = 8.dp), badge = {
+                        Badge(
+                            containerColor = appColor,
+                            modifier = Modifier.size(10.dp),
+                        )
+                    }) {
+                        Icon(
+                            trailingIcon,
+                            contentDescription = null,
+                            tint = Color.Black,
+                            modifier =
+                                Modifier
+                                    .padding(start = 8.dp)
+                                    .clickable {
+                                        onNotificationClick()
+                                    },
+                        )
+                    }
+                } else {
                     Icon(
                         trailingIcon,
                         contentDescription = null,
                         tint = Color.Black,
-                        modifier = Modifier.padding(start = 8.dp),
+                        modifier =
+                            Modifier
+                                .padding(start = 8.dp)
+                                .clickable {
+                                    showMoreMenu = true
+                                },
                     )
+                    // Dropdown Menu
+                    if (showMoreMenu) {
+                        DropdownMenu(
+                            expanded = showMoreMenu,
+                            onDismissRequest = { showMoreMenu = false },
+                        ) {
+                            DropdownMenuItem(text = { Text(text = "Show logs") }, onClick = {
+                                showMoreMenu = false
+                                goToLogListScreen()
+                            })
+                        }
+                    }
                 }
-            } else {
-                Icon(
-                    trailingIcon,
-                    contentDescription = null,
-                    tint = Color.Black,
-                    modifier = Modifier.padding(start = 8.dp),
-                )
             }
         },
     )

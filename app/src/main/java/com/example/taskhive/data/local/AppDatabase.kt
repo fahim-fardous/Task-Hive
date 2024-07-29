@@ -8,10 +8,11 @@ import androidx.room.TypeConverters
 import com.example.taskhive.components.DataTypeConverters
 import com.example.taskhive.data.local.dao.ProjectDao
 import com.example.taskhive.data.local.dao.TaskDao
+import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
 
-@Database(entities = [Task::class, Project::class], version = 1, exportSchema = false)
+@Database(entities = [Task::class, Project::class, Log::class], version = 1, exportSchema = false)
 @TypeConverters(DataTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun projectDao(): ProjectDao

@@ -107,14 +107,14 @@ fun HomeIndexScreenSkeleton(
                     goToTaskList = {projectId->
                         goToTaskList(projectId)
                     },
-                    viewModel = viewModel
+                    //viewModel = viewModel
                 )
             }
             composable(HomeTabScreen.TaskList.route) {
                 val viewModel: TaskListViewModel = hiltViewModel()
                 TaskListScreen(
                     goBack = { navController.popBackStack() },
-                    viewModel = viewModel
+                    //viewModel = viewModel
                 )
             }
             composable(HomeTabScreen.Notes.route) {

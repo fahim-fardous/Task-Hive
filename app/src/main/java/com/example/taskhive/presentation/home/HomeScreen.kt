@@ -38,24 +38,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.taskhive.R
+import com.example.taskhive.Screen
 import com.example.taskhive.components.InProgressCard
 import com.example.taskhive.components.ProgressCard
 import com.example.taskhive.components.TaskGroup
-import com.example.taskhive.presentation.home.model.ProjectUiModel
+import com.example.taskhive.domain.model.Project
+import com.example.taskhive.presentation.task.model.ProjectUiModel
 import com.example.taskhive.ui.theme.appColor
+import java.util.Date
 
 @Composable
 fun HomeScreen(
     goToAddProject: () -> Unit,
     goToTaskList: (Int?) -> Unit = {},
-    viewModel: HomeViewModel = hiltViewModel(),
+    viewModel: HomeViewModel = viewModel(),
 ) {
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.getProjects()
     }
@@ -69,6 +75,7 @@ fun HomeScreen(
         projects = projects,
         numberOfProject = numberOfProject,
         goToTaskList = { projectId ->
+            println(projectId.toString())
             goToTaskList(projectId)
         },
     )
@@ -81,31 +88,33 @@ fun HomeScreenSkeleton(
     numberOfProject: Int = 0,
     goToTaskList: (Int?) -> Unit = {},
 ) {
+    val context = LocalContext.current
+    val currentDate = Date()
     Scaffold(
         topBar = {
             Row(
                 modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.my_img),
                     contentDescription = "my photo",
                     modifier =
-                        Modifier
-                            .size(48.dp)
-                            .clip(
-                                CircleShape,
-                            ),
+                    Modifier
+                        .size(48.dp)
+                        .clip(
+                            CircleShape,
+                        ),
                     contentScale = ContentScale.Crop,
                 )
                 Column(
                     modifier =
-                        Modifier
-                            .padding(start = 16.dp)
-                            .weight(1f),
+                    Modifier
+                        .padding(start = 16.dp)
+                        .weight(1f),
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
@@ -136,7 +145,6 @@ fun HomeScreenSkeleton(
             FloatingActionButton(
                 onClick = { goToAddProject() },
                 containerColor = appColor,
-                shape = CircleShape,
             ) {
                 Icon(
                     Icons.Filled.Add,
@@ -148,10 +156,10 @@ fun HomeScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-                    .padding(16.dp),
+            Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .padding(16.dp),
         ) {
             ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f)
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -164,13 +172,13 @@ fun HomeScreenSkeleton(
                 )
                 Box(
                     modifier =
-                        Modifier
-                            .padding(top = 16.dp, start = 8.dp)
-                            .size(24.dp)
-                            .background(
-                                color = Color(0xFFEDE8FE),
-                                shape = CircleShape,
-                            ),
+                    Modifier
+                        .padding(top = 16.dp, start = 8.dp)
+                        .size(24.dp)
+                        .background(
+                            color = Color(0xFFEDE8FE),
+                            shape = CircleShape,
+                        ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -182,12 +190,12 @@ fun HomeScreenSkeleton(
             }
             LazyRow(
                 contentPadding =
-                    PaddingValues(
-                        top = 16.dp,
-                        bottom = 16.dp,
-                        start = 0.dp,
-                        end = 0.dp,
-                    ),
+                PaddingValues(
+                    top = 16.dp,
+                    bottom = 16.dp,
+                    start = 0.dp,
+                    end = 0.dp,
+                ),
             ) {
                 items(5) { id ->
                     InProgressCard(
@@ -210,13 +218,13 @@ fun HomeScreenSkeleton(
                 )
                 Box(
                     modifier =
-                        Modifier
-                            .padding(top = 16.dp, start = 8.dp)
-                            .size(24.dp)
-                            .background(
-                                color = Color(0xFFEDE8FE),
-                                shape = CircleShape,
-                            ),
+                    Modifier
+                        .padding(top = 16.dp, start = 8.dp)
+                        .size(24.dp)
+                        .background(
+                            color = Color(0xFFEDE8FE),
+                            shape = CircleShape,
+                        ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -229,12 +237,12 @@ fun HomeScreenSkeleton(
 
             LazyColumn(
                 contentPadding =
-                    PaddingValues(
-                        start = 0.dp,
-                        end = 0.dp,
-                        top = 16.dp,
-                        bottom = 16.dp,
-                    ),
+                PaddingValues(
+                    start = 0.dp,
+                    end = 0.dp,
+                    top = 16.dp,
+                    bottom = 16.dp,
+                ),
             ) {
                 items(projects) { project ->
                     TaskGroup(
@@ -243,7 +251,7 @@ fun HomeScreenSkeleton(
                         },
                         project = project.name,
                         numberOfTask = project.numberOfTask,
-                        progress = project.progress,
+                        progress = 0.0f,
                         selectedIcon = project.selectedIcon,
                         selectedIconColor = project.selectedIconColor,
                         selectedBorderColor = project.selectedBorderColor,

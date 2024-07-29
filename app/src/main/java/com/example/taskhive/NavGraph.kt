@@ -8,8 +8,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.taskhive.presentation.home.HomeScreen
-import com.example.taskhive.presentation.home.HomeViewModel
 import com.example.taskhive.presentation.home.index.HomeIndexScreen
+import com.example.taskhive.presentation.log.list.LogListScreen
+import com.example.taskhive.presentation.log.list.LogListViewModel
 import com.example.taskhive.presentation.notes.NoteScreen
 import com.example.taskhive.presentation.onboard.OnBoardScreen
 import com.example.taskhive.presentation.profile.ProfileScreen
@@ -37,7 +38,7 @@ sealed class Screen(
         fun createRoute(projectId: Int) = route.replaceFirst("{projectId}", "$projectId")
     }
 
-    data object TaskEdit: Screen("task/edit/{taskId}") {
+    data object TaskEdit : Screen("task/edit/{taskId}") {
         fun createRoute(taskId: Int) = route.replaceFirst("{taskId}", "$taskId")
     }
 
@@ -48,13 +49,20 @@ sealed class Screen(
     data object Profile : Screen("profile")
 
     data object HomeIndex : Screen("home/index")
+
+    data object LogList : Screen("log/list/{taskId}") {
+        fun createRoute(taskId: Int) = route.replaceFirst("{taskId}", "$taskId")
+    }
+
+    data object LogAdd : Screen("log/list/add/{taskId}") {
+        fun createRoute(taskId: Int) = route.replaceFirst("{taskId}", "$taskId")
+    }
 }
 
 @Composable
 fun MainNavHost(navController: NavHostController) {
     NavHost(navController = navController, startDestination = Screen.OnBoard.route) {
         composable(Screen.Home.route) {
-            val viewModel:HomeViewModel = hiltViewModel()
             HomeScreen(
                 goToAddProject = { navController.navigate(Screen.ProjectAdd.route) },
                 goToTaskList = { projectId ->
@@ -64,7 +72,6 @@ fun MainNavHost(navController: NavHostController) {
                         ),
                     )
                 },
-                viewModel = viewModel
             )
         }
         composable(Screen.OnBoard.route) {
@@ -78,15 +85,11 @@ fun MainNavHost(navController: NavHostController) {
                 },
             )
         }
-        composable(Screen.ProjectAdd.route) {
-            val viewModel:ProjectAddViewModel = hiltViewModel()
-            ProjectAddScreen(goBack = {navController.popBackStack()}, viewModel = viewModel)
-        }
         composable(
             route = Screen.TaskList.route,
             arguments = listOf(navArgument("projectId") { type = NavType.IntType }),
         ) { backStackEntry ->
-            val viewModel:TaskListViewModel = hiltViewModel()
+            val viewModel: TaskListViewModel = hiltViewModel()
             TaskListScreen(
                 goBack = { navController.popBackStack() },
                 goToAddTask = { projectId ->
@@ -96,33 +99,49 @@ fun MainNavHost(navController: NavHostController) {
                         ),
                     )
                 },
-                goToTaskEdit = { taskId ->
-                    navController.navigate(Screen.TaskEdit.createRoute(taskId = taskId))
+                goToEditTask = { taskId ->
+                    navController.navigate(
+                        Screen.TaskEdit.createRoute(taskId = taskId),
+                    )
+                },
+                goToLogListScreen = { taskId ->
+                    navController.navigate(
+                        Screen.LogList.createRoute(taskId = taskId),
+                    )
                 },
                 projectId = backStackEntry.arguments?.getInt("projectId"),
-                viewModel = viewModel
+                viewModel = viewModel,
             )
+        }
+        composable(Screen.ProjectAdd.route) {
+            val viewModel: ProjectAddViewModel = hiltViewModel()
+            ProjectAddScreen(goBack = { navController.popBackStack() }, viewModel = viewModel)
         }
         composable(
             route = Screen.TaskAdd.route,
             arguments = listOf(navArgument("projectId") { type = NavType.IntType }),
         ) {
-            val viewModel:TaskAddViewModel = hiltViewModel()
+            val viewModel: TaskAddViewModel = hiltViewModel()
             TaskAddScreen(
                 goBack = { navController.popBackStack() },
                 projectId = navController.currentBackStackEntry?.arguments?.getInt("projectId")!!,
-                viewModel = viewModel
+                viewModel = viewModel,
             )
         }
         composable(
             route = Screen.TaskEdit.route,
             arguments = listOf(navArgument("taskId") { type = NavType.IntType }),
-        ) { backStackEntry ->
-            val viewModel:TaskEditViewModel = hiltViewModel()
+        ) {
+            val viewModel: TaskEditViewModel = hiltViewModel()
             TaskEditScreen(
                 goBack = { navController.popBackStack() },
-                taskId = backStackEntry.arguments?.getInt("taskId")!!,
-                viewModel = viewModel
+                goToLogListScreen = { taskId ->
+                    navController.navigate(
+                        Screen.LogList.createRoute(taskId = taskId),
+                    )
+                },
+                taskId = navController.currentBackStackEntry?.arguments?.getInt("taskId")!!,
+                viewModel = viewModel,
             )
         }
         composable(Screen.Notes.route) {
@@ -139,6 +158,23 @@ fun MainNavHost(navController: NavHostController) {
                         Screen.TaskList.createRoute(projectId),
                     )
                 },
+            )
+        }
+
+        composable(
+            Screen.LogList.route,
+            arguments = listOf(navArgument("taskId") { type = NavType.IntType }),
+        ) {
+            val viewModel: LogListViewModel = hiltViewModel()
+            LogListScreen(
+                taskId = navController.currentBackStackEntry?.arguments?.getInt("taskId")!!,
+                goToAddLog = { taskId ->
+                    navController.navigate(
+                        Screen.LogAdd.createRoute(taskId),
+                    )
+                },
+                goBack = { navController.popBackStack() },
+                viewModel = viewModel,
             )
         }
     }

@@ -106,6 +106,7 @@ fun ProjectAddScreenSkeleton(
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
             CustomButton(
+                modifier = Modifier.padding(16.dp),
                 onClick =
                     {
                         saveProject(

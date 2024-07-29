@@ -1,15 +1,14 @@
-package com.example.taskhive.presentation.home.model
+package com.example.taskhive.presentation.task.model
 
 import java.util.Date
 
 data class ProjectUiModel(
-    val id: Int,
+    val id: Int = 0,
     val name: String,
     val description: String,
     val endDate: Date,
+    val numberOfTask: Int = 0,
     val selectedIcon: Int,
     val selectedIconColor: Int,
     val selectedBorderColor: Int,
-    val numberOfTask: Int = 0,
-    val progress: Float = 0.0f,
 )

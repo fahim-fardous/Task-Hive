@@ -21,29 +21,35 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.components.CalendarCard
 import com.example.taskhive.components.ProgressType
-import com.example.taskhive.components.Task
+import com.example.taskhive.components.TaskCard
 import com.example.taskhive.components.TopBar
+import com.example.taskhive.domain.model.Log
+import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.presentation.task.model.TaskUiModel
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
-import com.example.taskhive.utils.getReadableTime
 
 @Composable
 fun TaskListScreen(
     goBack: () -> Unit,
     goToAddTask: (Int) -> Unit = {},
-    goToTaskEdit: (Int) -> Unit = {},
+    goToEditTask: (Int) -> Unit = {},
+    goToLogListScreen: (Int) -> Unit = {},
     projectId: Int? = null,
     viewModel: TaskListViewModel = hiltViewModel(),
 ) {
@@ -59,13 +65,22 @@ fun TaskListScreen(
             viewModel.getProjectById(projectId)
         }
     }
+
     val tasks by viewModel.tasks.collectAsState()
+    val project by viewModel.project.collectAsState()
     TaskListScreenSkeleton(
         goBack = goBack,
         goToAddTask = goToAddTask,
+        goToEditTask = goToEditTask,
         projectId = projectId,
         tasks = tasks,
-        goEditTask = goToTaskEdit,
+        project = project,
+        saveLog = { log ->
+            viewModel.saveLog(log)
+        },
+        goToLogScreen = { taskId ->
+            goToLogListScreen(taskId)
+        },
     )
 }
 
@@ -81,21 +96,36 @@ private fun TaskListScreenSkeletonPreview() {
 fun TaskListScreenSkeleton(
     goBack: () -> Unit = {},
     goToAddTask: (Int) -> Unit = {},
-    goEditTask: (Int) -> Unit = {},
+    goToEditTask: (Int) -> Unit = {},
     projectId: Int? = null,
     tasks: List<TaskUiModel> = emptyList(),
+    project: Project? = null,
+    saveLog: (Log) -> Unit = {},
+    goToLogScreen: (Int) -> Unit = {},
 ) {
+    var logTaskId by remember {
+        mutableIntStateOf(-1)
+    }
     var selectedIndex by remember { mutableIntStateOf(0) }
+    var showLogDialog by remember {
+        mutableStateOf(false)
+    }
+    var totalTimeSpend by remember {
+        mutableLongStateOf(0L)
+    }
+    var logSpendTime by remember {
+        mutableLongStateOf(0L)
+    }
     Scaffold(
         topBar =
-        {
-            TopBar(
-                onClick = { goBack() },
-                leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                title = "Today's Task",
-                trailingIcon = Icons.Filled.Notifications,
-            )
-        },
+            {
+                TopBar(
+                    onClick = { goBack() },
+                    leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                    title = "Today's Task",
+                    trailingIcon = Icons.Filled.Notifications,
+                )
+            },
         floatingActionButtonPosition = FabPosition.End,
         floatingActionButton = {
             if (projectId != null) {
@@ -115,9 +145,9 @@ fun TaskListScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .padding(16.dp),
+                Modifier
+                    .padding(innerPadding)
+                    .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             CalendarCard()
@@ -147,7 +177,7 @@ fun TaskListScreenSkeleton(
                 item {
                     ProgressType(
                         onClick = { selectedIndex = 3 },
-                        text = "Done",
+                        text = "Completed",
                         isSelected = selectedIndex == 3,
                     )
                 }
@@ -155,29 +185,46 @@ fun TaskListScreenSkeleton(
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn {
                 items(
-                    when(selectedIndex){
+                    when (selectedIndex) {
                         0 -> tasks
                         1 -> tasks.filter { it.taskStatus == TaskStatus.TODO }
                         2 -> tasks.filter { it.taskStatus == TaskStatus.IN_PROGRESS }
                         3 -> tasks.filter { it.taskStatus == TaskStatus.DONE }
                         else -> tasks
-                    }
+                    },
                 ) { task ->
-                    Task(
-                        onClick = { goEditTask(task.id) },
-                        projectName = task.project.name,
-                        taskName = task.title,
-                        endTime = task.plannedEndTime.getReadableTime(),
-                        status = when (task.taskStatus) {
-                            TaskStatus.TODO -> "To-do"
-                            TaskStatus.IN_PROGRESS -> "In Progress"
-                            TaskStatus.DONE -> "Done"
+                    TaskCard(
+                        onClick = { goToEditTask(task.id) },
+                        onPauseClicked = { totalSpend, timer, startTime, endTime ->
+                            logTaskId = task.id
+                            totalTimeSpend = totalSpend
+                            logSpendTime = timer
+                            saveLog(
+                                Log(
+                                    taskId = task.id,
+                                    startTime = startTime,
+                                    endTime = endTime,
+                                    duration = timer,
+                                ),
+                            )
+                            showLogDialog = true
                         },
-                        icon = task.project.selectedIcon,
-                        iconColor = task.project.selectedIconColor,
-                        backgroundColor = task.project.selectedBorderColor,
-
-                        )
+                        goToLogScreen = {
+                            goToLogScreen(task.id)
+                        },
+                        projectName = project?.name ?: "",
+                        taskName = task.title,
+                        duration = task.totalTimeSpend,
+                        status =
+                            when (task.taskStatus) {
+                                TaskStatus.TODO -> "To-do"
+                                TaskStatus.IN_PROGRESS -> "In Progress"
+                                TaskStatus.DONE -> "Done"
+                            },
+                        icon = project?.selectedIcon ?: 0,
+                        iconColor = project?.selectedIconColor ?: 0,
+                        backgroundColor = project?.selectedBorderColor ?: 0,
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }

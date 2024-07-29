@@ -99,12 +99,12 @@ fun TaskAddScreenSkeleton(
                 leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
                 title = "Add Task",
                 trailingIcon = Icons.Filled.Notifications,
-                isBadgeVisible = true
             )
         },
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
             CustomButton(
+                modifier = Modifier.padding(horizontal = 16.dp),
                 onClick =
                     {
                         saveTask(

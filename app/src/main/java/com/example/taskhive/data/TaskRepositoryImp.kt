@@ -1,9 +1,9 @@
 package com.example.taskhive.data
 
 import com.example.taskhive.data.local.AppDatabase
+import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
-import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.domain.repository.TaskRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -39,8 +39,18 @@ class TaskRepositoryImp
                 db.taskDao().getTaskById(id)
             }
 
-        override suspend fun getCompletedTaskCount(taskStatus: TaskStatus): Int =
+        override suspend fun saveLog(log: Log): Long =
             withContext(Dispatchers.IO) {
-                db.taskDao().getNumberOfCompletedTask(taskStatus)
+                db.taskDao().saveLog(log)
             }
+
+        override suspend fun getLogsByTaskId(taskId: Int): List<Log> =
+            withContext(Dispatchers.IO) {
+                db.taskDao().getLogsByTaskId(taskId)
+            }
+
+//        override suspend fun getCompletedTaskCount(taskStatus: TaskStatus): Int =
+//            withContext(Dispatchers.IO) {
+//                db.taskDao().getNumberOfCompletedTask(taskStatus)
+//            }
     }

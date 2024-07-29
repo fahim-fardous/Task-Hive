@@ -11,23 +11,24 @@ data class Task(
     val id: Int,
     val title: String,
     val description: String,
-    val plannedStartTime: Date,
-    val plannedEndTime: Date,
+    val plannedStartTime: Date? = null,
+    val plannedEndTime: Date? = null,
     val actualStartTime: Date? = null,
     val actualEndTime: Date? = null,
+    var totalTimeSpend:Long = 0L,
     val project: Project,
-    val taskStatus: TaskStatus = TaskStatus.TODO,
+    val taskStatus: TaskStatus = TaskStatus.TODO
 )
 
-fun Task.toTaskUiModel() =
-    TaskUiModel(
-        id = id,
-        title = title,
-        description = description,
-        plannedStartTime = plannedStartTime,
-        plannedEndTime = plannedEndTime,
-        actualStartTime = actualStartTime,
-        actualEndTime = actualEndTime,
-        project = project,
-        taskStatus = taskStatus,
-    )
+fun Task.toUiModel() = TaskUiModel(
+    id = id,
+    title = title,
+    description = description,
+    plannedStartTime = plannedStartTime ?: Date(),
+    plannedEndTime = plannedEndTime ?: Date(),
+    actualStartTime = actualStartTime ?: Date(),
+    actualEndTime = actualEndTime ?: Date(),
+    project = project,
+    taskStatus = taskStatus,
+    totalTimeSpend = totalTimeSpend
+)

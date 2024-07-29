@@ -28,6 +28,7 @@ import com.example.taskhive.ui.theme.appColor
 
 @Composable
 fun CustomButton(
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     text: String,
     trailingIcon: ImageVector? = null,
@@ -37,9 +38,8 @@ fun CustomButton(
 ) {
     Box(
         modifier =
-        Modifier
-            .padding(horizontal = 32.dp)
-            .fillMaxWidth(fraction = 1.0f)
+        modifier
+            .fillMaxWidth()
             .background(color = appColor, shape = RoundedCornerShape(8.dp))
             .padding(12.dp).clickable {
                 onClick()

@@ -5,7 +5,6 @@ import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.repository.ProjectRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.Date
 import javax.inject.Inject
 
 class ProjectRepositoryImp
@@ -18,9 +17,9 @@ class ProjectRepositoryImp
                 db.projectDao().saveProject(project)
             }
 
-        override suspend fun getAllProjects(currentDate: Date): List<Project> =
+        override suspend fun getAllProjects(): List<Project> =
             withContext(Dispatchers.IO) {
-                db.projectDao().getAllProjects(currentDate)
+                db.projectDao().getAllProjects()
             }
 
         override suspend fun getProjectCount(): Int =
@@ -31,5 +30,10 @@ class ProjectRepositoryImp
         override suspend fun getProjectById(projectId: Int): Project =
             withContext(Dispatchers.IO) {
                 db.projectDao().getProjectById(projectId)
+            }
+
+        override suspend fun getTaskCountByProject(project: Project): Int =
+            withContext(Dispatchers.IO) {
+                db.taskDao().getTaskCountByProject(project)
             }
     }
