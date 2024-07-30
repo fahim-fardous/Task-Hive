@@ -25,6 +25,13 @@ object SelectableProperties {
             Color.Green,
             Color.Magenta,
         )
+    val progressIndicatorColors = listOf(
+        Color(0xFFF378B7),
+        Color(0xFF9160F3),
+        Color(0xFFFE9042),
+        Color.Green,
+        Color.Magenta,
+    )
     val backgroundColors =
         listOf(
             Color(0xFFFDE2F1),

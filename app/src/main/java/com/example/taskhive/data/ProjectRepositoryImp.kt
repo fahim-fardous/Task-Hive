@@ -36,4 +36,13 @@ class ProjectRepositoryImp
             withContext(Dispatchers.IO) {
                 db.taskDao().getTaskCountByProject(project)
             }
+
+        override suspend fun getInProgressProjects(): List<Project> =
+            withContext(Dispatchers.IO) {
+                db
+                    .taskDao()
+                    .getInProgressTasks()
+                    .map { it.project }
+                    .distinct()
+            }
     }

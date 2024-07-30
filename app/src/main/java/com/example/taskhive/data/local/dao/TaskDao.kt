@@ -7,6 +7,7 @@ import androidx.room.Query
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.domain.model.TaskStatus
 
 @Dao
 interface TaskDao {
@@ -30,4 +31,7 @@ interface TaskDao {
 
     @Query("SELECT * FROM logs WHERE taskId = :taskId")
     suspend fun getLogsByTaskId(taskId: Int): List<Log>
+
+    @Query("SELECT * FROM tasks WHERE taskStatus = :taskStatus")
+    suspend fun getInProgressTasks(taskStatus:TaskStatus = TaskStatus.IN_PROGRESS): List<Task>
 }
