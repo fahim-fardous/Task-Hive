@@ -226,7 +226,7 @@ fun TaskListScreenSkeleton(
                         goToLogScreen = {
                             goToLogScreen(task.id)
                         },
-                        projectName = project?.name ?: "",
+                        projectName = task.project.name,
                         taskName = task.title,
                         duration = task.totalTimeSpend,
                         status =

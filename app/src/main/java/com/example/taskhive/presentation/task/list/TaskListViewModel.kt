@@ -113,7 +113,8 @@ class TaskListViewModel
                 )
             taskRepository.saveTask(updatedTask)
             if (projectId != null) {
-                val tasks = taskRepository.getAllTasks()
+                val project = projectRepository.getProjectById(projectId)
+                val tasks = taskRepository.getTaskByProject(project)
                 if (tasks.isNotEmpty()) {
                     _tasks.value =
                         tasks.map {
