@@ -1,12 +1,9 @@
 package com.example.taskhive.di
 
 import android.content.Context
-import com.example.taskhive.data.ProjectRepositoryImp
-import com.example.taskhive.data.TaskRepositoryImp
+import android.content.SharedPreferences
 import com.example.taskhive.data.local.AppDatabase
-import com.example.taskhive.domain.repository.ProjectRepository
-import com.example.taskhive.domain.repository.TaskRepository
-import dagger.Binds
+import com.example.taskhive.utils.PreferenceHelper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,4 +19,14 @@ class AppModule {
     fun provideDatabase(
         @ApplicationContext context: Context,
     ): AppDatabase = AppDatabase(context)
+
+    @Provides
+    @Singleton
+    fun provideSharedPreferences(
+        @ApplicationContext context: Context,
+    ): SharedPreferences = context.getSharedPreferences("onboarding_prefs", Context.MODE_PRIVATE)
+
+    @Provides
+    @Singleton
+    fun providePreferenceHelper(preferences: SharedPreferences): PreferenceHelper = PreferenceHelper(preferences)
 }

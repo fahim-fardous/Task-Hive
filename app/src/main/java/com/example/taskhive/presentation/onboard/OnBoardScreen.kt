@@ -1,7 +1,6 @@
 package com.example.taskhive.presentation.onboard
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,26 +25,47 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.taskhive.R
 import com.example.taskhive.components.CustomButton
+import com.example.taskhive.ui.theme.TaskHiveTheme
 
 @Composable
-fun OnBoardScreen(goToHome: () -> Unit = {}) {
-    Scaffold(floatingActionButtonPosition = FabPosition.Center,
+fun OnBoardScreen(
+    goToHome: () -> Unit = {},
+    viewModel: OnBoardViewModel,
+) {
+    OnBoardScreenSkeleton(
+        goToHome = goToHome,
+        onBoarded = {
+            viewModel.setOnboardingCompleted()
+        },
+    )
+}
+
+@Composable
+fun OnBoardScreenSkeleton(
+    goToHome: () -> Unit = {},
+    onBoarded: () -> Unit = {},
+) {
+    Scaffold(
+        floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
             CustomButton(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                onClick = { goToHome() },
+                onClick = {
+                    goToHome()
+                    onBoarded()
+                },
                 text = "Let's Start",
                 trailingIcon = Icons.AutoMirrored.Filled.ArrowForward,
                 marginStart = 16.dp,
             )
-
-        }) { innerPadding->
+        },
+    ) { innerPadding ->
         Column(
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(16.dp),
+                Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(64.dp))
@@ -70,7 +90,6 @@ fun OnBoardScreen(goToHome: () -> Unit = {}) {
                 style = MaterialTheme.typography.bodyMedium,
             )
             Spacer(modifier = Modifier.height(64.dp))
-
         }
     }
 }
@@ -78,5 +97,7 @@ fun OnBoardScreen(goToHome: () -> Unit = {}) {
 @Preview(showBackground = true)
 @Composable
 private fun OnBoardScreenPreview() {
-    OnBoardScreen()
+    TaskHiveTheme {
+        OnBoardScreenSkeleton()
+    }
 }

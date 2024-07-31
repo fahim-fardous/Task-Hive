@@ -38,22 +38,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import com.example.taskhive.R
-import com.example.taskhive.Screen
 import com.example.taskhive.components.InProgressCard
 import com.example.taskhive.components.ProgressCard
 import com.example.taskhive.components.TaskGroup
-import com.example.taskhive.domain.model.Project
 import com.example.taskhive.presentation.task.model.ProjectUiModel
 import com.example.taskhive.ui.theme.appColor
-import java.util.Date
+import com.example.taskhive.utils.SelectableProperties.backgroundColors
+import com.example.taskhive.utils.SelectableProperties.colors
+import com.example.taskhive.utils.SelectableProperties.icons
 
 @Composable
 fun HomeScreen(
@@ -61,18 +59,22 @@ fun HomeScreen(
     goToTaskList: (Int?) -> Unit = {},
     viewModel: HomeViewModel = viewModel(),
 ) {
-    val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.getProjects()
     }
     LaunchedEffect(viewModel.count) {
         viewModel.getNumberOfProject()
     }
+    LaunchedEffect(Unit) {
+        viewModel.getInProgressProjects()
+    }
     val projects by viewModel.projects.collectAsState()
+    val inProgressProjects by viewModel.inProgressProjects.collectAsState()
     val numberOfProject by viewModel.count.collectAsState()
     HomeScreenSkeleton(
         goToAddProject = goToAddProject,
         projects = projects,
+        inProgressProjects = inProgressProjects,
         numberOfProject = numberOfProject,
         goToTaskList = { projectId ->
             println(projectId.toString())
@@ -85,6 +87,7 @@ fun HomeScreen(
 fun HomeScreenSkeleton(
     goToAddProject: () -> Unit = {},
     projects: List<ProjectUiModel> = emptyList(),
+    inProgressProjects: List<ProjectUiModel> = emptyList(),
     numberOfProject: Int = 0,
     goToTaskList: (Int?) -> Unit = {},
 ) {
@@ -158,49 +161,54 @@ fun HomeScreenSkeleton(
                 .padding(16.dp),
         ) {
             ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    modifier = Modifier.padding(top = 16.dp),
-                    text = "In Progress",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                )
-                Box(
-                    modifier =
-                    Modifier
-                        .padding(top = 16.dp, start = 8.dp)
-                        .size(24.dp)
-                        .background(
-                            color = Color(0xFFEDE8FE),
-                            shape = CircleShape,
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
+            if (inProgressProjects.isNotEmpty()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "5",
-                        color = appColor,
+                        modifier = Modifier.padding(top = 16.dp),
+                        text = "In Progress",
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
+                        color = Color.Black,
                     )
+                    Box(
+                        modifier =
+                            Modifier
+                                .padding(top = 16.dp, start = 8.dp)
+                                .size(24.dp)
+                                .background(
+                                    color = Color(0xFFEDE8FE),
+                                    shape = CircleShape,
+                                ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = inProgressProjects.size.toString(),
+                            color = appColor,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
                 }
-            }
-            LazyRow(
-                contentPadding =
-                PaddingValues(
-                    top = 16.dp,
-                    bottom = 16.dp,
-                    start = 0.dp,
-                    end = 0.dp,
-                ),
-            ) {
-                items(5) { id ->
-                    InProgressCard(
-                        taskGroup = "Office Project",
-                        projectName = "Grocery shopping app design",
-                        progress = 0.85f,
-                        id = id,
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
+
+                LazyRow(
+                    contentPadding =
+                        PaddingValues(
+                            top = 16.dp,
+                            bottom = 16.dp,
+                            start = 0.dp,
+                            end = 0.dp,
+                        ),
+                ) {
+                    items(inProgressProjects) { project ->
+                        InProgressCard(
+                            projectName = project.name,
+                            progress = project.progress,
+                            projectId = project.id,
+                            icon = icons[project.selectedIcon],
+                            iconColor = colors[project.selectedIconColor],
+                            borderColor = backgroundColors[project.selectedBorderColor],
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
                 }
             }
 
@@ -214,13 +222,13 @@ fun HomeScreenSkeleton(
                 )
                 Box(
                     modifier =
-                    Modifier
-                        .padding(top = 16.dp, start = 8.dp)
-                        .size(24.dp)
-                        .background(
-                            color = Color(0xFFEDE8FE),
-                            shape = CircleShape,
-                        ),
+                        Modifier
+                            .padding(top = 16.dp, start = 8.dp)
+                            .size(24.dp)
+                            .background(
+                                color = Color(0xFFEDE8FE),
+                                shape = CircleShape,
+                            ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -233,12 +241,12 @@ fun HomeScreenSkeleton(
 
             LazyColumn(
                 contentPadding =
-                PaddingValues(
-                    start = 0.dp,
-                    end = 0.dp,
-                    top = 16.dp,
-                    bottom = 16.dp,
-                ),
+                    PaddingValues(
+                        start = 0.dp,
+                        end = 0.dp,
+                        top = 16.dp,
+                        bottom = 16.dp,
+                    ),
             ) {
                 items(projects) { project ->
                     TaskGroup(

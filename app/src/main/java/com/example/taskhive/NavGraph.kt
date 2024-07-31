@@ -13,9 +13,12 @@ import com.example.taskhive.presentation.log.list.LogListScreen
 import com.example.taskhive.presentation.log.list.LogListViewModel
 import com.example.taskhive.presentation.notes.NoteScreen
 import com.example.taskhive.presentation.onboard.OnBoardScreen
+import com.example.taskhive.presentation.onboard.OnBoardViewModel
 import com.example.taskhive.presentation.profile.ProfileScreen
 import com.example.taskhive.presentation.project.add.ProjectAddScreen
 import com.example.taskhive.presentation.project.add.ProjectAddViewModel
+import com.example.taskhive.presentation.splash.SplashScreen
+import com.example.taskhive.presentation.splash.SplashViewModel
 import com.example.taskhive.presentation.task.add.TaskAddScreen
 import com.example.taskhive.presentation.task.add.TaskAddViewModel
 import com.example.taskhive.presentation.task.edit.TaskEditScreen
@@ -29,6 +32,8 @@ sealed class Screen(
     data object Home : Screen("home")
 
     data object OnBoard : Screen("onboard")
+
+    data object Splash : Screen("splash")
 
     data object TaskList : Screen("task/list/{projectId}") {
         fun createRoute(projectId: Int?) = route.replaceFirst("{projectId}", "$projectId")
@@ -61,7 +66,7 @@ sealed class Screen(
 
 @Composable
 fun MainNavHost(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Screen.OnBoard.route) {
+    NavHost(navController = navController, startDestination = Screen.Splash.route) {
         composable(Screen.Home.route) {
             HomeScreen(
                 goToAddProject = { navController.navigate(Screen.ProjectAdd.route) },
@@ -75,10 +80,32 @@ fun MainNavHost(navController: NavHostController) {
             )
         }
         composable(Screen.OnBoard.route) {
+            val viewModel: OnBoardViewModel = hiltViewModel()
             OnBoardScreen(
                 goToHome = {
                     navController.navigate(Screen.HomeIndex.route) {
                         popUpTo(Screen.OnBoard.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                viewModel = viewModel,
+            )
+        }
+        composable(Screen.Splash.route) {
+            val viewModel: SplashViewModel = hiltViewModel()
+            SplashScreen(
+                viewModel = viewModel,
+                goToOnboardScreen = {
+                    navController.navigate(Screen.OnBoard.route) {
+                        popUpTo(Screen.Splash.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                goToHomeScreen = {
+                    navController.navigate(Screen.HomeIndex.route) {
+                        popUpTo(Screen.Splash.route) {
                             inclusive = true
                         }
                     }

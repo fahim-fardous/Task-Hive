@@ -16,4 +16,6 @@ interface ProjectRepository {
     suspend fun getProjectById(projectId: Int): Project
 
     suspend fun getTaskCountByProject(project: Project): Int
+
+    suspend fun getInProgressProjects():List<Project>
 }

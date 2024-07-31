@@ -49,6 +49,19 @@ class TaskRepositoryImp
                 db.taskDao().getLogsByTaskId(taskId)
             }
 
+        override suspend fun getInProgressTaskCount(): Int =
+            withContext(Dispatchers.IO) {
+                db.taskDao().getNumberOfInProgressTask()
+            }
+
+    override suspend fun getInProgressTaskCountByProject(project: Project): Int = withContext(Dispatchers.IO){
+        db.taskDao().getInProgressTaskCountByProject(project)
+    }
+
+    override suspend fun deleteTask(taskId: Int) = withContext(Dispatchers.IO){
+        db.taskDao().deleteTask(taskId)
+    }
+
 //        override suspend fun getCompletedTaskCount(taskStatus: TaskStatus): Int =
 //            withContext(Dispatchers.IO) {
 //                db.taskDao().getNumberOfCompletedTask(taskStatus)

@@ -12,3 +12,4 @@ val Pink40 = Color(0xFF7D5260)
 
 val appColor = Color(0xFF5F33E1)
 var hintColor = Color(0xFF6E6A7C)
+var secondaryColor = Color(0xFFE5DEFD)
