@@ -86,7 +86,11 @@ fun TaskListScreen(
             }
         },
         changeTaskStatus = { taskId, status ->
-            viewModel.changeTaskStatus(taskId, status)
+            if (projectId != null) {
+                viewModel.changeTaskStatus(taskId, projectId, status)
+            } else {
+                viewModel.changeTaskStatus(taskId, null, status)
+            }
         },
     )
 }
@@ -157,9 +161,9 @@ fun TaskListScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .padding(16.dp),
+            Modifier
+                .padding(innerPadding)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             CalendarCard()
@@ -208,10 +212,11 @@ fun TaskListScreenSkeleton(
                 items(
                     filteredTasks,
                 ) { task ->
-                    logTaskId = task.id
+
                     TaskCard(
                         onClick = { goToEditTask(task.id) },
                         onPauseClicked = { totalSpend, timer, startTime, endTime ->
+                            logTaskId = task.id
                             totalTimeSpend = totalSpend
                             logSpendTime = timer
                             saveLog(
@@ -240,10 +245,12 @@ fun TaskListScreenSkeleton(
                         backgroundColor = project?.selectedBorderColor ?: 0,
                         onTaskDelete = {
                             showDeleteDialog = true
+                            logTaskId = task.id
                         },
                         onTaskChangeStatus = {
                             showTaskChangeDialog = true
                             currentStatus = task.taskStatus
+                            logTaskId = task.id
                         },
                         onTaskShowLogs = {
                             goToLogScreen(task.id)
@@ -258,8 +265,9 @@ fun TaskListScreenSkeleton(
                 currentStatus = currentStatus,
                 onDismiss = { showTaskChangeDialog = false },
                 onSave = { status ->
-                    changeTaskStatus(logTaskId, status)
+                    println(status)
                     showTaskChangeDialog = false
+                    changeTaskStatus(logTaskId, status)
                 },
             )
         }

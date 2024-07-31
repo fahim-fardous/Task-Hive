@@ -78,18 +78,33 @@ class TaskListViewModel
 
         fun changeTaskStatus(
             taskId: Int,
+            projectId: Int? = null,
             status: TaskStatus,
         ) = viewModelScope.launch {
+            //println(status)
             val task = taskRepository.getTaskById(taskId)
+            println("${task.taskStatus} ${task.title}")
             val updatedTask =
                 task.copy(taskStatus = status)
+            //println(updatedTask.taskStatus)
             taskRepository.saveTask(updatedTask)
-            val tasks = taskRepository.getAllTasks()
-            if (tasks.isNotEmpty()) {
-                _tasks.value =
-                    tasks.map {
-                        it.toUiModel()
-                    }
+            if (projectId != null) {
+                val project = projectRepository.getProjectById(projectId)
+                val tasks = taskRepository.getTaskByProject(project)
+                if (tasks.isNotEmpty()) {
+                    _tasks.value =
+                        tasks.map {
+                            it.toUiModel()
+                        }
+                }
+            } else {
+                val tasks = taskRepository.getAllTasks()
+                if (tasks.isNotEmpty()) {
+                    _tasks.value =
+                        tasks.map {
+                            it.toUiModel()
+                        }
+                }
             }
         }
 
