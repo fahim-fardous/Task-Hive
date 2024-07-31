@@ -99,17 +99,28 @@ class TaskListViewModel
                 _project.value = response
             }
 
-        fun saveLog(log: Log) =
-            viewModelScope.launch {
-                val id = taskRepository.saveLog(log)
-                val task = taskRepository.getTaskById(log.taskId)
-                val updatedTask =
-                    task.copy(
-                        actualStartTime = task.actualStartTime ?: log.startTime,
-                        totalTimeSpend = task.totalTimeSpend + log.duration,
-                        taskStatus = if ((task.totalTimeSpend + log.duration) > 0L) TaskStatus.IN_PROGRESS else TaskStatus.TODO,
-                    )
-                taskRepository.saveTask(updatedTask)
+        fun saveLog(
+            log: Log,
+            projectId: Int? = null,
+        ) = viewModelScope.launch {
+            val id = taskRepository.saveLog(log)
+            val task = taskRepository.getTaskById(log.taskId)
+            val updatedTask =
+                task.copy(
+                    actualStartTime = task.actualStartTime ?: log.startTime,
+                    totalTimeSpend = task.totalTimeSpend + log.duration,
+                    taskStatus = if ((task.totalTimeSpend + log.duration) > 0L) TaskStatus.IN_PROGRESS else TaskStatus.TODO,
+                )
+            taskRepository.saveTask(updatedTask)
+            if (projectId != null) {
+                val tasks = taskRepository.getAllTasks()
+                if (tasks.isNotEmpty()) {
+                    _tasks.value =
+                        tasks.map {
+                            it.toUiModel()
+                        }
+                }
+            } else {
                 val tasks = taskRepository.getAllTasks()
                 if (tasks.isNotEmpty()) {
                     _tasks.value =
@@ -118,4 +129,5 @@ class TaskListViewModel
                         }
                 }
             }
+        }
     }
