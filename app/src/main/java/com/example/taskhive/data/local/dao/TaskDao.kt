@@ -29,9 +29,21 @@ interface TaskDao {
     @Query("SELECT COUNT(*) FROM tasks WHERE project = :project")
     suspend fun getTaskCountByProject(project: Project): Int
 
-    @Query("SELECT * FROM logs WHERE taskId = :taskId")
+    @Query("SELECT * FROM logs WHERE taskId = :taskId ORDER BY startTime DESC")
     suspend fun getLogsByTaskId(taskId: Int): List<Log>
 
     @Query("SELECT * FROM tasks WHERE taskStatus = :taskStatus")
-    suspend fun getInProgressTasks(taskStatus:TaskStatus = TaskStatus.IN_PROGRESS): List<Task>
+    suspend fun getInProgressTasks(taskStatus: TaskStatus = TaskStatus.IN_PROGRESS): List<Task>
+
+    @Query("SELECT COUNT(*) FROM tasks WHERE taskStatus = :taskStatus")
+    suspend fun getNumberOfInProgressTask(taskStatus: TaskStatus = TaskStatus.DONE): Int
+
+    @Query("SELECT COUNT(*) FROM tasks WHERE project = :project AND taskStatus = :taskStatus")
+    suspend fun getInProgressTaskCountByProject(
+        project: Project,
+        taskStatus: TaskStatus = TaskStatus.IN_PROGRESS,
+    ): Int
+
+    @Query("DELETE FROM tasks WHERE id = :taskId")
+    suspend fun deleteTask(taskId: Int)
 }
