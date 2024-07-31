@@ -95,27 +95,27 @@ fun HomeScreenSkeleton(
         topBar = {
             Row(
                 modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.my_img),
                     contentDescription = "my photo",
                     modifier =
-                        Modifier
-                            .size(48.dp)
-                            .clip(
-                                CircleShape,
-                            ),
+                    Modifier
+                        .size(48.dp)
+                        .clip(
+                            CircleShape,
+                        ),
                     contentScale = ContentScale.Crop,
                 )
                 Column(
                     modifier =
-                        Modifier
-                            .padding(start = 16.dp)
-                            .weight(1f),
+                    Modifier
+                        .padding(start = 16.dp)
+                        .weight(1f),
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
@@ -155,10 +155,10 @@ fun HomeScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-                    .padding(16.dp),
+            Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .padding(16.dp),
         ) {
             ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f)
             if (inProgressProjects.isNotEmpty()) {
@@ -201,7 +201,7 @@ fun HomeScreenSkeleton(
                     items(inProgressProjects) { project ->
                         InProgressCard(
                             projectName = project.name,
-                            progress = 0.85f,
+                            progress = project.progress,
                             projectId = project.id,
                             icon = icons[project.selectedIcon],
                             iconColor = colors[project.selectedIconColor],

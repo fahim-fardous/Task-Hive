@@ -52,11 +52,25 @@ class HomeViewModel
 
         fun getInProgressProjects() =
             viewModelScope.launch {
-                val response = projectRepository.getInProgressProjects()
-                if (response.isNotEmpty()) {
-                    _inProgressProjects.value = response.map { it.toUiModel() }
+                val projects = projectRepository.getInProgressProjects()
+                val inProgressProjects = mutableListOf<ProjectUiModel>()
+                if (projects.isNotEmpty()) {
+                    projects.forEach { project ->
+                        val numberOfTask = getNumberOfTask(project)
+                        val inProgressTask = getNumberOfInProgressTask(project)
+                        inProgressProjects.add(
+                            project
+                                .toUiModel()
+                                .copy(
+                                    progress = (inProgressTask.toFloat() / numberOfTask.toFloat()),
+                                ),
+                        )
+                    }
+                    _inProgressProjects.value = inProgressProjects
                 }
             }
 
         private suspend fun getNumberOfTask(project: Project): Int = projectRepository.getTaskCountByProject(project)
+
+        private suspend fun getNumberOfInProgressTask(project: Project): Int = taskRepository.getInProgressTaskCountByProject(project)
     }
