@@ -1,5 +1,6 @@
 package com.example.taskhive
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -17,7 +18,6 @@ import com.example.taskhive.presentation.onboard.OnBoardViewModel
 import com.example.taskhive.presentation.profile.ProfileScreen
 import com.example.taskhive.presentation.project.add.ProjectAddScreen
 import com.example.taskhive.presentation.project.add.ProjectAddViewModel
-import com.example.taskhive.presentation.splash.SplashScreen
 import com.example.taskhive.presentation.splash.SplashViewModel
 import com.example.taskhive.presentation.task.add.TaskAddScreen
 import com.example.taskhive.presentation.task.add.TaskAddViewModel
@@ -65,8 +65,11 @@ sealed class Screen(
 }
 
 @Composable
-fun MainNavHost(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Screen.Splash.route) {
+fun MainNavHost(
+    navController: NavHostController,
+    startDestination: String,
+) {
+    NavHost(navController = navController, startDestination = startDestination) {
         composable(Screen.Home.route) {
             HomeScreen(
                 goToAddProject = { navController.navigate(Screen.ProjectAdd.route) },
@@ -90,26 +93,6 @@ fun MainNavHost(navController: NavHostController) {
                     }
                 },
                 viewModel = viewModel,
-            )
-        }
-        composable(Screen.Splash.route) {
-            val viewModel: SplashViewModel = hiltViewModel()
-            SplashScreen(
-                viewModel = viewModel,
-                goToOnboardScreen = {
-                    navController.navigate(Screen.OnBoard.route) {
-                        popUpTo(Screen.Splash.route) {
-                            inclusive = true
-                        }
-                    }
-                },
-                goToHomeScreen = {
-                    navController.navigate(Screen.HomeIndex.route) {
-                        popUpTo(Screen.Splash.route) {
-                            inclusive = true
-                        }
-                    }
-                },
             )
         }
         composable(
@@ -185,6 +168,7 @@ fun MainNavHost(navController: NavHostController) {
                         Screen.TaskList.createRoute(projectId),
                     )
                 },
+
             )
         }
 

@@ -1,16 +1,20 @@
 package com.example.taskhive.presentation
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.taskhive.MainNavHost
+import com.example.taskhive.Screen
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    startDestination:String = Screen.OnBoard.route
+) {
     val navController = rememberNavController()
     Surface(modifier = Modifier.fillMaxSize()) {
-        MainNavHost(navController = navController)
+        MainNavHost(navController = navController, startDestination = startDestination)
     }
 }
