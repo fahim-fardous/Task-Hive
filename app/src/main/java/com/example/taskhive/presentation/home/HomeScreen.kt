@@ -42,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.R
 import com.example.taskhive.components.InProgressCard
@@ -57,7 +58,7 @@ import com.example.taskhive.utils.SelectableProperties.icons
 fun HomeScreen(
     goToAddProject: () -> Unit,
     goToTaskList: (Int?) -> Unit = {},
-    viewModel: HomeViewModel = viewModel(),
+    viewModel: HomeViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(Unit) {
         viewModel.getProjects()

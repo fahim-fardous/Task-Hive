@@ -1,5 +1,6 @@
 package com.example.taskhive.presentation.home.index
 
+import android.util.Log
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -40,6 +41,7 @@ fun HomeIndexScreen(
     goToAddProject: () -> Unit,
     goToTaskList: (Int?) -> Unit,
 ) {
+
     val navController = rememberNavController()
     HomeIndexScreenSkeleton(
         navController = navController,
@@ -107,14 +109,14 @@ fun HomeIndexScreenSkeleton(
                     goToTaskList = {projectId->
                         goToTaskList(projectId)
                     },
-                    //viewModel = viewModel
+                    viewModel = viewModel
                 )
             }
             composable(HomeTabScreen.TaskList.route) {
                 val viewModel: TaskListViewModel = hiltViewModel()
                 TaskListScreen(
                     goBack = { navController.popBackStack() },
-                    //viewModel = viewModel
+                    viewModel = viewModel
                 )
             }
             composable(HomeTabScreen.Notes.route) {
