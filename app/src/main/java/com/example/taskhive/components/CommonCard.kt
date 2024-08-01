@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -41,7 +42,7 @@ fun CommonCard(
         elevation = CardDefaults.elevatedCardElevation(4.dp),
         colors =
             CardDefaults.elevatedCardColors(
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.background,
             ),
     ) {
         TextField(
@@ -64,7 +65,7 @@ fun CommonCard(
                 TextStyle(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
                 ),
             label = {
                 Text(

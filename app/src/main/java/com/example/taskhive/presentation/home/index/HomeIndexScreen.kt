@@ -40,6 +40,9 @@ import com.example.taskhive.presentation.task.list.TaskListViewModel
 fun HomeIndexScreen(
     goToAddProject: () -> Unit,
     goToTaskList: (Int?) -> Unit,
+    goToAddTask: (Int) -> Unit = {},
+    goToEditTask: (Int) -> Unit = {},
+    goToLogListScreen: (Int) -> Unit = {},
 ) {
 
     val navController = rememberNavController()
@@ -47,6 +50,9 @@ fun HomeIndexScreen(
         navController = navController,
         goToAddProject = goToAddProject,
         goToTaskList = goToTaskList,
+        goToAddTask = goToAddTask,
+        goToEditTask = goToEditTask,
+        goToLogListScreen = goToLogListScreen,
     )
 }
 
@@ -55,6 +61,9 @@ fun HomeIndexScreenSkeleton(
     navController: NavHostController,
     goToAddProject: () -> Unit = {},
     goToTaskList: (Int?) -> Unit = {},
+    goToAddTask: (Int) -> Unit = {},
+    goToEditTask: (Int) -> Unit = {},
+    goToLogListScreen: (Int) -> Unit = {},
 ) {
     val items =
         listOf(
@@ -116,7 +125,16 @@ fun HomeIndexScreenSkeleton(
                 val viewModel: TaskListViewModel = hiltViewModel()
                 TaskListScreen(
                     goBack = { navController.popBackStack() },
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    goToAddTask = {projectId->
+                        goToAddTask(projectId)
+                    },
+                    goToEditTask = {taskId->
+                        goToEditTask(taskId)
+                    },
+                    goToLogListScreen = {taskId->
+                        goToLogListScreen(taskId)
+                    },
                 )
             }
             composable(HomeTabScreen.Notes.route) {

@@ -168,6 +168,23 @@ fun MainNavHost(
                         Screen.TaskList.createRoute(projectId),
                     )
                 },
+                goToAddTask = { projectId ->
+                    navController.navigate(
+                        Screen.TaskAdd.createRoute(
+                            projectId = projectId,
+                        ),
+                    )
+                },
+                goToEditTask = { taskId ->
+                    navController.navigate(
+                        Screen.TaskEdit.createRoute(taskId = taskId),
+                    )
+                },
+                goToLogListScreen = { taskId ->
+                    navController.navigate(
+                        Screen.LogList.createRoute(taskId = taskId),
+                    )
+                },
 
             )
         }

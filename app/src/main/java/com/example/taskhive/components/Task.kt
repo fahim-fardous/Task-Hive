@@ -1,5 +1,6 @@
 package com.example.taskhive.components
 
+import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.filled.Timelapse
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
 import com.example.taskhive.utils.formatLogTime
 import kotlinx.coroutines.delay
@@ -87,7 +90,7 @@ fun TaskCard(
         elevation = CardDefaults.elevatedCardElevation(2.dp),
         colors =
             CardDefaults.elevatedCardColors(
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.background,
             ),
     ) {
         Row(
@@ -106,13 +109,13 @@ fun TaskCard(
             ) {
                 Text(
                     text = projectName,
-                    color = Color(0xFF6E6A7C),
+                    color = MaterialTheme.colorScheme.onBackground,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 2,
                 )
                 Text(
                     text = taskName,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                 )
@@ -173,10 +176,24 @@ fun TaskCard(
 @Preview()
 @Composable
 private fun TaskPreview() {
-    TaskCard(
-        projectName = "Task Management and To do app design",
-        taskName = "Market Research",
-        duration = 0L,
-        status = "In Progress",
-    )
+    TaskHiveTheme {
+        TaskCard(
+            projectName = "Task Management and To do app design",
+            taskName = "Market Research",
+            duration = 0L,
+            status = "In Progress",
+        )
+    }
+}
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun TaskPreviewDark() {
+    TaskHiveTheme {
+        TaskCard(
+            projectName = "Task Management and To do app design",
+            taskName = "Market Research",
+            duration = 0L,
+            status = "In Progress",
+        )
+    }
 }

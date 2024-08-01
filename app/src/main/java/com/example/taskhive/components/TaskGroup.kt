@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -43,7 +44,7 @@ fun TaskGroup(
         elevation = CardDefaults.elevatedCardElevation(2.dp),
         colors =
             CardDefaults.elevatedCardColors(
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.background,
             ),
     ) {
         Row(
@@ -60,7 +61,7 @@ fun TaskGroup(
                     .weight(1f)
                     .padding(start = 16.dp),
             ) {
-                Text(text = project, color = Color.Black)
+                Text(text = project, color = MaterialTheme.colorScheme.onBackground)
                 Text(
                     text = if(numberOfTask > 1) "$numberOfTask tasks" else "$numberOfTask task",
                     color = Color(0xFF6E6A7C),
@@ -73,7 +74,7 @@ fun TaskGroup(
                 strokeWidth = 8f,
                 size = 70.dp,
                 textSize = 12.sp,
-                tracColor = Color.LightGray,
+                trackColor = Color.LightGray,
                 textColor = Color.Black,
                 fontWeight = FontWeight.Normal,
             )
