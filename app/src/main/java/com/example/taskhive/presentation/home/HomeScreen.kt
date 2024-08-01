@@ -1,5 +1,6 @@
 package com.example.taskhive.presentation.home
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +50,7 @@ import com.example.taskhive.components.InProgressCard
 import com.example.taskhive.components.ProgressCard
 import com.example.taskhive.components.TaskGroup
 import com.example.taskhive.presentation.task.model.ProjectUiModel
+import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
 import com.example.taskhive.utils.SelectableProperties.backgroundColors
 import com.example.taskhive.utils.SelectableProperties.colors
@@ -120,11 +122,12 @@ fun HomeScreenSkeleton(
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text(text = "Hello!", style = MaterialTheme.typography.bodyMedium)
+                    Text(text = "Hello!", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
                     Text(
                         text = "Fahim",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
                 }
                 BadgedBox(modifier = Modifier.padding(end = 8.dp), badge = {
@@ -136,7 +139,7 @@ fun HomeScreenSkeleton(
                     Icon(
                         Icons.Filled.Notifications,
                         contentDescription = "Notifications",
-                        tint = Color.Black,
+                        tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.padding(start = 8.dp),
                     )
                 }
@@ -169,7 +172,7 @@ fun HomeScreenSkeleton(
                         text = "In Progress",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
                     Box(
                         modifier =
@@ -219,7 +222,7 @@ fun HomeScreenSkeleton(
                     text = "Projects",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
                 )
                 Box(
                     modifier =
@@ -272,5 +275,15 @@ fun HomeScreenSkeleton(
 @Preview(showBackground = true)
 @Composable
 private fun HomeScreenSkeletonPreview() {
-    HomeScreenSkeleton()
+    TaskHiveTheme {
+        HomeScreenSkeleton()
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun HomeScreenSkeletonPreviewDark() {
+    TaskHiveTheme {
+        HomeScreenSkeleton()
+    }
 }

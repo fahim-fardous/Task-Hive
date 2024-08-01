@@ -1,5 +1,6 @@
 package com.example.taskhive.presentation.task.list
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -40,6 +41,7 @@ import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.presentation.task.model.TaskUiModel
 import com.example.taskhive.ui.theme.TaskHiveTheme
+import com.example.taskhive.utils.MockData
 
 @Composable
 fun TaskListScreen(
@@ -76,6 +78,7 @@ fun TaskListScreen(
             viewModel.saveLog(log)
         },
         goToLogScreen = { taskId ->
+            println("Coming here to go to log screen")
             goToLogListScreen(taskId)
         },
         deleteTask = { taskId ->
@@ -99,7 +102,27 @@ fun TaskListScreen(
 @Composable
 private fun TaskListScreenSkeletonPreview() {
     TaskHiveTheme {
-        TaskListScreenSkeleton()
+        val tasks = mutableListOf<TaskUiModel>()
+        repeat(5) {
+            tasks.add(MockData.task)
+        }
+        TaskListScreenSkeleton(
+            tasks = tasks,
+        )
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun TaskListScreenSkeletonPreviewDark() {
+    TaskHiveTheme {
+        val tasks = mutableListOf<TaskUiModel>()
+        repeat(5) {
+            tasks.add(MockData.task)
+        }
+        TaskListScreenSkeleton(
+            tasks = tasks,
+        )
     }
 }
 
@@ -161,13 +184,13 @@ fun TaskListScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .padding(16.dp),
+                Modifier
+                    .padding(innerPadding)
+                    .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             CalendarCard()
-            Spacer(modifier = Modifier.height(16.dp)) // Use a more efficient way to filter tasks
+            Spacer(modifier = Modifier.height(16.dp))
             val filteredTasks =
                 when (selectedTaskStatus) {
                     0 -> tasks
@@ -265,7 +288,6 @@ fun TaskListScreenSkeleton(
                 currentStatus = currentStatus,
                 onDismiss = { showTaskChangeDialog = false },
                 onSave = { status ->
-                    println(status)
                     showTaskChangeDialog = false
                     changeTaskStatus(logTaskId, status)
                 },

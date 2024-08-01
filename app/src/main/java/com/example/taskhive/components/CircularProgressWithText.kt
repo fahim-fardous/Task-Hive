@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,7 +26,7 @@ fun CircularProgressWithText(
     color: Color = Color.Blue,
     size:Dp = 100.dp,
     textSize:TextUnit = 18.sp,
-    tracColor:Color = Color(0xFF8664FE),
+    trackColor:Color = Color(0xFF8664FE),
     textColor:Color = Color.White,
     fontWeight: FontWeight = FontWeight.Bold
 ) {
@@ -42,12 +43,12 @@ fun CircularProgressWithText(
                 .rotate(90f),
             color = color,
             strokeWidth = strokeWidth.dp,
-            trackColor = tracColor,
+            trackColor = trackColor,
         )
         Text(
             text = "${(progress * 100).toInt()}%",
             fontSize = textSize,
-            color = textColor,
+            color = MaterialTheme.colorScheme.onBackground,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(start = 16.dp),
         )

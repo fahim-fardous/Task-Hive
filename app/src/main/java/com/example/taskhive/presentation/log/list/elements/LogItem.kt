@@ -1,5 +1,6 @@
 package com.example.taskhive.presentation.log.list.elements
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -56,11 +58,13 @@ fun LogItem(
                     startTime.getReadableTime(),
                     maxLines = 1,
                     modifier = Modifier.padding(top = 4.dp),
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = " - ${endTime.getReadableTime()}",
                     maxLines = 1,
                     modifier = Modifier.padding(top = 4.dp),
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
@@ -75,6 +79,19 @@ private fun LogItemPreview() {
             Modifier
                 .fillMaxSize()
                 .padding(16.dp),
+    ) {
+        LogItem(isFirst = true, startTime = Date(), endTime = Date(), duration = 10)
+        LogItem(isFirst = false, startTime = Date(), endTime = Date(), duration = 12)
+    }
+}
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun LogItemPreviewDark() {
+    Column(
+        modifier =
+        Modifier
+            .fillMaxSize()
+            .padding(16.dp),
     ) {
         LogItem(isFirst = true, startTime = Date(), endTime = Date(), duration = 10)
         LogItem(isFirst = false, startTime = Date(), endTime = Date(), duration = 12)

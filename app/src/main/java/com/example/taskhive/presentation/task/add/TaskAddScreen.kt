@@ -1,5 +1,6 @@
 package com.example.taskhive.presentation.task.add
 
+import android.content.res.Configuration
 import android.icu.util.Calendar
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,6 +40,7 @@ import com.example.taskhive.components.CommonCard
 import com.example.taskhive.components.CustomButton
 import com.example.taskhive.components.TimePickerDialog
 import com.example.taskhive.components.TopBar
+import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.utils.HelperFunctions.convert24HourTo12Hour
 import com.example.taskhive.utils.getReadableTime
 import com.example.taskhive.utils.toDate
@@ -77,8 +79,18 @@ fun TaskAddScreen(
 @Preview
 @Composable
 private fun TaskAddScreenSkeletonPreview() {
-    TaskAddScreenSkeleton()
+    TaskHiveTheme {
+        TaskAddScreenSkeleton()
+    }
 }
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun TaskAddScreenSkeletonPreviewDark() {
+    TaskHiveTheme {
+        TaskAddScreenSkeleton()
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

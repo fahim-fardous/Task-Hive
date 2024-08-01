@@ -1,5 +1,6 @@
 package com.example.taskhive.presentation.log.list
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,25 +20,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.components.TopBar
 import com.example.taskhive.domain.model.Log
+import com.example.taskhive.presentation.home.HomeScreenSkeleton
 import com.example.taskhive.presentation.log.list.elements.LogItem
+import com.example.taskhive.ui.theme.TaskHiveTheme
+import com.example.taskhive.utils.MockData
 
 @Composable
 fun LogListScreen(
     taskId: Int,
     goToAddLog: (Int) -> Unit = {},
     goBack: () -> Unit = {},
-    viewModel: LogListViewModel = viewModel(),
+    viewModel: LogListViewModel = hiltViewModel(),
 ) {
-    println("From log list task id is $taskId")
     LaunchedEffect(Unit) {
         viewModel.getLogs(taskId)
     }
     val logs by viewModel.logs.collectAsState()
     LogListScreenSkeleton(
-        logs = logs,
+        logs = logs ,
         goBack = goBack,
     )
 }
@@ -45,7 +49,23 @@ fun LogListScreen(
 @Preview
 @Composable
 private fun LogListScreenSkeletonPreview() {
-    LogListScreen(taskId = 1)
+    LogListScreenSkeleton(
+        logs = List(10) {
+            MockData.log
+        }
+    )
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun LogListScreenSkeletonPreviewDark() {
+    TaskHiveTheme {
+        LogListScreenSkeleton(
+            logs = List(10) {
+                MockData.log
+            }
+        )
+    }
 }
 
 @Composable

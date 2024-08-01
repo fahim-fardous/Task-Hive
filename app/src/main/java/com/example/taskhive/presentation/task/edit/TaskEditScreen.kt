@@ -1,5 +1,6 @@
 package com.example.taskhive.presentation.task.edit
 
+import android.content.res.Configuration
 import android.icu.util.Calendar
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import com.example.taskhive.components.TimePickerDialog
 import com.example.taskhive.components.TopBar
 import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.presentation.task.model.TaskUiModel
+import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.utils.HelperFunctions.convert24HourTo12Hour
 import com.example.taskhive.utils.MockData.task
 import com.example.taskhive.utils.getReadableTime
@@ -52,7 +54,7 @@ fun TaskEditScreen(
     goBack: () -> Unit,
     goToLogListScreen: (Int) -> Unit = {},
     taskId: Int,
-    viewModel: TaskEditViewModel = viewModel()
+    viewModel: TaskEditViewModel = viewModel(),
 ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) {
@@ -63,17 +65,18 @@ fun TaskEditScreen(
         goBack = goBack,
         task = task,
         editTask = { title, description, startTime, endTime, status ->
-            task?.copy(
-                title = title,
-                description = description,
-                plannedStartTime = startTime,
-                plannedEndTime = endTime,
-                taskStatus = status
-            )?.let {
-                viewModel.editTask(
-                    it
-                )
-            }
+            task
+                ?.copy(
+                    title = title,
+                    description = description,
+                    plannedStartTime = startTime,
+                    plannedEndTime = endTime,
+                    taskStatus = status,
+                )?.let {
+                    viewModel.editTask(
+                        it,
+                    )
+                }
         },
         onTitleChange = { newTitle ->
             viewModel.onTitleChange(newTitle)
@@ -85,15 +88,24 @@ fun TaskEditScreen(
             viewModel.onTaskStatusChange(newStatus)
         },
         goToLogListScreen = goToLogListScreen,
-        taskId = taskId
+        taskId = taskId,
     )
 }
 
 @Preview
 @Composable
 private fun TaskEditScreenSkeletonPreview() {
+    TaskHiveTheme {
+        TaskEditScreenSkeleton(taskId = task.id, task = task)
+    }
+}
 
-    TaskEditScreenSkeleton(taskId = task.id, task = task)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun TaskEditScreenSkeletonPreviewDark() {
+    TaskHiveTheme {
+        TaskEditScreenSkeleton(taskId = task.id, task = task)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,7 +118,7 @@ fun TaskEditScreenSkeleton(
     onDescriptionChange: (String) -> Unit = {},
     onTaskStatusChange: (TaskStatus) -> Unit = {},
     goToLogListScreen: (Int) -> Unit = { _ -> },
-    taskId: Int
+    taskId: Int,
 ) {
     var status by remember {
         mutableStateOf(TaskStatus.TODO)
@@ -128,28 +140,29 @@ fun TaskEditScreenSkeleton(
             CustomButton(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 onClick =
-                {
-                    task?.let {
-                        editTask(
-                            task.title,
-                            task.description,
-                            task.plannedStartTime,
-                            task.plannedEndTime,
-                            task.taskStatus
-                        )
-                    }
-                    goBack()
-                },
+                    {
+                        task?.let {
+                            editTask(
+                                task.title,
+                                task.description,
+                                task.plannedStartTime,
+                                task.plannedEndTime,
+                                task.taskStatus,
+                            )
+                        }
+                        goBack()
+                    },
                 text = "Edit Task",
                 trailingIcon = null,
             )
         },
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp)
-                .fillMaxSize(),
+            modifier =
+                Modifier
+                    .padding(innerPadding)
+                    .padding(16.dp)
+                    .fillMaxSize(),
         ) {
             // TODO QUESTION
             if (task != null) {
@@ -210,26 +223,25 @@ fun TaskEditScreenSkeleton(
             }
             Row(
                 modifier = Modifier.padding(top = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 if (task != null) {
                     ProgressType(
                         onClick = { onTaskStatusChange(TaskStatus.TODO) },
                         text = "To-do",
-                        isSelected = task.taskStatus == TaskStatus.TODO
+                        isSelected = task.taskStatus == TaskStatus.TODO,
                     )
                     ProgressType(
                         onClick = { onTaskStatusChange(TaskStatus.IN_PROGRESS) },
                         text = "In Progress",
-                        isSelected = task.taskStatus == TaskStatus.IN_PROGRESS
+                        isSelected = task.taskStatus == TaskStatus.IN_PROGRESS,
                     )
                     ProgressType(
                         onClick = { onTaskStatusChange(TaskStatus.DONE) },
                         text = "Done",
-                        isSelected = task.taskStatus == TaskStatus.DONE
+                        isSelected = task.taskStatus == TaskStatus.DONE,
                     )
                 }
-
             }
         }
     }
