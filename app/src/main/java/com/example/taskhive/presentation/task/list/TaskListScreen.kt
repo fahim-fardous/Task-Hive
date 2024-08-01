@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -27,22 +26,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.components.CalendarCard
+import com.example.taskhive.components.DeleteAlertDialog
 import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.TaskCard
+import com.example.taskhive.components.TaskStatusDialog
 import com.example.taskhive.components.TopBar
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.presentation.task.model.TaskUiModel
 import com.example.taskhive.ui.theme.TaskHiveTheme
-import com.example.taskhive.ui.theme.appColor
 
 @Composable
 fun TaskListScreen(
@@ -81,6 +78,20 @@ fun TaskListScreen(
         goToLogScreen = { taskId ->
             goToLogListScreen(taskId)
         },
+        deleteTask = { taskId ->
+            if (projectId != null) {
+                viewModel.deleteTask(taskId, projectId)
+            } else {
+                viewModel.deleteTask(taskId, null)
+            }
+        },
+        changeTaskStatus = { taskId, status ->
+            if (projectId != null) {
+                viewModel.changeTaskStatus(taskId, projectId, status)
+            } else {
+                viewModel.changeTaskStatus(taskId, null, status)
+            }
+        },
     )
 }
 
@@ -102,19 +113,27 @@ fun TaskListScreenSkeleton(
     project: Project? = null,
     saveLog: (Log) -> Unit = {},
     goToLogScreen: (Int) -> Unit = {},
+    deleteTask: (Int) -> Unit = { _ -> },
+    changeTaskStatus: (Int, TaskStatus) -> Unit = { _, _ -> },
 ) {
     var logTaskId by remember {
         mutableIntStateOf(-1)
     }
-    var selectedIndex by remember { mutableIntStateOf(0) }
-    var showLogDialog by remember {
-        mutableStateOf(false)
-    }
+    var selectedTaskStatus by remember { mutableIntStateOf(0) }
     var totalTimeSpend by remember {
         mutableLongStateOf(0L)
     }
     var logSpendTime by remember {
         mutableLongStateOf(0L)
+    }
+    var showTaskChangeDialog by remember {
+        mutableStateOf(false)
+    }
+    var showDeleteDialog by remember {
+        mutableStateOf(false)
+    }
+    var currentStatus by remember {
+        mutableStateOf(TaskStatus.TODO)
     }
     Scaffold(
         topBar =
@@ -142,54 +161,58 @@ fun TaskListScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .padding(16.dp),
+            Modifier
+                .padding(innerPadding)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             CalendarCard()
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp)) // Use a more efficient way to filter tasks
+            val filteredTasks =
+                when (selectedTaskStatus) {
+                    0 -> tasks
+                    1 -> tasks.filter { it.taskStatus == TaskStatus.TODO }
+                    2 -> tasks.filter { it.taskStatus == TaskStatus.IN_PROGRESS }
+                    3 -> tasks.filter { it.taskStatus == TaskStatus.DONE }
+                    else -> tasks
+                }
+
             LazyRow {
                 item {
                     ProgressType(
-                        onClick = { selectedIndex = 0 },
+                        onClick = { selectedTaskStatus = 0 },
                         text = "All",
-                        isSelected = selectedIndex == 0,
+                        isSelected = selectedTaskStatus == 0,
                     )
                 }
                 item {
                     ProgressType(
-                        onClick = { selectedIndex = 1 },
+                        onClick = { selectedTaskStatus = 1 },
                         text = "To do",
-                        isSelected = selectedIndex == 1,
+                        isSelected = selectedTaskStatus == 1,
                     )
                 }
                 item {
                     ProgressType(
-                        onClick = { selectedIndex = 2 },
+                        onClick = { selectedTaskStatus = 2 },
                         text = "In Progress",
-                        isSelected = selectedIndex == 2,
+                        isSelected = selectedTaskStatus == 2,
                     )
                 }
                 item {
                     ProgressType(
-                        onClick = { selectedIndex = 3 },
+                        onClick = { selectedTaskStatus = 3 },
                         text = "Completed",
-                        isSelected = selectedIndex == 3,
+                        isSelected = selectedTaskStatus == 3,
                     )
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn {
                 items(
-                    when (selectedIndex) {
-                        0 -> tasks
-                        1 -> tasks.filter { it.taskStatus == TaskStatus.TODO }
-                        2 -> tasks.filter { it.taskStatus == TaskStatus.IN_PROGRESS }
-                        3 -> tasks.filter { it.taskStatus == TaskStatus.DONE }
-                        else -> tasks
-                    },
+                    filteredTasks,
                 ) { task ->
+
                     TaskCard(
                         onClick = { goToEditTask(task.id) },
                         onPauseClicked = { totalSpend, timer, startTime, endTime ->
@@ -204,12 +227,11 @@ fun TaskListScreenSkeleton(
                                     duration = timer,
                                 ),
                             )
-                            showLogDialog = true
                         },
                         goToLogScreen = {
                             goToLogScreen(task.id)
                         },
-                        projectName = project?.name ?: "",
+                        projectName = task.project.name,
                         taskName = task.title,
                         duration = task.totalTimeSpend,
                         status =
@@ -221,10 +243,42 @@ fun TaskListScreenSkeleton(
                         icon = project?.selectedIcon ?: 0,
                         iconColor = project?.selectedIconColor ?: 0,
                         backgroundColor = project?.selectedBorderColor ?: 0,
+                        onTaskDelete = {
+                            showDeleteDialog = true
+                            logTaskId = task.id
+                        },
+                        onTaskChangeStatus = {
+                            showTaskChangeDialog = true
+                            currentStatus = task.taskStatus
+                            logTaskId = task.id
+                        },
+                        onTaskShowLogs = {
+                            goToLogScreen(task.id)
+                        },
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
+        }
+        if (showTaskChangeDialog) {
+            TaskStatusDialog(
+                currentStatus = currentStatus,
+                onDismiss = { showTaskChangeDialog = false },
+                onSave = { status ->
+                    println(status)
+                    showTaskChangeDialog = false
+                    changeTaskStatus(logTaskId, status)
+                },
+            )
+        }
+        if (showDeleteDialog) {
+            DeleteAlertDialog(
+                title = "Are you sure you want to delete this task?",
+                onDeleteClicked = {
+                    showDeleteDialog = false
+                    deleteTask(logTaskId)
+                },
+            )
         }
     }
 }

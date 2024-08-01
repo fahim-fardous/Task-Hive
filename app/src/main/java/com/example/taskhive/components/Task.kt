@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -50,6 +49,9 @@ fun TaskCard(
     icon: Int = 0,
     iconColor: Int = 0,
     backgroundColor: Int = 0,
+    onTaskDelete: () -> Unit = {},
+    onTaskChangeStatus: () -> Unit = {},
+    onTaskShowLogs: () -> Unit = {},
 ) {
     var isRunning by remember {
         mutableStateOf(false)
@@ -117,9 +119,8 @@ fun TaskCard(
                 Spacer(modifier = Modifier.weight(1f))
                 Row(
                     modifier =
-                        Modifier.padding(top = 4.dp).clickable {
-                            goToLogScreen()
-                        },
+                        Modifier
+                            .padding(top = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
@@ -132,15 +133,13 @@ fun TaskCard(
                 }
             }
             Column(
-                verticalArrangement = Arrangement.SpaceEvenly,
+                verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.End,
             ) {
-                TaskGroupIcon(
-                    icon = icon,
-                    iconColor = iconColor,
-                    backgroundColor = backgroundColor,
-                    size = 30.dp,
-                    padding = 4.dp,
+                IconWithDropdownMenu(
+                    onDeleteClicked = { onTaskDelete() },
+                    onChangeStatusClicked = { onTaskChangeStatus() },
+                    onShowLogsClicked = { onTaskShowLogs() },
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Row(

@@ -20,6 +20,12 @@ interface TaskRepository {
 
     suspend fun getLogsByTaskId(taskId: Int): List<Log>
 
+    suspend fun getInProgressTaskCount(): Int
+
+    suspend fun getInProgressTaskCountByProject(project: Project): Int
+
+    suspend fun deleteTask(taskId: Int)
+
     //suspend fun getCompletedTaskCount(taskStatus: TaskStatus): Int
 
 }
