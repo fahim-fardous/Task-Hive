@@ -50,6 +50,7 @@ import com.example.taskhive.components.InProgressCard
 import com.example.taskhive.components.ProgressCard
 import com.example.taskhive.components.TaskGroup
 import com.example.taskhive.presentation.task.model.ProjectUiModel
+import com.example.taskhive.presentation.task.model.TaskUiModel
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
 import com.example.taskhive.utils.SelectableProperties.backgroundColors
@@ -69,15 +70,15 @@ fun HomeScreen(
         viewModel.getNumberOfProject()
     }
     LaunchedEffect(Unit) {
-        viewModel.getInProgressProjects()
+        viewModel.getInProgressTasks()
     }
     val projects by viewModel.projects.collectAsState()
-    val inProgressProjects by viewModel.inProgressProjects.collectAsState()
+    val inProgressTasks by viewModel.inProgressTasks.collectAsState()
     val numberOfProject by viewModel.count.collectAsState()
     HomeScreenSkeleton(
         goToAddProject = goToAddProject,
         projects = projects,
-        inProgressProjects = inProgressProjects,
+        inProgressTasks = inProgressTasks,
         numberOfProject = numberOfProject,
         goToTaskList = { projectId ->
             println(projectId.toString())
@@ -90,7 +91,7 @@ fun HomeScreen(
 fun HomeScreenSkeleton(
     goToAddProject: () -> Unit = {},
     projects: List<ProjectUiModel> = emptyList(),
-    inProgressProjects: List<ProjectUiModel> = emptyList(),
+    inProgressTasks: List<TaskUiModel> = emptyList(),
     numberOfProject: Int = 0,
     goToTaskList: (Int?) -> Unit = {},
 ) {
@@ -169,7 +170,7 @@ fun HomeScreenSkeleton(
                     .padding(16.dp),
         ) {
             ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f)
-            if (inProgressProjects.isNotEmpty()) {
+            if (inProgressTasks.isNotEmpty()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         modifier = Modifier.padding(top = 16.dp),
@@ -190,7 +191,7 @@ fun HomeScreenSkeleton(
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            text = inProgressProjects.size.toString(),
+                            text = inProgressTasks.size.toString(),
                             color = appColor,
                             fontWeight = FontWeight.Bold,
                         )
@@ -206,14 +207,15 @@ fun HomeScreenSkeleton(
                             end = 0.dp,
                         ),
                 ) {
-                    items(inProgressProjects) { project ->
+                    items(inProgressTasks) { task ->
                         InProgressCard(
-                            projectName = project.name,
-                            progress = project.progress,
-                            projectId = project.id,
-                            icon = icons[project.selectedIcon],
-                            iconColor = colors[project.selectedIconColor],
-                            borderColor = backgroundColors[project.selectedBorderColor],
+                            projectName = task.project.name,
+                            taskName = task.title,
+                            progress = 0.5f,
+                            projectId = task.project.id,
+                            icon = icons[task.project.selectedIcon],
+                            iconColor = colors[task.project.selectedIconColor],
+                            borderColor = backgroundColors[task.project.selectedBorderColor],
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                     }
@@ -263,7 +265,7 @@ fun HomeScreenSkeleton(
                         },
                         project = project.name,
                         numberOfTask = project.numberOfTask,
-                        progress = 0.0f,
+                        progress = project.progress,
                         selectedIcon = project.selectedIcon,
                         selectedIconColor = project.selectedIconColor,
                         selectedBorderColor = project.selectedBorderColor,
