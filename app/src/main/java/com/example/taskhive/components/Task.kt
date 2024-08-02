@@ -1,5 +1,6 @@
 package com.example.taskhive.components
 
+import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,9 +36,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.taskhive.service.TimerService
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
 import com.example.taskhive.utils.formatLogTime
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import java.util.Date
 
@@ -44,25 +48,20 @@ import java.util.Date
 fun TaskCard(
     onClick: () -> Unit = {},
     onPauseClicked: (Long, Long, Date, Date) -> Unit = { _, _, _, _ -> },
-    goToLogScreen: () -> Unit = {},
     projectName: String,
     taskName: String,
     duration: Long,
-    status: String,
-    icon: Int = 0,
-    iconColor: Int = 0,
-    backgroundColor: Int = 0,
     onTaskDelete: () -> Unit = {},
     onTaskChangeStatus: () -> Unit = {},
     onTaskShowLogs: () -> Unit = {},
+    startTimer: () -> Unit = {},
+    endTimer: () -> Unit = {},
 ) {
     var isRunning by remember {
         mutableStateOf(false)
     }
 
-    var timer by remember {
-        mutableLongStateOf(0L)
-    }
+    val timer by TimerService.timer.collectAsState()
 
     var startTime by remember {
         mutableStateOf<Date>(Date())
@@ -71,22 +70,15 @@ fun TaskCard(
         mutableStateOf<Date>(Date())
     }
 
-    LaunchedEffect(isRunning) {
-        while (isRunning) {
-            delay(1000L)
-            timer += 1000L
-        }
-    }
-
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(140.dp)
-                .clickable {
-                    onClick()
-                },
+        Modifier
+            .fillMaxWidth()
+            .height(140.dp)
+            .clickable {
+                onClick()
+            },
         elevation = CardDefaults.elevatedCardElevation(2.dp),
         colors =
             CardDefaults.elevatedCardColors(
@@ -95,16 +87,16 @@ fun TaskCard(
     ) {
         Row(
             modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalAlignment = Alignment.Top,
         ) {
             Column(
                 modifier =
-                    Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
+                Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
@@ -154,6 +146,7 @@ fun TaskCard(
                         onPlayClicked = {
                             isRunning = true
                             startTime = Date()
+                            startTimer()
                         },
                         onPauseClicked = {
                             isRunning = false
@@ -164,7 +157,7 @@ fun TaskCard(
                                 startTime,
                                 endTime,
                             )
-                            timer = 0
+                            endTimer()
                         },
                     )
                 }
@@ -181,7 +174,6 @@ private fun TaskPreview() {
             projectName = "Task Management and To do app design",
             taskName = "Market Research",
             duration = 0L,
-            status = "In Progress",
         )
     }
 }
@@ -193,7 +185,6 @@ private fun TaskPreviewDark() {
             projectName = "Task Management and To do app design",
             taskName = "Market Research",
             duration = 0L,
-            status = "In Progress",
         )
     }
 }

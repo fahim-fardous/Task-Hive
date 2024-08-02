@@ -1,6 +1,5 @@
 package com.example.taskhive
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -18,7 +17,6 @@ import com.example.taskhive.presentation.onboard.OnBoardViewModel
 import com.example.taskhive.presentation.profile.ProfileScreen
 import com.example.taskhive.presentation.project.add.ProjectAddScreen
 import com.example.taskhive.presentation.project.add.ProjectAddViewModel
-import com.example.taskhive.presentation.splash.SplashViewModel
 import com.example.taskhive.presentation.task.add.TaskAddScreen
 import com.example.taskhive.presentation.task.add.TaskAddViewModel
 import com.example.taskhive.presentation.task.edit.TaskEditScreen
@@ -68,6 +66,8 @@ sealed class Screen(
 fun MainNavHost(
     navController: NavHostController,
     startDestination: String,
+    startTimer: () -> Unit = {},
+    endTimer: () -> Unit = {},
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
         composable(Screen.Home.route) {
@@ -121,6 +121,8 @@ fun MainNavHost(
                 },
                 projectId = backStackEntry.arguments?.getInt("projectId"),
                 viewModel = viewModel,
+                startTimer = startTimer,
+                endTimer = endTimer,
             )
         }
         composable(Screen.ProjectAdd.route) {
@@ -185,7 +187,8 @@ fun MainNavHost(
                         Screen.LogList.createRoute(taskId = taskId),
                     )
                 },
-
+                startTimer = startTimer,
+                endTimer = endTimer,
             )
         }
 

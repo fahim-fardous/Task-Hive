@@ -98,31 +98,35 @@ fun HomeScreenSkeleton(
         topBar = {
             Row(
                 modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.my_img),
                     contentDescription = "my photo",
                     modifier =
-                    Modifier
-                        .size(48.dp)
-                        .clip(
-                            CircleShape,
-                        ),
+                        Modifier
+                            .size(48.dp)
+                            .clip(
+                                CircleShape,
+                            ),
                     contentScale = ContentScale.Crop,
                 )
                 Column(
                     modifier =
-                    Modifier
-                        .padding(start = 16.dp)
-                        .weight(1f),
+                        Modifier
+                            .padding(start = 16.dp)
+                            .weight(1f),
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text(text = "Hello!", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
+                    Text(
+                        text = "Hello!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
                     Text(
                         text = "Fahim",
                         style = MaterialTheme.typography.bodyLarge,
@@ -159,10 +163,10 @@ fun HomeScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(16.dp),
+                Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .padding(16.dp),
         ) {
             ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f)
             if (inProgressProjects.isNotEmpty()) {

@@ -52,9 +52,9 @@ import java.util.Date
 @Composable
 fun TaskEditScreen(
     goBack: () -> Unit,
-    goToLogListScreen: (Int) -> Unit = {},
+    goToLogListScreen: (Int) -> Unit,
     taskId: Int,
-    viewModel: TaskEditViewModel = viewModel(),
+    viewModel: TaskEditViewModel,
 ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) {

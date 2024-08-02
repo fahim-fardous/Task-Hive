@@ -1,10 +1,10 @@
 package com.example.taskhive.presentation.home.index
 
-import android.util.Log
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Note
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Note
@@ -43,8 +43,9 @@ fun HomeIndexScreen(
     goToAddTask: (Int) -> Unit = {},
     goToEditTask: (Int) -> Unit = {},
     goToLogListScreen: (Int) -> Unit = {},
+    startTimer: () -> Unit = {},
+    endTimer: () -> Unit = {},
 ) {
-
     val navController = rememberNavController()
     HomeIndexScreenSkeleton(
         navController = navController,
@@ -53,6 +54,8 @@ fun HomeIndexScreen(
         goToAddTask = goToAddTask,
         goToEditTask = goToEditTask,
         goToLogListScreen = goToLogListScreen,
+        startTimer = startTimer,
+        endTimer = endTimer,
     )
 }
 
@@ -64,6 +67,8 @@ fun HomeIndexScreenSkeleton(
     goToAddTask: (Int) -> Unit = {},
     goToEditTask: (Int) -> Unit = {},
     goToLogListScreen: (Int) -> Unit = {},
+    startTimer: () -> Unit = {},
+    endTimer: () -> Unit = {},
 ) {
     val items =
         listOf(
@@ -115,10 +120,10 @@ fun HomeIndexScreenSkeleton(
                 val viewModel: HomeViewModel = hiltViewModel()
                 HomeScreen(
                     goToAddProject = { goToAddProject() },
-                    goToTaskList = {projectId->
+                    goToTaskList = { projectId ->
                         goToTaskList(projectId)
                     },
-                    viewModel = viewModel
+                    viewModel = viewModel,
                 )
             }
             composable(HomeTabScreen.TaskList.route) {
@@ -126,14 +131,20 @@ fun HomeIndexScreenSkeleton(
                 TaskListScreen(
                     goBack = { navController.popBackStack() },
                     viewModel = viewModel,
-                    goToAddTask = {projectId->
+                    goToAddTask = { projectId ->
                         goToAddTask(projectId)
                     },
-                    goToEditTask = {taskId->
+                    goToEditTask = { taskId ->
                         goToEditTask(taskId)
                     },
-                    goToLogListScreen = {taskId->
+                    goToLogListScreen = { taskId ->
                         goToLogListScreen(taskId)
+                    },
+                    startTimer = {
+                        startTimer()
+                    },
+                    endTimer = {
+                        endTimer()
                     },
                 )
             }
@@ -167,7 +178,7 @@ private sealed class HomeTabScreen(
     data object TaskList :
         HomeTabScreen("task_list_screen/{projectId", "Task List", Icons.Filled.CalendarMonth)
 
-    data object Notes : HomeTabScreen("notes_screen", "Notes", Icons.AutoMirrored.Filled.Note)
+    data object Notes : HomeTabScreen("notes_screen", "Analytics", Icons.Default.Analytics)
 
     data object Profile : HomeTabScreen("profile_screen", "Profile", Icons.Filled.Person)
 }

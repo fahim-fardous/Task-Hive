@@ -46,11 +46,13 @@ import com.example.taskhive.utils.MockData
 @Composable
 fun TaskListScreen(
     goBack: () -> Unit,
-    goToAddTask: (Int) -> Unit = {},
-    goToEditTask: (Int) -> Unit = {},
-    goToLogListScreen: (Int) -> Unit = {},
+    goToAddTask: (Int) -> Unit,
+    goToEditTask: (Int) -> Unit,
+    goToLogListScreen: (Int) -> Unit,
     projectId: Int? = null,
-    viewModel: TaskListViewModel = hiltViewModel(),
+    viewModel: TaskListViewModel,
+    startTimer: () -> Unit,
+    endTimer: () -> Unit,
 ) {
     LaunchedEffect(Unit) {
         if (projectId != null) {
@@ -95,6 +97,8 @@ fun TaskListScreen(
                 viewModel.changeTaskStatus(taskId, null, status)
             }
         },
+        startTimer = startTimer,
+        endTimer = endTimer,
     )
 }
 
@@ -138,6 +142,8 @@ fun TaskListScreenSkeleton(
     goToLogScreen: (Int) -> Unit = {},
     deleteTask: (Int) -> Unit = { _ -> },
     changeTaskStatus: (Int, TaskStatus) -> Unit = { _, _ -> },
+    startTimer: () -> Unit = {},
+    endTimer: () -> Unit = {},
 ) {
     var logTaskId by remember {
         mutableIntStateOf(-1)
@@ -251,21 +257,9 @@ fun TaskListScreenSkeleton(
                                 ),
                             )
                         },
-                        goToLogScreen = {
-                            goToLogScreen(task.id)
-                        },
                         projectName = task.project.name,
                         taskName = task.title,
                         duration = task.totalTimeSpend,
-                        status =
-                            when (task.taskStatus) {
-                                TaskStatus.TODO -> "To-do"
-                                TaskStatus.IN_PROGRESS -> "In Progress"
-                                TaskStatus.DONE -> "Done"
-                            },
-                        icon = project?.selectedIcon ?: 0,
-                        iconColor = project?.selectedIconColor ?: 0,
-                        backgroundColor = project?.selectedBorderColor ?: 0,
                         onTaskDelete = {
                             showDeleteDialog = true
                             logTaskId = task.id
@@ -278,6 +272,8 @@ fun TaskListScreenSkeleton(
                         onTaskShowLogs = {
                             goToLogScreen(task.id)
                         },
+                        startTimer = startTimer,
+                        endTimer = endTimer,
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
