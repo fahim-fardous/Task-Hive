@@ -66,8 +66,6 @@ sealed class Screen(
 fun MainNavHost(
     navController: NavHostController,
     startDestination: String,
-    startTimer: () -> Unit = {},
-    endTimer: () -> Unit = {},
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
         composable(Screen.Home.route) {
@@ -121,8 +119,6 @@ fun MainNavHost(
                 },
                 projectId = backStackEntry.arguments?.getInt("projectId"),
                 viewModel = viewModel,
-                startTimer = startTimer,
-                endTimer = endTimer,
             )
         }
         composable(Screen.ProjectAdd.route) {
@@ -187,8 +183,7 @@ fun MainNavHost(
                         Screen.LogList.createRoute(taskId = taskId),
                     )
                 },
-                startTimer = startTimer,
-                endTimer = endTimer,
+
             )
         }
 

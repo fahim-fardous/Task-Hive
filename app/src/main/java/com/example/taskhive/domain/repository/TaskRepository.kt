@@ -4,13 +4,13 @@ import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.model.TaskStatus
+import java.util.Date
 
 interface TaskRepository {
     suspend fun saveTask(task: Task): Long
 
-    suspend fun getAllTasks(): List<Task>
 
-    suspend fun getTaskByProject(project: Project): List<Task>
+    suspend fun getTaskByProject(date: Date,project: Project): List<Task>
 
     suspend fun getTaskCountByProject(project: Project): Int
 
@@ -29,5 +29,9 @@ interface TaskRepository {
     suspend fun getRecentInProgressTasks(): List<Task>
 
     suspend fun getCompletedTaskCount(project: Project): Int
+
+    suspend fun getTodaysTasks(date:Date, project: Project?):List<Task>
+
+    suspend fun getAllTasks(date: Date):List<Task>
 
 }

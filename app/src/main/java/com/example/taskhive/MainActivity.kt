@@ -28,25 +28,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             TaskHiveTheme {
                 val startDestination by viewModel.startDestination.collectAsState()
-                    MainScreen(
-                        startDestination = startDestination,
-                        startTimer = {
-                            startService(
-                                Intent(
-                                    this,
-                                    TimerService::class.java,
-                                ),
-                            )
-                        },
-                        endTimer = {
-                            stopService(
-                                Intent(
-                                    this,
-                                    TimerService::class.java,
-                                ),
-                            )
-                        },
-                    )
+                MainScreen(
+                    startDestination = startDestination,
+                )
             }
         }
     }

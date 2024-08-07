@@ -34,7 +34,6 @@ fun CommonCard(
     height: Dp = 200.dp,
     readOnly: Boolean = false,
 ) {
-    println("It is $value value")
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier =

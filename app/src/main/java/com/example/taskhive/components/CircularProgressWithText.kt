@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun CircularProgressWithText(
     modifier: Modifier = Modifier,
-    progress: Float = 0.85f,
+    progress: Float,
     strokeWidth: Float = 4f,
     color: Color = Color.Blue,
     size:Dp = 100.dp,

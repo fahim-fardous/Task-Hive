@@ -2,6 +2,7 @@ package com.example.taskhive.presentation.task.add
 
 import android.content.res.Configuration
 import android.icu.util.Calendar
+import android.icu.util.TimeZone
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,18 +17,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +48,7 @@ import com.example.taskhive.components.TimePickerDialog
 import com.example.taskhive.components.TopBar
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.utils.HelperFunctions.convert24HourTo12Hour
+import com.example.taskhive.utils.getReadableDate
 import com.example.taskhive.utils.getReadableTime
 import com.example.taskhive.utils.toDate
 import java.util.Date
@@ -63,7 +70,7 @@ fun TaskAddScreen(
 
     TaskAddScreenSkeleton(
         goBack = goBack,
-        saveTask = { title, description, startTime, endTime ->
+        saveTask = { title, description, startTime, endTime, startDate ->
             viewModel.saveTask(
                 id = 0,
                 title = title,
@@ -71,6 +78,7 @@ fun TaskAddScreen(
                 plannedStartTime = startTime ?: Date(),
                 plannedEndTime = endTime ?: Date(),
                 projectId = projectId,
+                startDate = startDate ?: Date(),
             )
         },
     )
@@ -83,6 +91,7 @@ private fun TaskAddScreenSkeletonPreview() {
         TaskAddScreenSkeleton()
     }
 }
+
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun TaskAddScreenSkeletonPreviewDark() {
@@ -91,19 +100,20 @@ private fun TaskAddScreenSkeletonPreviewDark() {
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskAddScreenSkeleton(
     goBack: () -> Unit = {},
-    saveTask: (String, String, Date?, Date?) -> Unit = { _, _, _, _ -> },
+    saveTask: (String, String, Date?, Date?, Date?) -> Unit = { _, _, _, _,_ -> },
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var startTime by remember { mutableStateOf<Date?>(null) }
     var endTime by remember { mutableStateOf<Date?>(null) }
+    var startDate by remember { mutableStateOf<Date?>(null) }
     var showStartTimePickerDialog by remember { mutableStateOf(false) }
     var showEndTimePickerDialog by remember { mutableStateOf(false) }
+    var showDatePickerDialog by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopBar(
@@ -124,6 +134,7 @@ fun TaskAddScreenSkeleton(
                             description,
                             startTime,
                             endTime,
+                            startDate,
                         )
                     },
                 text = "Add Task",
@@ -154,6 +165,20 @@ fun TaskAddScreenSkeleton(
                 label = "Description",
                 lines = 5,
             )
+            Spacer(modifier = Modifier.height(24.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                CommonCard(
+                    modifier = Modifier.weight(1f),
+                    value = startDate.getReadableDate(),
+                    onValueChange = { },
+                    label = "Start Date",
+                    lines = 1,
+                    readOnly = true,
+                )
+                FloatingActionButton(onClick = { showDatePickerDialog = true }) {
+                    Icon(Icons.Filled.Add, contentDescription = "Add date")
+                }
+            }
             Spacer(modifier = Modifier.height(24.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 CommonCard(
@@ -254,6 +279,68 @@ fun TaskAddScreenSkeleton(
             },
         ) {
             TimePicker(state = timePickerState)
+        }
+    }
+
+    // -----------------------------------------------------------------------------------
+    // Dialog
+    // -----------------------------------------------------------------------------------
+
+    if (showDatePickerDialog) {
+        val initialSelectedDate =
+            remember {
+                val localCalender = Calendar.getInstance()
+                val utcCalender = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                utcCalender.clear()
+                utcCalender.set(
+                    localCalender.get(Calendar.YEAR),
+                    localCalender.get(Calendar.MONTH),
+                    localCalender.get(Calendar.DATE),
+                )
+                utcCalender.timeInMillis
+            }
+
+        val datePickerState =
+            rememberDatePickerState(
+                initialSelectedDateMillis = initialSelectedDate,
+                selectableDates =
+                    object : SelectableDates {
+                        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+
+                        override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis >= calendar.timeInMillis
+
+                        override fun isSelectableYear(year: Int): Boolean = year >= calendar.get(Calendar.YEAR)
+                    },
+            )
+        val datePickerConfirmButtonEnabled =
+            remember {
+                derivedStateOf { datePickerState.selectedDateMillis != null }
+            }
+
+        DatePickerDialog(onDismissRequest = { showDatePickerDialog = false }, confirmButton = {
+            TextButton(
+                onClick = {
+                    showDatePickerDialog = false
+
+                    datePickerState.selectedDateMillis?.let {
+                        startDate = Date(it)
+                    }
+                },
+                enabled = datePickerConfirmButtonEnabled.value,
+            ) {
+                Text(text = "OK")
+            }
+        }, dismissButton = {
+            TextButton(onClick = { showDatePickerDialog = false }) {
+                Text(text = "Cancel")
+            }
+        }) {
+            DatePicker(state = datePickerState, title = {
+                Text(
+                    text = "Task Date",
+                    Modifier.padding(start = 24.dp, end = 12.dp, top = 16.dp),
+                )
+            })
         }
     }
 }

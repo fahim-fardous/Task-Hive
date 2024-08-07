@@ -21,16 +21,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,8 +38,6 @@ import com.example.taskhive.service.TimerService
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
 import com.example.taskhive.utils.formatLogTime
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.delay
 import java.util.Date
 
 @Composable
@@ -49,20 +45,20 @@ fun TaskCard(
     onClick: () -> Unit = {},
     onPauseClicked: (Long, Long, Date, Date) -> Unit = { _, _, _, _ -> },
     projectName: String,
+    taskId: Int,
     taskName: String,
     duration: Long,
     onTaskDelete: () -> Unit = {},
     onTaskChangeStatus: () -> Unit = {},
     onTaskShowLogs: () -> Unit = {},
-    startTimer: () -> Unit = {},
-    endTimer: () -> Unit = {},
 ) {
+    val context = LocalContext.current
     var isRunning by remember {
         mutableStateOf(false)
     }
 
+    val id by TimerService.id.collectAsState()
     val timer by TimerService.timer.collectAsState()
-
     var startTime by remember {
         mutableStateOf<Date>(Date())
     }
@@ -141,12 +137,20 @@ fun TaskCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(formatLogTime(timer))
+                    Text(text = if (taskId == id) formatLogTime(timer) else formatLogTime(0L))
                     TimerButton(
                         onPlayClicked = {
                             isRunning = true
                             startTime = Date()
-                            startTimer()
+                                context.startService(
+                                    Intent(
+                                        context,
+                                        TimerService::class.java,
+                                    ).apply {
+                                        action = TimerService.ACTION_START
+                                        putExtra("taskId", taskId)
+                                    },
+                                )
                         },
                         onPauseClicked = {
                             isRunning = false
@@ -157,8 +161,16 @@ fun TaskCard(
                                 startTime,
                                 endTime,
                             )
-                            endTimer()
+                                context.stopService(
+                                    Intent(
+                                        context,
+                                        TimerService::class.java,
+                                    ).apply {
+                                        action = TimerService.ACTION_STOP
+                                    },
+                                )
                         },
+                        taskId = taskId
                     )
                 }
             }
@@ -174,9 +186,11 @@ private fun TaskPreview() {
             projectName = "Task Management and To do app design",
             taskName = "Market Research",
             duration = 0L,
+            taskId = 0,
         )
     }
 }
+
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun TaskPreviewDark() {
@@ -185,6 +199,7 @@ private fun TaskPreviewDark() {
             projectName = "Task Management and To do app design",
             taskName = "Market Research",
             duration = 0L,
+            taskId = 0,
         )
     }
 }

@@ -43,8 +43,6 @@ fun HomeIndexScreen(
     goToAddTask: (Int) -> Unit = {},
     goToEditTask: (Int) -> Unit = {},
     goToLogListScreen: (Int) -> Unit = {},
-    startTimer: () -> Unit = {},
-    endTimer: () -> Unit = {},
 ) {
     val navController = rememberNavController()
     HomeIndexScreenSkeleton(
@@ -54,8 +52,6 @@ fun HomeIndexScreen(
         goToAddTask = goToAddTask,
         goToEditTask = goToEditTask,
         goToLogListScreen = goToLogListScreen,
-        startTimer = startTimer,
-        endTimer = endTimer,
     )
 }
 
@@ -67,8 +63,6 @@ fun HomeIndexScreenSkeleton(
     goToAddTask: (Int) -> Unit = {},
     goToEditTask: (Int) -> Unit = {},
     goToLogListScreen: (Int) -> Unit = {},
-    startTimer: () -> Unit = {},
-    endTimer: () -> Unit = {},
 ) {
     val items =
         listOf(
@@ -139,13 +133,7 @@ fun HomeIndexScreenSkeleton(
                     },
                     goToLogListScreen = { taskId ->
                         goToLogListScreen(taskId)
-                    },
-                    startTimer = {
-                        startTimer()
-                    },
-                    endTimer = {
-                        endTimer()
-                    },
+                    }
                 )
             }
             composable(HomeTabScreen.Notes.route) {

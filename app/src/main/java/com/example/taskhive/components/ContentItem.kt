@@ -1,9 +1,9 @@
 package com.example.taskhive.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -23,13 +23,19 @@ import androidx.compose.ui.unit.sp
 import com.example.taskhive.ui.theme.appColor
 
 @Composable
-fun ContentItem(date: CalendarUiModel.Date) {
+fun ContentItem(
+    date: CalendarUiModel.Date,
+    onDateClick: (CalendarUiModel.Date) -> Unit = {},
+) {
     Card(
-        modifier = Modifier.padding(4.dp),
+        modifier =
+            Modifier.padding(4.dp).clickable {
+                onDateClick(date)
+            },
         colors =
             CardDefaults.cardColors(
                 containerColor =
-                    if (date.isSelected || date.isToday) {
+                    if (date.isSelected) {
                         appColor
                     } else {
                         Color.White
@@ -50,14 +56,14 @@ fun ContentItem(date: CalendarUiModel.Date) {
                         .toString()
                         .substring(0, 3),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = if (date.isToday) Color.White else Color.Black,
+                color = if (date.isSelected) Color.White else Color.Black,
                 style = MaterialTheme.typography.bodySmall,
                 fontSize = 8.sp,
             )
             Text(
                 text = date.date.dayOfMonth.toString(),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = if (date.isToday) Color.White else Color.Black,
+                color = if (date.isSelected) Color.White else Color.Black,
                 style = MaterialTheme.typography.bodyLarge,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
@@ -65,7 +71,7 @@ fun ContentItem(date: CalendarUiModel.Date) {
             Text(
                 text = date.day,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = if (date.isToday) Color.White else Color.Black,
+                color = if (date.isSelected) Color.White else Color.Black,
                 fontSize = 8.sp,
             )
         }

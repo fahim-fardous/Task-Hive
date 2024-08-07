@@ -22,6 +22,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
@@ -162,7 +163,7 @@ fun ProjectAddScreenSkeleton(
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
-            Text(text = "Select an icon", color = Color.Black, fontWeight = FontWeight.Bold)
+            Text(text = "Select an icon", color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 items(icons) { icon ->
@@ -174,7 +175,7 @@ fun ProjectAddScreenSkeleton(
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
-            Text(text = "Select icon color", color = Color.Black, fontWeight = FontWeight.Bold)
+            Text(text = "Select icon color", color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 items(colors) { color ->
@@ -188,7 +189,7 @@ fun ProjectAddScreenSkeleton(
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "Select icon background color",
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontWeight = FontWeight.Bold,
             )
             Spacer(modifier = Modifier.height(8.dp))

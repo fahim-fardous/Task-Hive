@@ -24,7 +24,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.components.TopBar
 import com.example.taskhive.domain.model.Log
-import com.example.taskhive.presentation.home.HomeScreenSkeleton
 import com.example.taskhive.presentation.log.list.elements.LogItem
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.utils.MockData
@@ -41,7 +40,7 @@ fun LogListScreen(
     }
     val logs by viewModel.logs.collectAsState()
     LogListScreenSkeleton(
-        logs = logs ,
+        logs = logs,
         goBack = goBack,
     )
 }
@@ -50,9 +49,10 @@ fun LogListScreen(
 @Composable
 private fun LogListScreenSkeletonPreview() {
     LogListScreenSkeleton(
-        logs = List(10) {
-            MockData.log
-        }
+        logs =
+            List(10) {
+                MockData.log
+            },
     )
 }
 
@@ -61,9 +61,10 @@ private fun LogListScreenSkeletonPreview() {
 private fun LogListScreenSkeletonPreviewDark() {
     TaskHiveTheme {
         LogListScreenSkeleton(
-            logs = List(10) {
-                MockData.log
-            }
+            logs =
+                List(10) {
+                    MockData.log
+                },
         )
     }
 }

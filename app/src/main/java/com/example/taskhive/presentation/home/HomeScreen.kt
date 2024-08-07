@@ -81,7 +81,6 @@ fun HomeScreen(
         inProgressTasks = inProgressTasks,
         numberOfProject = numberOfProject,
         goToTaskList = { projectId ->
-            println(projectId.toString())
             goToTaskList(projectId)
         },
     )
@@ -265,7 +264,7 @@ fun HomeScreenSkeleton(
                         },
                         project = project.name,
                         numberOfTask = project.numberOfTask,
-                        progress = project.progress,
+                        progress = if (project.progress.isNaN()) 0.0f else project.progress,
                         selectedIcon = project.selectedIcon,
                         selectedIconColor = project.selectedIconColor,
                         selectedBorderColor = project.selectedBorderColor,

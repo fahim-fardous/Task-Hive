@@ -13,66 +13,95 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
-class TaskListViewModel @Inject constructor(
-    private val taskRepository: TaskRepository,
-    private val projectRepository: ProjectRepository
-) : ViewModel() {
+class TaskListViewModel
+    @Inject
+    constructor(
+        private val taskRepository: TaskRepository,
+        private val projectRepository: ProjectRepository,
+    ) : ViewModel() {
+        private val _tasks = MutableStateFlow<List<TaskUiModel>>(emptyList())
+        val tasks = _tasks.asStateFlow()
 
-    private val _tasks = MutableStateFlow<List<TaskUiModel>>(emptyList())
-    val tasks = _tasks.asStateFlow()
+        private val _project = MutableStateFlow<Project?>(null)
+        val project = _project.asStateFlow()
 
-    private val _project = MutableStateFlow<Project?>(null)
-    val project = _project.asStateFlow()
+        fun getProjectById(projectId: Int) =
+            viewModelScope.launch {
+                _project.value = projectRepository.getProjectById(projectId)
+            }
 
-    fun getTasksById(projectId: Int) = viewModelScope.launch {
-        updateTasks(projectId)
-    }
-
-    fun getAllTasks() = viewModelScope.launch {
-        updateTasks(null)
-    }
-
-    fun deleteTask(taskId: Int, projectId: Int? = null) = viewModelScope.launch {
-        taskRepository.deleteTask(taskId)
-        updateTasks(projectId)
-    }
-
-    private suspend fun updateTasks(projectId: Int?) {
-        if (projectId != null) {
-            val project = projectRepository.getProjectById(projectId)
-            _project.value = project
-            val tasks = taskRepository.getTaskByProject(project)
-            _tasks.value = tasks.map { it.toUiModel() }
-        } else {
-            val tasks = taskRepository.getAllTasks()
-            _tasks.value = tasks.map { it.toUiModel() }
+        fun getTasks(
+            date: LocalDate,
+            projectId: Int? = null,
+        ) = viewModelScope.launch {
+            if (projectId == null) {
+                _tasks.value = taskRepository.getAllTasks(localDateToDate(date)).map { it.toUiModel() }
+            } else {
+                val project = projectRepository.getProjectById(projectId)
+                _tasks.value =
+                    taskRepository
+                        .getTaskByProject(localDateToDate(date), project)
+                        .map { it.toUiModel() }
+            }
         }
-    }
 
-    fun changeTaskStatus(taskId: Int, projectId: Int? = null, status: TaskStatus) = viewModelScope.launch {
-        val task = taskRepository.getTaskById(taskId)
-        val updatedTask = task.copy(taskStatus = status)
-        taskRepository.saveTask(updatedTask)
-        updateTasks(projectId)
-    }
+        private suspend fun getTaskByProject(
+            projectId: Int? = null,
+            date: LocalDate,
+        ) {
+            if (projectId == null) {
+                _tasks.value = taskRepository.getAllTasks(localDateToDate(date)).map { it.toUiModel() }
+            } else {
+                val project = projectRepository.getProjectById(projectId)
+                _tasks.value =
+                    taskRepository
+                        .getTaskByProject(localDateToDate(date), project)
+                        .map { it.toUiModel() }
+            }
+        }
 
-    fun getProjectById(projectId: Int) = viewModelScope.launch {
-        val response = projectRepository.getProjectById(projectId)
-        _project.value = response
-    }
+        fun deleteTask(
+            taskId: Int,
+            projectId: Int? = null,
+            date: LocalDate,
+        ) = viewModelScope.launch {
+            taskRepository.deleteTask(taskId)
+            getTaskByProject(projectId, date)
+        }
 
-    fun saveLog(log: Log, projectId: Int? = null) = viewModelScope.launch {
-        val id = taskRepository.saveLog(log)
-        val task = taskRepository.getTaskById(log.taskId)
-        val updatedTask = task.copy(
-            actualStartTime = task.actualStartTime ?: log.startTime,
-            totalTimeSpend = task.totalTimeSpend + log.duration,
-            taskStatus = if ((task.totalTimeSpend + log.duration) > 0L) TaskStatus.IN_PROGRESS else TaskStatus.TODO,
-        )
-        taskRepository.saveTask(updatedTask)
-        updateTasks(projectId)
+        fun changeTaskStatus(
+            taskId: Int,
+            projectId: Int? = null,
+            date: LocalDate,
+            status: TaskStatus,
+        ) = viewModelScope.launch {
+            val task = taskRepository.getTaskById(taskId)
+            taskRepository.saveTask(task.copy(taskStatus = status))
+            getTaskByProject(projectId, date)
+        }
+
+        fun saveLog(
+            log: Log,
+            projectId: Int? = null,
+            date: LocalDate,
+        ) = viewModelScope.launch {
+            taskRepository.saveLog(log)
+            val task = taskRepository.getTaskById(log.taskId)
+            val updatedTask =
+                task.copy(
+                    actualStartTime = task.actualStartTime ?: log.startTime,
+                    totalTimeSpend = task.totalTimeSpend + log.duration,
+                    taskStatus = if ((task.totalTimeSpend + log.duration) > 0L) TaskStatus.IN_PROGRESS else TaskStatus.TODO,
+                )
+            taskRepository.saveTask(updatedTask)
+            getTaskByProject(projectId, date)
+        }
+
+        private fun localDateToDate(date: LocalDate): Date = Date.from(date.atStartOfDay(ZoneOffset.UTC).toInstant())
     }
-}

@@ -29,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.taskhive.components.CalendarCard
 import com.example.taskhive.components.DeleteAlertDialog
 import com.example.taskhive.components.ProgressType
@@ -42,6 +41,8 @@ import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.presentation.task.model.TaskUiModel
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.utils.MockData
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 @Composable
 fun TaskListScreen(
@@ -51,14 +52,12 @@ fun TaskListScreen(
     goToLogListScreen: (Int) -> Unit,
     projectId: Int? = null,
     viewModel: TaskListViewModel,
-    startTimer: () -> Unit,
-    endTimer: () -> Unit,
 ) {
     LaunchedEffect(Unit) {
         if (projectId != null) {
-            viewModel.getTasksById(projectId)
+            viewModel.getTasks(LocalDate.now(ZoneOffset.UTC), projectId)
         } else {
-            viewModel.getAllTasks()
+            viewModel.getTasks(LocalDate.now(ZoneOffset.UTC))
         }
     }
     LaunchedEffect(projectId) {
@@ -76,29 +75,47 @@ fun TaskListScreen(
         projectId = projectId,
         tasks = tasks,
         project = project,
-        saveLog = { log ->
-            viewModel.saveLog(log)
+        saveLog = { log, date ->
+            if (projectId != null) {
+                viewModel.saveLog(log, projectId, date)
+            } else {
+                viewModel.saveLog(log, null, date)
+            }
         },
         goToLogScreen = { taskId ->
-            println("Coming here to go to log screen")
             goToLogListScreen(taskId)
         },
-        deleteTask = { taskId ->
+        deleteTask = { taskId, date ->
             if (projectId != null) {
-                viewModel.deleteTask(taskId, projectId)
+                viewModel.deleteTask(taskId, projectId, date)
             } else {
-                viewModel.deleteTask(taskId, null)
+                viewModel.deleteTask(taskId, null, date)
             }
         },
-        changeTaskStatus = { taskId, status ->
+        changeTaskStatus = { taskId, status, date ->
             if (projectId != null) {
-                viewModel.changeTaskStatus(taskId, projectId, status)
+                viewModel.changeTaskStatus(
+                    taskId = taskId,
+                    projectId = projectId,
+                    status = status,
+                    date = date,
+                )
             } else {
-                viewModel.changeTaskStatus(taskId, null, status)
+                viewModel.changeTaskStatus(
+                    taskId = taskId,
+                    projectId = null,
+                    status = status,
+                    date = date,
+                )
             }
         },
-        startTimer = startTimer,
-        endTimer = endTimer,
+        onDateChange = { date ->
+            if (projectId != null) {
+                viewModel.getTasks(date, projectId)
+            } else {
+                viewModel.getTasks(date)
+            }
+        },
     )
 }
 
@@ -138,12 +155,11 @@ fun TaskListScreenSkeleton(
     projectId: Int? = null,
     tasks: List<TaskUiModel> = emptyList(),
     project: Project? = null,
-    saveLog: (Log) -> Unit = {},
+    saveLog: (Log, LocalDate) -> Unit = { _, _ -> },
     goToLogScreen: (Int) -> Unit = {},
-    deleteTask: (Int) -> Unit = { _ -> },
-    changeTaskStatus: (Int, TaskStatus) -> Unit = { _, _ -> },
-    startTimer: () -> Unit = {},
-    endTimer: () -> Unit = {},
+    deleteTask: (Int, LocalDate) -> Unit = { _, _ -> },
+    changeTaskStatus: (Int, TaskStatus, LocalDate) -> Unit = { _, _, _ -> },
+    onDateChange: (date: LocalDate) -> Unit = {},
 ) {
     var logTaskId by remember {
         mutableIntStateOf(-1)
@@ -163,6 +179,9 @@ fun TaskListScreenSkeleton(
     }
     var currentStatus by remember {
         mutableStateOf(TaskStatus.TODO)
+    }
+    var currentDate by remember {
+        mutableStateOf(LocalDate.now(ZoneOffset.UTC))
     }
     Scaffold(
         topBar =
@@ -195,7 +214,12 @@ fun TaskListScreenSkeleton(
                     .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            CalendarCard()
+            CalendarCard(
+                selectedDate = { date ->
+                    currentDate = date.date
+                    onDateChange(date.date)
+                },
+            )
             Spacer(modifier = Modifier.height(16.dp))
             val filteredTasks =
                 when (selectedTaskStatus) {
@@ -239,9 +263,8 @@ fun TaskListScreenSkeleton(
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn {
                 items(
-                    filteredTasks,
+                    items = filteredTasks,
                 ) { task ->
-
                     TaskCard(
                         onClick = { goToEditTask(task.id) },
                         onPauseClicked = { totalSpend, timer, startTime, endTime ->
@@ -255,9 +278,11 @@ fun TaskListScreenSkeleton(
                                     endTime = endTime,
                                     duration = timer,
                                 ),
+                                currentDate,
                             )
                         },
                         projectName = task.project.name,
+                        taskId = task.id,
                         taskName = task.title,
                         duration = task.totalTimeSpend,
                         onTaskDelete = {
@@ -272,8 +297,6 @@ fun TaskListScreenSkeleton(
                         onTaskShowLogs = {
                             goToLogScreen(task.id)
                         },
-                        startTimer = startTimer,
-                        endTimer = endTimer,
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -285,7 +308,7 @@ fun TaskListScreenSkeleton(
                 onDismiss = { showTaskChangeDialog = false },
                 onSave = { status ->
                     showTaskChangeDialog = false
-                    changeTaskStatus(logTaskId, status)
+                    changeTaskStatus(logTaskId, status, currentDate)
                 },
             )
         }
@@ -294,7 +317,7 @@ fun TaskListScreenSkeleton(
                 title = "Are you sure you want to delete this task?",
                 onDeleteClicked = {
                     showDeleteDialog = false
-                    deleteTask(logTaskId)
+                    deleteTask(logTaskId, currentDate)
                 },
             )
         }

@@ -33,7 +33,6 @@ fun TaskGroup(
     selectedBorderColor:Int = 0,
     id: Int = 0,
 ) {
-    println(progress)
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier

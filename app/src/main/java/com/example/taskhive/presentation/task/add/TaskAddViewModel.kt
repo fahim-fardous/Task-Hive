@@ -6,6 +6,7 @@ import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.domain.repository.ProjectRepository
 import com.example.taskhive.domain.repository.TaskRepository
+import com.example.taskhive.utils.getReadableDate
 import com.example.taskhive.utils.getReadableTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,8 +30,9 @@ class TaskAddViewModel
             description: String,
             plannedStartTime: String,
             plannedEndTime: String,
+            plannedDate: String,
         ): Boolean {
-            if (name.isBlank() || description.isBlank() || plannedStartTime.isBlank() || plannedEndTime.isBlank()) {
+            if (name.isBlank() || description.isBlank() || plannedStartTime.isBlank() || plannedEndTime.isBlank()|| plannedDate.isBlank()) {
                 _showMessage.value = "Fill all the fields"
                 return false
             }
@@ -44,12 +46,14 @@ class TaskAddViewModel
             plannedStartTime: Date,
             plannedEndTime: Date,
             projectId: Int,
+            startDate: Date?,
         ) = viewModelScope.launch {
             if (!isValid(
                     title,
                     description,
                     plannedStartTime.getReadableTime(),
                     plannedEndTime.getReadableTime(),
+                startDate.getReadableDate()
                 )
             ) {
                 return@launch
@@ -62,6 +66,7 @@ class TaskAddViewModel
                     description = description,
                     plannedStartTime = plannedStartTime,
                     plannedEndTime = plannedEndTime,
+                    plannedStartDate = startDate,
                     project = project,
                     taskStatus = TaskStatus.TODO,
                 ),

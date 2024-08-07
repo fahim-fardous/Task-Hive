@@ -11,6 +11,7 @@ data class TaskUiModel(
     var description: String,
     var plannedStartTime: Date? = null,
     var plannedEndTime: Date? = null,
+    var plannedStartDate: Date? = null,
     val actualStartTime: Date? = null,
     val actualEndTime: Date? = null,
     val project: Project,

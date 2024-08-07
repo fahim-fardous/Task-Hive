@@ -11,16 +11,12 @@ import com.example.taskhive.Screen
 @Composable
 fun MainScreen(
     startDestination: String = Screen.OnBoard.route,
-    startTimer: () -> Unit = {},
-    endTimer: () -> Unit = {},
 ) {
     val navController = rememberNavController()
     Surface(modifier = Modifier.fillMaxSize()) {
         MainNavHost(
             navController = navController,
             startDestination = startDestination,
-            startTimer = startTimer,
-            endTimer = endTimer,
         )
     }
 }

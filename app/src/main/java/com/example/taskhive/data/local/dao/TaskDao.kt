@@ -8,6 +8,7 @@ import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.model.TaskStatus
+import java.util.Date
 
 @Dao
 interface TaskDao {
@@ -20,8 +21,8 @@ interface TaskDao {
     @Query("SELECT * FROM tasks")
     suspend fun getAllTasks(): List<Task>
 
-    @Query("SELECT * FROM tasks WHERE project = :project")
-    suspend fun getTaskByProject(project: Project): List<Task>
+    @Query("SELECT * FROM tasks WHERE plannedStartDate = :date AND project = :project")
+    suspend fun getTaskByProject( date: Date, project: Project): List<Task>
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     suspend fun getTaskById(taskId: Int): Task
@@ -52,4 +53,10 @@ interface TaskDao {
         project: Project,
         taskStatus: TaskStatus = TaskStatus.DONE,
     ): Int
+
+    @Query("SELECT * FROM tasks WHERE plannedStartDate=:date AND (project=:project OR :project IS NULL)")
+    suspend fun getTodaysTasks(date:Date, project: Project?):List<Task>
+
+    @Query("SELECT * FROM tasks WHERE plannedStartDate=:date")
+    suspend fun getAllTasks(date:Date):List<Task>
 }
