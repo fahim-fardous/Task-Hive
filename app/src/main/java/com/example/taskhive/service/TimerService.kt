@@ -3,30 +3,24 @@ package com.example.taskhive.service
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
 import com.example.taskhive.components.TimerItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class TimerService : Service() {
-    private  var serviceJob: Job? = null
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private val id = MutableStateFlow(0L)
 
     companion object {
-        private val _timer = MutableStateFlow(0L)
-        val timer = _timer.asStateFlow()
-        private val _isTimerRunning = MutableStateFlow(false)
-        val isTimerRunning = _isTimerRunning.asStateFlow()
-        private val _id = MutableStateFlow(0)
-        val id = _id.asStateFlow()
-
-        const val ACTION_START = "ACTION_START"
-        const val ACTION_STOP = "ACTION_STOP"
+        private val _taskMap = MutableStateFlow<Map<Int, TimerItem>>(emptyMap())
+        val taskMap: StateFlow<Map<Int, TimerItem>> = _taskMap.asStateFlow()
     }
 
     override fun onCreate() {
@@ -38,42 +32,37 @@ class TimerService : Service() {
         flags: Int,
         startId: Int,
     ): Int {
-        when (intent?.action) {
-            ACTION_START -> {
-                startTimer(intent.getIntExtra("taskId", 0))
-            }
-        }
+        intent?.getIntExtra("taskId", 0)?.let { startTimer(it) }
         return START_STICKY
     }
 
-    override fun stopService(name: Intent?): Boolean {
-        stopTimer()
-        return super.stopService(name)
-    }
-
-    private fun startTimer(taskId: Int){
-        _id.value = taskId
-        stopTimer()
-        _isTimerRunning.value = true
-        serviceJob =
-            CoroutineScope(Dispatchers.Default).launch {
-                while (isActive) {
-                    println("Coming and updating")
+    private fun startTimer(taskId: Int) {
+        stopTimer(taskId)
+        val timerItem = _taskMap.value[taskId] ?: TimerItem().apply { _taskMap.value += (taskId to this) }
+        if (!timerItem.isRunning) {
+            timerItem.isRunning = true
+            coroutineScope.launch {
+                while (timerItem.isRunning) {
                     delay(1000L)
-                    _timer.value += 1000L
+                    timerItem.time.value += 1000L
+                    _taskMap.value = _taskMap.value.toMutableMap().apply { put(taskId, timerItem) }
                 }
             }
-        _timer.value = 0L
+            stopTimer(taskId)
+        }
+
     }
 
-    private fun stopTimer(){
-        _isTimerRunning.value = false
-        _timer.value = 0L
-        serviceJob?.cancel()
+    private fun stopTimer(taskId: Int) {
+        println("Completed")
+        _taskMap.value = _taskMap.value.toMutableMap().apply {
+            this[taskId]?.time?.value = 0L
+            remove(taskId)
+        }
     }
 
     override fun onDestroy() {
-        stopTimer()
+        coroutineScope.cancel()
         super.onDestroy()
     }
 

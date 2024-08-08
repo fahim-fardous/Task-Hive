@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
+import com.example.taskhive.domain.model.ProjectProgress
 import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.model.TaskStatus
 import java.util.Date
@@ -22,7 +23,10 @@ interface TaskDao {
     suspend fun getAllTasks(): List<Task>
 
     @Query("SELECT * FROM tasks WHERE plannedStartDate = :date AND project = :project")
-    suspend fun getTaskByProject( date: Date, project: Project): List<Task>
+    suspend fun getTaskByProject(
+        date: Date,
+        project: Project,
+    ): List<Task>
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     suspend fun getTaskById(taskId: Int): Task
@@ -55,8 +59,26 @@ interface TaskDao {
     ): Int
 
     @Query("SELECT * FROM tasks WHERE plannedStartDate=:date AND (project=:project OR :project IS NULL)")
-    suspend fun getTodaysTasks(date:Date, project: Project?):List<Task>
+    suspend fun getTodaysTasks(
+        date: Date,
+        project: Project?,
+    ): List<Task>
 
     @Query("SELECT * FROM tasks WHERE plannedStartDate=:date")
-    suspend fun getAllTasks(date:Date):List<Task>
+    suspend fun getAllTasks(date: Date): List<Task>
+
+    @Query("""
+        SELECT 
+            DATE(plannedStartDate / 1000, 'unixepoch', 'localtime') as date, 
+            SUM(totalTimeSpend) as totalTimeSpent
+        FROM tasks
+        WHERE plannedStartDate IS NOT NULL 
+        AND plannedStartDate BETWEEN :startDate AND :endDate
+        GROUP BY DATE(plannedStartDate / 1000, 'unixepoch', 'localtime')
+        ORDER BY date ASC
+    """)
+    suspend fun getProgressForWeek(
+        startDate: Date,
+        endDate: Date,
+    ): List<ProjectProgress>
 }

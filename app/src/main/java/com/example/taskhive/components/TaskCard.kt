@@ -56,9 +56,8 @@ fun TaskCard(
     var isRunning by remember {
         mutableStateOf(false)
     }
-
-    val id by TimerService.id.collectAsState()
-    val timer by TimerService.timer.collectAsState()
+    val timerMap by TimerService.taskMap.collectAsState()
+    val timer = timerMap[taskId]?.time?.collectAsState(initial = 0L)
     var startTime by remember {
         mutableStateOf<Date>(Date())
     }
@@ -137,40 +136,46 @@ fun TaskCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(text = if (taskId == id) formatLogTime(timer) else formatLogTime(0L))
+                    println("")
+                    Text(
+                        text = formatLogTime(timer?.value ?: 0L) ,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 14.sp,
+                    )
                     TimerButton(
                         onPlayClicked = {
                             isRunning = true
                             startTime = Date()
-                                context.startService(
-                                    Intent(
-                                        context,
-                                        TimerService::class.java,
-                                    ).apply {
-                                        action = TimerService.ACTION_START
-                                        putExtra("taskId", taskId)
-                                    },
-                                )
+                            context.startService(
+                                Intent(
+                                    context,
+                                    TimerService::class.java,
+                                ).apply {
+                                    putExtra("taskId", taskId)
+                                },
+                            )
                         },
                         onPauseClicked = {
                             isRunning = false
                             endTime = Date()
+                            println("Duration is ${duration + (timer?.value ?: 0L)}")
+                            println("Timer is ${(timer?.value ?: 0L)}")
                             onPauseClicked(
-                                duration + timer,
-                                timer,
+                                duration + (timer?.value ?: 0L),
+                                (timer?.value ?: 0L),
                                 startTime,
                                 endTime,
                             )
-                                context.stopService(
-                                    Intent(
-                                        context,
-                                        TimerService::class.java,
-                                    ).apply {
-                                        action = TimerService.ACTION_STOP
-                                    },
-                                )
+                            context.stopService(
+                                Intent(
+                                    context,
+                                    TimerService::class.java,
+                                ).apply {
+                                    putExtra("taskId", taskId)
+                                },
+                            )
                         },
-                        taskId = taskId
+                        taskId = taskId,
                     )
                 }
             }

@@ -29,8 +29,8 @@ fun TimerButton(
     onPlayClicked: () -> Unit = {},
     taskId: Int,
 ) {
-    var isRunning by remember { mutableStateOf(false) }
-    val id by TimerService.id.collectAsState()
+    //val isRunning by TimerService().getIsTaskRunning(taskId).collectAsState()
+    var isRunning by remember {mutableStateOf(false)}
     Box(
         modifier =
             modifier

@@ -3,6 +3,7 @@ package com.example.taskhive.data
 import com.example.taskhive.data.local.AppDatabase
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
+import com.example.taskhive.domain.model.ProjectProgress
 import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.repository.TaskRepository
 import kotlinx.coroutines.Dispatchers
@@ -82,4 +83,8 @@ class TaskRepositoryImp
             withContext(Dispatchers.IO) {
                 db.taskDao().getAllTasks(date)
             }
+
+    override suspend fun getProgressForWeek(startDate: Date, endDate: Date): List<ProjectProgress> = withContext(Dispatchers.IO){
+        db.taskDao().getProgressForWeek(startDate, endDate)
     }
+}

@@ -3,11 +3,9 @@ package com.example.taskhive.presentation.home.index
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Note
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Note
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -29,9 +27,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.taskhive.presentation.analytics.AnalyticsScreen
+import com.example.taskhive.presentation.analytics.AnalyticsViewModel
 import com.example.taskhive.presentation.home.HomeScreen
 import com.example.taskhive.presentation.home.HomeViewModel
-import com.example.taskhive.presentation.notes.NoteScreen
 import com.example.taskhive.presentation.profile.ProfileScreen
 import com.example.taskhive.presentation.task.list.TaskListScreen
 import com.example.taskhive.presentation.task.list.TaskListViewModel
@@ -137,7 +136,8 @@ fun HomeIndexScreenSkeleton(
                 )
             }
             composable(HomeTabScreen.Notes.route) {
-                NoteScreen()
+                val viewModel: AnalyticsViewModel = hiltViewModel()
+                AnalyticsScreen(viewModel = viewModel)
             }
             composable(HomeTabScreen.Profile.route) {
                 ProfileScreen()

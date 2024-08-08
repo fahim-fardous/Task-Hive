@@ -7,11 +7,12 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.taskhive.presentation.analytics.AnalyticsScreen
+import com.example.taskhive.presentation.analytics.AnalyticsViewModel
 import com.example.taskhive.presentation.home.HomeScreen
 import com.example.taskhive.presentation.home.index.HomeIndexScreen
 import com.example.taskhive.presentation.log.list.LogListScreen
 import com.example.taskhive.presentation.log.list.LogListViewModel
-import com.example.taskhive.presentation.notes.NoteScreen
 import com.example.taskhive.presentation.onboard.OnBoardScreen
 import com.example.taskhive.presentation.onboard.OnBoardViewModel
 import com.example.taskhive.presentation.profile.ProfileScreen
@@ -47,7 +48,7 @@ sealed class Screen(
 
     data object ProjectAdd : Screen("project/add")
 
-    data object Notes : Screen("notes")
+    data object Analytics : Screen("analytics")
 
     data object Profile : Screen("profile")
 
@@ -152,8 +153,11 @@ fun MainNavHost(
                 viewModel = viewModel,
             )
         }
-        composable(Screen.Notes.route) {
-            NoteScreen()
+        composable(Screen.Analytics.route) {
+            val viewModel: AnalyticsViewModel = hiltViewModel()
+            AnalyticsScreen(
+                viewModel = viewModel,
+            )
         }
         composable(Screen.Profile.route) {
             ProfileScreen()
