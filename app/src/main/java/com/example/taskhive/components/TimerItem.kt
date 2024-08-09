@@ -4,5 +4,5 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 data class TimerItem(
     var time:MutableStateFlow<Long> = MutableStateFlow(0L),
-    var isRunning:Boolean = false,
+    var isRunning:MutableStateFlow<Boolean> = MutableStateFlow(false),
 )

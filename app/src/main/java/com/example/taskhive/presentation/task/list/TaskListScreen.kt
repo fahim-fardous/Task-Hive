@@ -39,6 +39,7 @@ import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.presentation.task.model.TaskUiModel
+import com.example.taskhive.service.TimerService
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.utils.MockData
 import java.time.LocalDate
