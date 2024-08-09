@@ -117,6 +117,9 @@ fun TaskListScreen(
                 viewModel.getTasks(date)
             }
         },
+        addTime = { timer ->
+            viewModel.addTime(timer)
+        }
     )
 }
 
@@ -161,6 +164,7 @@ fun TaskListScreenSkeleton(
     deleteTask: (Int, LocalDate) -> Unit = { _, _ -> },
     changeTaskStatus: (Int, TaskStatus, LocalDate) -> Unit = { _, _, _ -> },
     onDateChange: (date: LocalDate) -> Unit = {},
+    addTime: (Long) -> Unit = {},
 ) {
     var logTaskId by remember {
         mutableIntStateOf(-1)
@@ -281,6 +285,7 @@ fun TaskListScreenSkeleton(
                                 ),
                                 currentDate,
                             )
+                            addTime(timer)
                         },
                         projectName = task.project.name,
                         taskId = task.id,
