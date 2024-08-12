@@ -1,5 +1,6 @@
 package com.example.taskhive.presentation.task.list
 
+import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.taskhive.components.CalendarCard
@@ -117,9 +119,9 @@ fun TaskListScreen(
                 viewModel.getTasks(date)
             }
         },
-        addTime = { timer ->
-            viewModel.addTime(timer)
-        }
+        addTime = { timer, date ->
+            viewModel.addTime(timer, date)
+        },
     )
 }
 
@@ -164,7 +166,7 @@ fun TaskListScreenSkeleton(
     deleteTask: (Int, LocalDate) -> Unit = { _, _ -> },
     changeTaskStatus: (Int, TaskStatus, LocalDate) -> Unit = { _, _, _ -> },
     onDateChange: (date: LocalDate) -> Unit = {},
-    addTime: (Long) -> Unit = {},
+    addTime: (Long, LocalDate) -> Unit = { _, _ -> },
 ) {
     var logTaskId by remember {
         mutableIntStateOf(-1)
@@ -188,6 +190,14 @@ fun TaskListScreenSkeleton(
     var currentDate by remember {
         mutableStateOf(LocalDate.now(ZoneOffset.UTC))
     }
+
+    var selectedDate by remember {
+        mutableStateOf(LocalDate.now(ZoneOffset.UTC))
+    }
+
+    val timerState by TimerService.timerItem.collectAsState()
+
+    val context = LocalContext.current
     Scaffold(
         topBar =
             {
@@ -222,6 +232,7 @@ fun TaskListScreenSkeleton(
             CalendarCard(
                 selectedDate = { date ->
                     currentDate = date.date
+                    selectedDate = date.date
                     onDateChange(date.date)
                 },
             )
@@ -273,24 +284,32 @@ fun TaskListScreenSkeleton(
                     TaskCard(
                         onClick = { goToEditTask(task.id) },
                         onPauseClicked = { totalSpend, timer, startTime, endTime ->
-                            logTaskId = task.id
-                            totalTimeSpend = totalSpend
-                            logSpendTime = timer
-                            saveLog(
-                                Log(
-                                    taskId = task.id,
-                                    startTime = startTime,
-                                    endTime = endTime,
-                                    duration = timer,
-                                ),
-                                currentDate,
-                            )
-                            addTime(timer)
+                            if (task.id == timerState?.taskId) {
+                                context.stopService(
+                                    Intent(context, TimerService::class.java).apply {
+                                        putExtra("taskId", task.id)
+                                    },
+                                )
+                                logTaskId = task.id
+                                totalTimeSpend = totalSpend
+                                logSpendTime = timer
+                                saveLog(
+                                    Log(
+                                        taskId = task.id,
+                                        startTime = startTime,
+                                        endTime = endTime,
+                                        duration = timer,
+                                    ),
+                                    currentDate,
+                                )
+                                addTime(timer, selectedDate)
+                            }
                         },
                         projectName = task.project.name,
                         taskId = task.id,
                         taskName = task.title,
                         duration = task.totalTimeSpend,
+                        time = if (timerState?.taskId == task.id) timerState?.time else 0L,
                         onTaskDelete = {
                             showDeleteDialog = true
                             logTaskId = task.id
@@ -302,6 +321,15 @@ fun TaskListScreenSkeleton(
                         },
                         onTaskShowLogs = {
                             goToLogScreen(task.id)
+                        },
+                        onPlayClicked = {
+                            if (timerState?.taskId == null) {
+                                context.startService(
+                                    Intent(context, TimerService::class.java).apply {
+                                        putExtra("taskId", task.id)
+                                    },
+                                )
+                            }
                         },
                     )
                     Spacer(modifier = Modifier.height(16.dp))

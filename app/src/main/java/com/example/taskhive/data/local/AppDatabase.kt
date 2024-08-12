@@ -14,7 +14,11 @@ import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
 
-@Database(entities = [Task::class, Project::class, Log::class, Day::class], version = 1, exportSchema = false)
+@Database(
+    entities = [Task::class, Project::class, Log::class, Day::class],
+    version = 1,
+    exportSchema = false,
+)
 @TypeConverters(DataTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun projectDao(): ProjectDao

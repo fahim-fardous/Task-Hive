@@ -1,8 +1,8 @@
 package com.example.taskhive.components
 
-import kotlinx.coroutines.flow.MutableStateFlow
 
 data class TimerItem(
-    var time:MutableStateFlow<Long> = MutableStateFlow(0L),
-    var isRunning:MutableStateFlow<Boolean> = MutableStateFlow(false),
+    val taskId:Int = 0,
+    val time:Long = 0L,
+    val isRunning:Boolean = false,
 )

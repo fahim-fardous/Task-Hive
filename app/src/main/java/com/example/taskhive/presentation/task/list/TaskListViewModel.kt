@@ -2,6 +2,7 @@ package com.example.taskhive.presentation.task.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.taskhive.domain.model.Day
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.TaskStatus
@@ -105,10 +106,15 @@ class TaskListViewModel
             getTaskByProject(projectId, date)
         }
 
-        fun addTime(time: Long) =
+        fun addTime(time: Long, date:LocalDate) =
             viewModelScope.launch {
-                val id = dayRepository.getDay(localDateToDate(LocalDate.now()))
-                dayRepository.saveDay(id.copy(totalTimeSpend = id.totalTimeSpend + time))
+                val day = dayRepository.getDay(localDateToDate(date))
+                if(day == null){
+                    dayRepository.saveDay(Day(date = localDateToDate(date), totalTimeSpend = time))
+                }else{
+                    dayRepository.saveDay(day.copy(totalTimeSpend = day.totalTimeSpend + time))
+                }
+
             }
 
         private fun localDateToDate(date: LocalDate): Date = Date.from(date.atStartOfDay(ZoneOffset.UTC).toInstant())

@@ -1,7 +1,9 @@
 package com.example.taskhive.di
 
+import com.example.taskhive.data.DayRepositoryImp
 import com.example.taskhive.data.ProjectRepositoryImp
 import com.example.taskhive.data.TaskRepositoryImp
+import com.example.taskhive.domain.repository.DayRepository
 import com.example.taskhive.domain.repository.ProjectRepository
 import com.example.taskhive.domain.repository.TaskRepository
 import dagger.Binds
@@ -17,4 +19,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun provideProjectRepository(imp: ProjectRepositoryImp): ProjectRepository
+
+    @Binds
+    abstract fun provideDayRepository(imp: DayRepositoryImp): DayRepository
 }

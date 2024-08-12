@@ -1,4 +1,4 @@
-package com.example.taskhive.data.remote
+package com.example.taskhive.data
 
 import com.example.taskhive.data.local.AppDatabase
 import com.example.taskhive.domain.model.Day
@@ -26,5 +26,13 @@ class DayRepositoryImp
         override suspend fun getDay(date: Date): Day =
             withContext(Dispatchers.IO) {
                 db.dayDao().getDay(date)
+            }
+
+        override suspend fun getWeeklyReportByDay(
+            startDate: Date,
+            endDate: Date,
+        ): List<Day> =
+            withContext(Dispatchers.IO) {
+                db.dayDao().getWeeklyReportByDay(startDate, endDate)
             }
     }
