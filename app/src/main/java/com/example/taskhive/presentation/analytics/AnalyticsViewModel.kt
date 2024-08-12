@@ -2,9 +2,8 @@ package com.example.taskhive.presentation.analytics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.taskhive.domain.model.ProjectProgress
-import com.example.taskhive.domain.repository.ProjectRepository
-import com.example.taskhive.domain.repository.TaskRepository
+import com.example.taskhive.domain.model.Day
+import com.example.taskhive.domain.repository.DayRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,11 +19,10 @@ import javax.inject.Inject
 class AnalyticsViewModel
     @Inject
     constructor(
-        private val taskRepository: TaskRepository,
-        private val projectRepository: ProjectRepository,
+        private val dayRepository: DayRepository,
     ) : ViewModel() {
-        private val _weeklyProgress = MutableStateFlow<List<ProjectProgress>>(emptyList())
-        val weeklyProgress = _weeklyProgress.asStateFlow()
+        private val _weeklyReport = MutableStateFlow<List<Day>>(emptyList())
+        val weeklyReport = _weeklyReport.asStateFlow()
 
         private val today = LocalDate.now()
         private val startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
@@ -32,11 +30,12 @@ class AnalyticsViewModel
 
         fun getWeeklyProgress() =
             viewModelScope.launch {
-                _weeklyProgress.value =
-                    taskRepository.getProgressForWeek(
-                        localDateToDate(startOfWeek),
-                        localDateToDate(endOfWeek),
-                    )
+                val startDate = localDateToDate(startOfWeek)
+                val endDate = localDateToDate(endOfWeek)
+                val weeklyReport = dayRepository.getWeeklyReportByDay(startDate, endDate)
+                if (weeklyReport.isNotEmpty()) {
+                    _weeklyReport.value = weeklyReport
+                }
             }
 
         private fun localDateToDate(date: LocalDate): Date = Date.from(date.atStartOfDay(ZoneOffset.UTC).toInstant())

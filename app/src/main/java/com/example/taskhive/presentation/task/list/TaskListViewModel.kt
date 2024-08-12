@@ -2,10 +2,12 @@ package com.example.taskhive.presentation.task.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.taskhive.domain.model.Day
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.domain.model.toUiModel
+import com.example.taskhive.domain.repository.DayRepository
 import com.example.taskhive.domain.repository.ProjectRepository
 import com.example.taskhive.domain.repository.TaskRepository
 import com.example.taskhive.presentation.task.model.TaskUiModel
@@ -24,6 +26,7 @@ class TaskListViewModel
     constructor(
         private val taskRepository: TaskRepository,
         private val projectRepository: ProjectRepository,
+        private val dayRepository: DayRepository,
     ) : ViewModel() {
         private val _tasks = MutableStateFlow<List<TaskUiModel>>(emptyList())
         val tasks = _tasks.asStateFlow()
@@ -102,6 +105,17 @@ class TaskListViewModel
             taskRepository.saveTask(updatedTask)
             getTaskByProject(projectId, date)
         }
+
+        fun addTime(time: Long, date:LocalDate) =
+            viewModelScope.launch {
+                val day = dayRepository.getDay(localDateToDate(date))
+                if(day == null){
+                    dayRepository.saveDay(Day(date = localDateToDate(date), totalTimeSpend = time))
+                }else{
+                    dayRepository.saveDay(day.copy(totalTimeSpend = day.totalTimeSpend + time))
+                }
+
+            }
 
         private fun localDateToDate(date: LocalDate): Date = Date.from(date.atStartOfDay(ZoneOffset.UTC).toInstant())
     }

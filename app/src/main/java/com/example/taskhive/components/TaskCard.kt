@@ -1,6 +1,5 @@
 package com.example.taskhive.components
 
-import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +20,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,7 +32,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.taskhive.service.TimerService
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
 import com.example.taskhive.utils.formatLogTime
@@ -48,32 +45,22 @@ fun TaskCard(
     taskId: Int,
     taskName: String,
     duration: Long,
+    time: Long?,
     onTaskDelete: () -> Unit = {},
     onTaskChangeStatus: () -> Unit = {},
     onTaskShowLogs: () -> Unit = {},
+    onPlayClicked: () -> Unit = {},
 ) {
-    val context = LocalContext.current
-    var isRunning by remember {
-        mutableStateOf(false)
-    }
-    val timerMap by TimerService.taskMap.collectAsState()
-    val timer = timerMap[taskId]?.time?.collectAsState(initial = 0L)
-    var startTime by remember {
-        mutableStateOf<Date>(Date())
-    }
-    var endTime by remember {
-        mutableStateOf<Date>(Date())
-    }
+    var startTime by remember { mutableStateOf(Date()) }
+    var endTime by remember { mutableStateOf(Date()) }
 
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .height(140.dp)
-            .clickable {
-                onClick()
-            },
+            Modifier
+                .fillMaxWidth()
+                .height(140.dp)
+                .clickable { onClick() },
         elevation = CardDefaults.elevatedCardElevation(2.dp),
         colors =
             CardDefaults.elevatedCardColors(
@@ -82,16 +69,16 @@ fun TaskCard(
     ) {
         Row(
             modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
             verticalAlignment = Alignment.Top,
         ) {
             Column(
                 modifier =
-                Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
@@ -108,9 +95,7 @@ fun TaskCard(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Row(
-                    modifier =
-                        Modifier
-                            .padding(top = 4.dp),
+                    modifier = Modifier.padding(top = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
@@ -136,43 +121,23 @@ fun TaskCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    println("")
                     Text(
-                        text = formatLogTime(timer?.value ?: 0L) ,
+                        text = formatLogTime((time ?: 0L)),
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 14.sp,
                     )
                     TimerButton(
                         onPlayClicked = {
-                            isRunning = true
                             startTime = Date()
-                            context.startService(
-                                Intent(
-                                    context,
-                                    TimerService::class.java,
-                                ).apply {
-                                    putExtra("taskId", taskId)
-                                },
-                            )
+                            onPlayClicked()
                         },
                         onPauseClicked = {
-                            isRunning = false
                             endTime = Date()
-                            println("Duration is ${duration + (timer?.value ?: 0L)}")
-                            println("Timer is ${(timer?.value ?: 0L)}")
                             onPauseClicked(
-                                duration + (timer?.value ?: 0L),
-                                (timer?.value ?: 0L),
+                                duration + (time ?: 0L),
+                                (time ?: 0L),
                                 startTime,
                                 endTime,
-                            )
-                            context.stopService(
-                                Intent(
-                                    context,
-                                    TimerService::class.java,
-                                ).apply {
-                                    putExtra("taskId", taskId)
-                                },
                             )
                         },
                         taskId = taskId,
@@ -192,6 +157,7 @@ private fun TaskPreview() {
             taskName = "Market Research",
             duration = 0L,
             taskId = 0,
+            time = 0L,
         )
     }
 }
@@ -205,6 +171,7 @@ private fun TaskPreviewDark() {
             taskName = "Market Research",
             duration = 0L,
             taskId = 0,
+            time = 0L,
         )
     }
 }

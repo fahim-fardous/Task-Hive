@@ -54,7 +54,7 @@ fun InProgressCard(
         modifier =
             Modifier
                 .width(220.dp)
-                .height(120.dp)
+                .height(140.dp)
                 .background(
                     color = backgroundColors[projectId % backgroundColors.size],
                     shape = RoundedCornerShape(16.dp),

@@ -63,3 +63,9 @@ fun formatLogTime(milliseconds: Long): String {
         else -> String.format(Locale.getDefault(), "%ds", remainingSeconds)
     }
 }
+
+fun convertMillisecondsToHoursFloat(milliseconds: Long): Float {
+    val totalMinutes = milliseconds / (1000 * 60).toFloat()
+    val hours = totalMinutes / 60
+    return hours + 100f
+}
