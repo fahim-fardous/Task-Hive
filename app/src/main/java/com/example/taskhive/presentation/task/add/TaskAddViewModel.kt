@@ -32,7 +32,12 @@ class TaskAddViewModel
             plannedEndTime: String,
             plannedDate: String,
         ): Boolean {
-            if (name.isBlank() || description.isBlank() || plannedStartTime.isBlank() || plannedEndTime.isBlank()|| plannedDate.isBlank()) {
+            if (name.isBlank() ||
+                description.isBlank() ||
+                plannedStartTime.isBlank() ||
+                plannedEndTime.isBlank() ||
+                plannedDate.isBlank()
+            ) {
                 _showMessage.value = "Fill all the fields"
                 return false
             }
@@ -53,9 +58,13 @@ class TaskAddViewModel
                     description,
                     plannedStartTime.getReadableTime(),
                     plannedEndTime.getReadableTime(),
-                startDate.getReadableDate()
+                    startDate.getReadableDate(),
                 )
             ) {
+                return@launch
+            }
+            if(plannedStartTime.after(plannedEndTime)){
+                _showMessage.value = "Start time cannot be after end time"
                 return@launch
             }
             val project = projectRepository.getProjectById(projectId)
@@ -73,4 +82,9 @@ class TaskAddViewModel
             )
             _showMessage.value = "Task saved"
         }
+
+        fun updateMessage() =
+            viewModelScope.launch {
+                _showMessage.value = null
+            }
     }

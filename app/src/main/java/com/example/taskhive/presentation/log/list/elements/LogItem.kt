@@ -20,7 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.taskhive.components.TaskGroupIcon
-import com.example.taskhive.utils.formatLogTime
+import com.example.taskhive.utils.formatTime
 import com.example.taskhive.utils.getReadableTime
 import java.util.Date
 
@@ -48,7 +48,7 @@ fun LogItem(
         }
         Column(verticalArrangement = Arrangement.Bottom) {
             Text(
-                text = formatLogTime(duration),
+                text = formatTime(duration),
                 color = Color.LightGray,
                 fontSize = 12.sp,
                 maxLines = 1,

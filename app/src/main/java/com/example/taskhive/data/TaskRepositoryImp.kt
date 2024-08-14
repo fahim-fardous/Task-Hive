@@ -87,4 +87,8 @@ class TaskRepositoryImp
     override suspend fun getProgressForWeek(startDate: Date, endDate: Date): List<ProjectProgress> = withContext(Dispatchers.IO){
         db.taskDao().getProgressForWeek(startDate, endDate)
     }
+
+    override suspend fun getWeeklyTask(startDate: Date, endDate: Date): List<Task> = withContext(Dispatchers.IO){
+        db.taskDao().getWeeklyTask(startDate, endDate)
+    }
 }

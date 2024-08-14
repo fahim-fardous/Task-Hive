@@ -46,6 +46,7 @@ class TaskListViewModel
             if (projectId == null) {
                 _tasks.value = taskRepository.getAllTasks(localDateToDate(date)).map { it.toUiModel() }
             } else {
+                println("Hi I am coming here to get tasks")
                 val project = projectRepository.getProjectById(projectId)
                 _tasks.value =
                     taskRepository

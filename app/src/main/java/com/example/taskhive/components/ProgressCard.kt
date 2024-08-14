@@ -30,13 +30,14 @@ import com.example.taskhive.ui.theme.appColor
 fun ProgressCard(
     onClick: () -> Unit,
     progress: Float,
+    textColor: Color = MaterialTheme.colorScheme.onBackground
 ) {
     Box(
         modifier =
-            Modifier
-                .fillMaxWidth()
-                .background(color = Color(0xFF5F33E0), shape = RoundedCornerShape(16.dp))
-                .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 32.dp),
+        Modifier
+            .fillMaxWidth()
+            .background(color = Color(0xFF5F33E0), shape = RoundedCornerShape(16.dp))
+            .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 32.dp),
     ) {
         Row {
             Column {
@@ -47,12 +48,13 @@ fun ProgressCard(
                 )
                 Box(
                     modifier =
-                        Modifier
-                            .padding(top = 24.dp)
-                            .background(
-                                color = Color(0xFFEDE8FE),
-                                shape = RoundedCornerShape(4.dp),
-                            ).padding(horizontal = 8.dp, vertical = 6.dp),
+                    Modifier
+                        .padding(top = 24.dp)
+                        .background(
+                            color = Color(0xFFEDE8FE),
+                            shape = RoundedCornerShape(4.dp),
+                        )
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
                 ) {
                     Text(text = "View Task", color = appColor, fontWeight = FontWeight.Bold)
                 }
@@ -61,6 +63,7 @@ fun ProgressCard(
                 progress = 0.85f,
                 color = Color.White,
                 strokeWidth = 8f,
+                textColor = textColor
             )
             Box(
                 modifier = Modifier.fillMaxWidth(),
@@ -71,9 +74,9 @@ fun ProgressCard(
                         Icons.Filled.MoreHoriz,
                         contentDescription = "icon",
                         modifier =
-                            Modifier
-                                .size(30.dp)
-                                .padding(2.dp),
+                        Modifier
+                            .size(30.dp)
+                            .padding(2.dp),
                         tint = Color.White,
                     )
                 }
@@ -82,12 +85,9 @@ fun ProgressCard(
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 private fun ProgressCardPreview() {
-    Scaffold { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
-            ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f)
-        }
-    }
+    ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f)
 }
+

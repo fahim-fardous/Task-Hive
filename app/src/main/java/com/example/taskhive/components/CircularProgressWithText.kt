@@ -27,7 +27,7 @@ fun CircularProgressWithText(
     size:Dp = 100.dp,
     textSize:TextUnit = 18.sp,
     trackColor:Color = Color(0xFF8664FE),
-    textColor:Color = Color.White,
+    textColor:Color,
     fontWeight: FontWeight = FontWeight.Bold
 ) {
     Box(
@@ -48,7 +48,7 @@ fun CircularProgressWithText(
         Text(
             text = "${(progress * 100).toInt()}%",
             fontSize = textSize,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = textColor,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(start = 16.dp),
         )

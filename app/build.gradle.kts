@@ -81,6 +81,8 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     // Splash Screen
     implementation(libs.androidx.core.splashscreen)
+    // Lazy Table
+    implementation(libs.lazytable)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

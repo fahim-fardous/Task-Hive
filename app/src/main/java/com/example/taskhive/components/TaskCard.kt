@@ -26,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
-import com.example.taskhive.utils.formatLogTime
+import com.example.taskhive.utils.formatTime
 import java.util.Date
 
 @Composable
@@ -104,7 +103,7 @@ fun TaskCard(
                         tint = appColor,
                     )
                     Spacer(modifier = Modifier.width(2.dp))
-                    Text(text = formatLogTime(duration), color = appColor, fontSize = 14.sp)
+                    Text(text = formatTime(duration), color = appColor, fontSize = 14.sp)
                 }
             }
             Column(
@@ -122,7 +121,7 @@ fun TaskCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        text = formatLogTime((time ?: 0L)),
+                        text = formatTime((time ?: 0L)),
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 14.sp,
                     )

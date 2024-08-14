@@ -168,7 +168,7 @@ fun HomeScreenSkeleton(
                     .fillMaxSize()
                     .padding(16.dp),
         ) {
-            ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f)
+            ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f, textColor = Color.White)
             if (inProgressTasks.isNotEmpty()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(

@@ -1,6 +1,8 @@
 package com.example.taskhive.utils
 
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.ZoneOffset
 import java.util.Date
 import java.util.Locale
 
@@ -37,7 +39,7 @@ fun String?.toDate(): Date? {
     }
 }
 
-fun formatLogTime(milliseconds: Long): String {
+fun formatTime(milliseconds: Long): String {
     val totalSeconds = milliseconds / 1000
     val hours = totalSeconds / 3600
     val remainingMinutes = (totalSeconds % 3600) / 60
@@ -69,3 +71,5 @@ fun convertMillisecondsToHoursFloat(milliseconds: Long): Float {
     val hours = totalMinutes / 60
     return hours + 100f
 }
+
+fun localDateToDate(date: LocalDate): Date = Date.from(date.atStartOfDay(ZoneOffset.UTC).toInstant())

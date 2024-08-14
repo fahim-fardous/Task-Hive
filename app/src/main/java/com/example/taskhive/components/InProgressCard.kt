@@ -110,6 +110,7 @@ fun InProgressCard(
                 progress = { progress },
                 color =
                     progressIndicatorColors[projectId % progressIndicatorColors.size],
+                trackColor = Color.White
             )
         }
     }

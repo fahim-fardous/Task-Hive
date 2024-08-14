@@ -31,6 +31,7 @@ fun TaskGroup(
     selectedIcon:Int = 0,
     selectedIconColor:Int = 0,
     selectedBorderColor:Int = 0,
+    textColor:Color = MaterialTheme.colorScheme.onBackground,
     id: Int = 0,
 ) {
     Card(
@@ -74,7 +75,7 @@ fun TaskGroup(
                 size = 70.dp,
                 textSize = 12.sp,
                 trackColor = Color.LightGray,
-                textColor = Color.Black,
+                textColor = textColor,
                 fontWeight = FontWeight.Normal,
             )
         }

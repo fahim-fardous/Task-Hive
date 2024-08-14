@@ -33,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.taskhive.components.CalendarCard
 import com.example.taskhive.components.DeleteAlertDialog
+import com.example.taskhive.components.NoTaskCard
 import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.TaskCard
 import com.example.taskhive.components.TaskStatusDialog
@@ -56,6 +57,7 @@ fun TaskListScreen(
     projectId: Int? = null,
     viewModel: TaskListViewModel,
 ) {
+    val timerState by TimerService.timerItem.collectAsState()
     LaunchedEffect(Unit) {
         if (projectId != null) {
             viewModel.getTasks(LocalDate.now(ZoneOffset.UTC), projectId)
@@ -122,35 +124,15 @@ fun TaskListScreen(
         addTime = { timer, date ->
             viewModel.addTime(timer, date)
         },
+        getTasks = { date ->
+            println("Getting tasks for date: $date")
+            if (projectId != null) {
+                viewModel.getTasks(date, projectId)
+            } else {
+                viewModel.getTasks(date)
+            }
+        },
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun TaskListScreenSkeletonPreview() {
-    TaskHiveTheme {
-        val tasks = mutableListOf<TaskUiModel>()
-        repeat(5) {
-            tasks.add(MockData.task)
-        }
-        TaskListScreenSkeleton(
-            tasks = tasks,
-        )
-    }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-private fun TaskListScreenSkeletonPreviewDark() {
-    TaskHiveTheme {
-        val tasks = mutableListOf<TaskUiModel>()
-        repeat(5) {
-            tasks.add(MockData.task)
-        }
-        TaskListScreenSkeleton(
-            tasks = tasks,
-        )
-    }
 }
 
 @Composable
@@ -167,6 +149,7 @@ fun TaskListScreenSkeleton(
     changeTaskStatus: (Int, TaskStatus, LocalDate) -> Unit = { _, _, _ -> },
     onDateChange: (date: LocalDate) -> Unit = {},
     addTime: (Long, LocalDate) -> Unit = { _, _ -> },
+    getTasks: (LocalDate) -> Unit = { _ -> },
 ) {
     var logTaskId by remember {
         mutableIntStateOf(-1)
@@ -196,7 +179,9 @@ fun TaskListScreenSkeleton(
     }
 
     val timerState by TimerService.timerItem.collectAsState()
-
+    LaunchedEffect(timerState?.isRunning) {
+        getTasks(selectedDate)
+    }
     val context = LocalContext.current
     Scaffold(
         topBar =
@@ -277,62 +262,73 @@ fun TaskListScreenSkeleton(
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn {
-                items(
-                    items = filteredTasks,
-                ) { task ->
-                    TaskCard(
-                        onClick = { goToEditTask(task.id) },
-                        onPauseClicked = { totalSpend, timer, startTime, endTime ->
-                            if (task.id == timerState?.taskId) {
-                                context.stopService(
-                                    Intent(context, TimerService::class.java).apply {
-                                        putExtra("taskId", task.id)
-                                    },
-                                )
+            if (filteredTasks.isEmpty()) {
+                NoTaskCard(selectedStatus = selectedTaskStatus)
+            } else {
+                LazyColumn {
+                    if (filteredTasks.isEmpty()) {
+                        item {
+                            NoTaskCard(selectedStatus = selectedTaskStatus)
+                        }
+                    }
+                    items(
+                        items = filteredTasks,
+                    ) { task ->
+                        TaskCard(
+                            onClick = { goToEditTask(task.id) },
+                            onPauseClicked = { totalSpend, timer, startTime, endTime ->
+                                if (task.id == timerState?.taskId) {
+                                    context.stopService(
+                                        Intent(context, TimerService::class.java).apply {
+                                            putExtra("taskId", task.id)
+                                        },
+                                    )
+                                    logTaskId = task.id
+                                    totalTimeSpend = totalSpend
+                                    logSpendTime = timer
+                                    saveLog(
+                                        Log(
+                                            taskId = task.id,
+                                            startTime = startTime,
+                                            endTime = endTime,
+                                            duration = timer,
+                                        ),
+                                        currentDate,
+                                    )
+                                    addTime(timer, selectedDate)
+                                    getTasks(selectedDate)
+                                }
+                            },
+                            projectName = task.project.name,
+                            taskId = task.id,
+                            taskName = task.title,
+                            duration = task.totalTimeSpend,
+                            time = if (timerState?.taskId == task.id) timerState?.time else 0L,
+                            onTaskDelete = {
+                                showDeleteDialog = true
                                 logTaskId = task.id
-                                totalTimeSpend = totalSpend
-                                logSpendTime = timer
-                                saveLog(
-                                    Log(
-                                        taskId = task.id,
-                                        startTime = startTime,
-                                        endTime = endTime,
-                                        duration = timer,
-                                    ),
-                                    currentDate,
-                                )
-                                addTime(timer, selectedDate)
-                            }
-                        },
-                        projectName = task.project.name,
-                        taskId = task.id,
-                        taskName = task.title,
-                        duration = task.totalTimeSpend,
-                        time = if (timerState?.taskId == task.id) timerState?.time else 0L,
-                        onTaskDelete = {
-                            showDeleteDialog = true
-                            logTaskId = task.id
-                        },
-                        onTaskChangeStatus = {
-                            showTaskChangeDialog = true
-                            currentStatus = task.taskStatus
-                            logTaskId = task.id
-                        },
-                        onTaskShowLogs = {
-                            goToLogScreen(task.id)
-                        },
-                        onPlayClicked = {
-                            if (timerState?.taskId == null) {
-                                context.startService(
-                                    Intent(context, TimerService::class.java).apply {
-                                        putExtra("taskId", task.id)
-                                    },
-                                )
-                            }
-                        },
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
+                            },
+                            onTaskChangeStatus = {
+                                showTaskChangeDialog = true
+                                currentStatus = task.taskStatus
+                                logTaskId = task.id
+                            },
+                            onTaskShowLogs = {
+                                goToLogScreen(task.id)
+                            },
+                            onPlayClicked = {
+                                if (timerState?.taskId == null) {
+                                    context.startService(
+                                        Intent(context, TimerService::class.java).apply {
+                                            putExtra("taskId", task.id)
+                                            putExtra("taskName", task.title)
+                                        },
+                                    )
+                                }
+                            },
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
             }
         }
@@ -355,5 +351,56 @@ fun TaskListScreenSkeleton(
                 },
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TaskListScreenSkeletonPreview() {
+    TaskHiveTheme {
+        val tasks = mutableListOf<TaskUiModel>()
+        repeat(5) {
+            tasks.add(MockData.task)
+        }
+        TaskListScreenSkeleton(
+            tasks = tasks,
+        )
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun TaskListScreenSkeletonPreviewDark() {
+    TaskHiveTheme {
+        val tasks = mutableListOf<TaskUiModel>()
+        repeat(5) {
+            tasks.add(MockData.task)
+        }
+        TaskListScreenSkeleton(
+            tasks = tasks,
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TaskListScreenSkeletonWithoutTaskPreview() {
+    TaskHiveTheme {
+        val tasks = mutableListOf<TaskUiModel>()
+
+        TaskListScreenSkeleton(
+            tasks = tasks,
+        )
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun TaskListScreenSkeletonWithoutTaskPreviewDark() {
+    TaskHiveTheme {
+        val tasks = mutableListOf<TaskUiModel>()
+        TaskListScreenSkeleton(
+            tasks = tasks,
+        )
     }
 }

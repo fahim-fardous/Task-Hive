@@ -3,6 +3,7 @@ package com.example.taskhive.presentation.task.add
 import android.content.res.Configuration
 import android.icu.util.Calendar
 import android.icu.util.TimeZone
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,6 +40,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -59,9 +61,12 @@ fun TaskAddScreen(
     projectId: Int,
     viewModel: TaskAddViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
     val showMessage by viewModel.showMessage.collectAsState()
     LaunchedEffect(showMessage) {
         if (showMessage != null) {
+            Toast.makeText(context, showMessage, Toast.LENGTH_SHORT).show()
+            viewModel.updateMessage()
             if (showMessage == "Task saved") {
                 goBack()
             }

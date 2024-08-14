@@ -31,7 +31,4 @@ class AppModule {
     @Singleton
     fun providePreferenceHelper(preferences: SharedPreferences): PreferenceHelper = PreferenceHelper(preferences)
 
-    @Provides
-    @Singleton
-    fun provideTimerService(): TimerService = TimerService()
 }

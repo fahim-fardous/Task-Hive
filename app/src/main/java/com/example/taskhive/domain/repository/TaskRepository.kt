@@ -37,4 +37,6 @@ interface TaskRepository {
 
     suspend fun getProgressForWeek(startDate: Date, endDate: Date): List<ProjectProgress>
 
+    suspend fun getWeeklyTask(startDate: Date, endDate: Date): List<Task>
+
 }
