@@ -21,6 +21,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.taskhive.utils.SelectableProperties.backgroundColors
+import com.example.taskhive.utils.SelectableProperties.colors
+import com.example.taskhive.utils.SelectableProperties.icons
 
 @Composable
 fun TaskGroup(
@@ -70,11 +73,11 @@ fun TaskGroup(
             }
             CircularProgressWithText(
                 progress = progress,
-                color = if (id % 2 == 0) Color(0xFFF378B7) else Color(0xFF9160F3),
+                color = colors[selectedIconColor],
                 strokeWidth = 8f,
                 size = 70.dp,
                 textSize = 12.sp,
-                trackColor = Color.LightGray,
+                trackColor = backgroundColors[selectedBorderColor],
                 textColor = textColor,
                 fontWeight = FontWeight.Normal,
             )

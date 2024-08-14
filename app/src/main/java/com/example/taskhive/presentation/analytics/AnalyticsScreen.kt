@@ -1,37 +1,36 @@
 package com.example.taskhive.presentation.analytics
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.taskhive.components.HeaderItem
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.utils.MockData
+import com.example.taskhive.utils.formatTime
 import com.example.taskhive.utils.getReadableDate
 import com.example.taskhive.utils.getReadableTime
-import eu.wewox.lazytable.LazyTable
-import eu.wewox.lazytable.LazyTableItem
-import eu.wewox.lazytable.lazyTableDimensions
-import eu.wewox.lazytable.lazyTablePinConfiguration
+import java.util.Date
 
 @Composable
 fun AnalyticsScreen(viewModel: AnalyticsViewModel = hiltViewModel()) {
@@ -60,103 +59,71 @@ fun AnalyticsScreenSkeleton(tasks: List<Task> = emptyList()) {
                     .fillMaxSize()
                     .padding(16.dp),
         ) {
-            LazyTable(
-                pinConfiguration =
-                    lazyTablePinConfiguration(
-                        columns = 7, // Number of columns in the table
-                        rows = tasks.size,
-                        footer = true,
-                    ),
-                dimensions = lazyTableDimensions(148.dp, 32.dp),
-                modifier = Modifier.fillMaxSize(),
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .horizontalScroll(rememberScrollState()),
             ) {
-                // Items for each task
-                items(
-                    count = tasks.size * 7, // Adjusted for 7 columns
-                    layoutInfo = {
-                        LazyTableItem(
-                            column = it % 7,
-                            row = it / 7 + 1,
-                        )
-                    },
-                ) {
-                    Cell(task = tasks[it / 7], column = it % 7)
-                }
-
-                // Header items
-                items(
-                    count = 7, // Adjusted for 7 columns
-                    layoutInfo = {
-                        LazyTableItem(
-                            column = it % 7,
-                            row = 0,
-                        )
-                    },
-                ) {
-                    HeaderCell(column = it)
+                LazyColumn {
+                    item {
+                        Row {
+                            HeaderItem(width = 100.dp, title = "Project", isCenter = true)
+                            HeaderItem(width = 300.dp, title = "Task", isCenter = true)
+                            HeaderItem(width = 100.dp, title = "Tag", isCenter = true)
+                            HeaderItem(width = 110.dp, title = "Start Date", isCenter = true)
+                            HeaderItem(width = 100.dp, title = "Start Time", isCenter = true)
+                            HeaderItem(width = 100.dp, title = "End Time", isCenter = true)
+                            HeaderItem(width = 100.dp, title = "Duration", isCenter = true)
+                        }
+                    }
+                    items(tasks) { task ->
+                        Row {
+                            HeaderItem(width = 100.dp, title = task.project.name)
+                            HeaderItem(width = 300.dp, title = task.title)
+                            HeaderItem(width = 100.dp, title = "Task")
+                            HeaderItem(
+                                width = 110.dp,
+                                title = task.plannedStartDate.getReadableDate(),
+                            )
+                            HeaderItem(
+                                width = 100.dp,
+                                title = task.plannedStartTime.getReadableTime(),
+                            )
+                            HeaderItem(
+                                width = 100.dp,
+                                title = task.plannedEndTime.getReadableTime(),
+                            )
+                            HeaderItem(width = 100.dp, title = formatTime(task.totalTimeSpend))
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-@Suppress("ComplexMethod")
-@Composable
-private fun Cell(
-    task: Task,
-    column: Int,
-) {
-    val content =
-        when (column) {
-            0 -> task.project.name
-            1 -> task.title // Assuming task has a 'tag' property with a 'name'
-            2 -> "Tag"
-            3 -> task.plannedStartDate.getReadableDate()
-            4 -> task.actualStartTime.getReadableTime()
-            5 -> task.actualEndTime.getReadableTime()
-            6 -> "1H 2M" // Assuming 'duration' is a property of task
-            else -> error("Unknown column index: $column")
-        }
-
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier =
-            Modifier
-                .background(MaterialTheme.colorScheme.surface)
-                .border(Dp.Hairline, MaterialTheme.colorScheme.onSurface),
-    ) {
-        if (content.isNotEmpty()) {
-            Text(text = content)
-        }
-    }
-}
-
-@Composable
-private fun HeaderCell(column: Int) {
-    val content =
-        when (column) {
-            0 -> "Project"
-            1 -> "Tag"
-            2 -> "Start Date"
-            3 -> "Start Time"
-            4 -> "End Time"
-            5 -> "Duration"
-            else -> error("Unknown column index: $column")
-        }
-
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier =
-            Modifier
-                .background(MaterialTheme.colorScheme.primary)
-                .border(Dp.Hairline, MaterialTheme.colorScheme.onPrimary),
-    ) {
-        Text(text = content)
-    }
-}
-
 @Preview
 @Composable
 private fun AnalyticsScreenSkeletonPreview() {
-    AnalyticsScreenSkeleton()
+    val tasks = mutableListOf<Task>()
+    for (i in 1..10) {
+        tasks.add(
+            Task(
+                id = 1,
+                title = "Sample Task",
+                description = "This is a sample task description",
+                plannedStartTime = Date(),
+                plannedEndTime = Date(),
+                actualStartTime = Date(),
+                actualEndTime = Date(),
+                totalTimeSpend = 3600L,
+                project = MockData.project,
+            ),
+        )
+    }
+
+    AnalyticsScreenSkeleton(
+        tasks = tasks
+    )
 }
