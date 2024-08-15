@@ -8,9 +8,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import java.time.LocalDate
 
 @Composable
-fun CalendarCard(selectedDate: (CalendarUiModel.Date) -> Unit = {}) {
+fun CalendarCard(selectedDate: (CalendarUiModel.Date) -> Unit = {}, currentDate:LocalDate) {
     val dataSource = CalendarDataSource()
     var calendarUiModel by remember {
         mutableStateOf(dataSource.getData(lastSelectedDate = dataSource.today))

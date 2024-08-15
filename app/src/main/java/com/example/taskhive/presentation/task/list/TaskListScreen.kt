@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -57,7 +58,9 @@ fun TaskListScreen(
     projectId: Int? = null,
     viewModel: TaskListViewModel,
 ) {
-    val timerState by TimerService.timerItem.collectAsState()
+    LaunchedEffect(Unit) {
+        viewModel.setDate()
+    }
     LaunchedEffect(Unit) {
         if (projectId != null) {
             viewModel.getTasks(LocalDate.now(ZoneOffset.UTC), projectId)
@@ -125,7 +128,6 @@ fun TaskListScreen(
             viewModel.addTime(timer, date)
         },
         getTasks = { date ->
-            println("Getting tasks for date: $date")
             if (projectId != null) {
                 viewModel.getTasks(date, projectId)
             } else {
@@ -179,8 +181,13 @@ fun TaskListScreenSkeleton(
     }
 
     val timerState by TimerService.timerItem.collectAsState()
-    LaunchedEffect(timerState?.isRunning) {
-        getTasks(selectedDate)
+    LaunchedEffect(key1 = timerState) {
+        snapshotFlow { timerState?.isRunning }
+            .collect { isRunning ->
+                if (isRunning == null) {
+                    getTasks(selectedDate)
+                }
+            }
     }
     val context = LocalContext.current
     Scaffold(
@@ -216,10 +223,12 @@ fun TaskListScreenSkeleton(
         ) {
             CalendarCard(
                 selectedDate = { date ->
+                    selectedTaskStatus = 0
                     currentDate = date.date
                     selectedDate = date.date
                     onDateChange(date.date)
                 },
+                currentDate = currentDate
             )
             Spacer(modifier = Modifier.height(16.dp))
             val filteredTasks =
@@ -346,6 +355,9 @@ fun TaskListScreenSkeleton(
             DeleteAlertDialog(
                 title = "Are you sure you want to delete this task?",
                 onDeleteClicked = {
+                    context.stopService(
+                        Intent(context, TimerService::class.java),
+                    )
                     showDeleteDialog = false
                     deleteTask(logTaskId, currentDate)
                 },

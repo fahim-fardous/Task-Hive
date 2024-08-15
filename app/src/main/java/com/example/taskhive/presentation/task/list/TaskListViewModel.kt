@@ -46,12 +46,13 @@ class TaskListViewModel
             if (projectId == null) {
                 _tasks.value = taskRepository.getAllTasks(localDateToDate(date)).map { it.toUiModel() }
             } else {
-                println("Hi I am coming here to get tasks")
                 val project = projectRepository.getProjectById(projectId)
-                _tasks.value =
+                val tasks =
                     taskRepository
                         .getTaskByProject(localDateToDate(date), project)
                         .map { it.toUiModel() }
+
+                _tasks.value = tasks
             }
         }
 
@@ -107,16 +108,17 @@ class TaskListViewModel
             getTaskByProject(projectId, date)
         }
 
-        fun addTime(time: Long, date:LocalDate) =
-            viewModelScope.launch {
-                val day = dayRepository.getDay(localDateToDate(date))
-                if(day == null){
-                    dayRepository.saveDay(Day(date = localDateToDate(date), totalTimeSpend = time))
-                }else{
-                    dayRepository.saveDay(day.copy(totalTimeSpend = day.totalTimeSpend + time))
-                }
-
+        fun addTime(
+            time: Long,
+            date: LocalDate,
+        ) = viewModelScope.launch {
+            val day = dayRepository.getDay(localDateToDate(date))
+            if (day == null) {
+                dayRepository.saveDay(Day(date = localDateToDate(date), totalTimeSpend = time))
+            } else {
+                dayRepository.saveDay(day.copy(totalTimeSpend = day.totalTimeSpend + time))
             }
+        }
 
         private fun localDateToDate(date: LocalDate): Date = Date.from(date.atStartOfDay(ZoneOffset.UTC).toInstant())
     }
