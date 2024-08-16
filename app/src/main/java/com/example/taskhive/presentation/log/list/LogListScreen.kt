@@ -348,7 +348,7 @@ fun LogListScreenSkeleton(
                     showStartDatePickerDialog = false
 
                     datePickerState.selectedDateMillis?.let {
-                        endDate = Date(it)
+                        startDate = Date(it)
                     }
                 },
                 enabled = datePickerConfirmButtonEnabled.value,
