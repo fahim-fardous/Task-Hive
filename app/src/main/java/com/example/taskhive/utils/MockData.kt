@@ -11,6 +11,7 @@ import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.domain.model.toUiModel
+import java.time.LocalDate
 import java.util.Date
 
 object MockData {
@@ -121,6 +122,8 @@ object MockData {
         startTime = Date(),
         endTime = Date(),
         duration = 3600L,
-        taskId = 1
+        taskId = 1,
+        startDate = localDateToDate(LocalDate.now()),
+        endDate = localDateToDate(LocalDate.now())
     )
 }

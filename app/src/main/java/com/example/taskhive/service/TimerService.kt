@@ -1,5 +1,6 @@
 package com.example.taskhive.service
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -14,6 +15,7 @@ import com.example.taskhive.R
 import com.example.taskhive.components.TimerItem
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.repository.TaskRepository
+import com.example.taskhive.utils.localDateToDate
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +24,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.Date
+import java.time.LocalDate
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -61,6 +63,7 @@ class TimerService : Service() {
                 val currentTimer = _timerItem.value
 
                 if (currentTimer?.isRunning == true) {
+                    println("Timer already running")
                 } else {
                     startTimer(taskId, taskName)
                 }
@@ -73,6 +76,7 @@ class TimerService : Service() {
         taskId: Int,
         taskName: String,
     ) {
+        println("coming here to start")
         val stopIntent =
             Intent(this, TimerService::class.java).apply {
                 action = STOP_TIMER_ACTION
@@ -80,9 +84,15 @@ class TimerService : Service() {
         val stopPendingIntent =
             PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE)
 
-        _timerItem.value = TimerItem(taskId = taskId, isRunning = true, startTime = Date())
-
+        _timerItem.value =
+            TimerItem(
+                taskId = taskId,
+                isRunning = true,
+                startTime = localDateToDate(LocalDate.now()),
+            )
         updateNotification(taskName, stopPendingIntent)
+        startForeground(NOTIFICATION_ID,updateNotification(taskName, stopPendingIntent))
+
 
         coroutineScope.launch {
             while (_timerItem.value?.isRunning == true) {
@@ -101,8 +111,10 @@ class TimerService : Service() {
                     Log(
                         duration = it.time,
                         startTime = it.startTime,
-                        endTime = Date(),
+                        endTime = localDateToDate(LocalDate.now()),
                         taskId = it.taskId,
+                        startDate = it.startTime,
+                        endDate = localDateToDate(LocalDate.now()),
                     ),
                 )
                 taskRepository.saveTask(task.copy(totalTimeSpend = task.totalTimeSpend + it.time))
@@ -113,9 +125,10 @@ class TimerService : Service() {
                 stopSelf()
             }
         }
-        _timerItem.value = null
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        NotificationManagerCompat.from(this@TimerService).cancel(NOTIFICATION_ID)
+            println("Timer stopped by clicking button")
+            _timerItem.value = null
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            NotificationManagerCompat.from(this@TimerService).cancel(NOTIFICATION_ID)
     }
 
     override fun onDestroy() {
@@ -143,7 +156,7 @@ class TimerService : Service() {
     private fun updateNotification(
         taskName: String,
         stopPendingIntent: PendingIntent,
-    ) {
+    ): Notification {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent =
             PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
@@ -162,12 +175,6 @@ class TimerService : Service() {
 
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(NOTIFICATION_ID, notification)
-    }
-
-    private fun formatTime(millis: Long): String {
-        val hours = millis / 3600000
-        val minutes = (millis % 3600000) / 60000
-        val seconds = (millis % 60000) / 1000
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds)
+        return notification
     }
 }

@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
@@ -30,6 +31,7 @@
         </provider>
         <activity
             android:name=".MainActivity"
+            android:launchMode="singleInstance"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.TaskHive.SplashScreen">
@@ -40,7 +42,8 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".service.TimerService" />
+            android:name=".service.TimerService"
+            android:foregroundServiceType="specialUse"/>
     </application>
 
 </manifest>
