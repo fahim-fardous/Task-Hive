@@ -2,6 +2,7 @@ package com.example.taskhive.presentation.task.list
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -33,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.taskhive.components.CalendarCard
+import com.example.taskhive.components.CalendarPreferences
 import com.example.taskhive.components.DeleteAlertDialog
 import com.example.taskhive.components.NoTaskCard
 import com.example.taskhive.components.ProgressType
@@ -59,11 +61,20 @@ fun TaskListScreen(
     projectId: Int? = null,
     viewModel: TaskListViewModel,
 ) {
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         if (projectId != null) {
-            viewModel.getTasks(LocalDate.now(ZoneOffset.UTC), projectId)
+            if (CalendarPreferences(context).getSelectedDate() == null) {
+                viewModel.getTasks(LocalDate.now(ZoneOffset.UTC), projectId)
+            } else {
+                viewModel.getTasks(CalendarPreferences(context).getSelectedDate()!!, projectId)
+            }
         } else {
-            viewModel.getTasks(LocalDate.now(ZoneOffset.UTC))
+            if (CalendarPreferences(context).getSelectedDate() == null) {
+                viewModel.getTasks(LocalDate.now(ZoneOffset.UTC))
+            } else {
+                viewModel.getTasks(CalendarPreferences(context).getSelectedDate()!!)
+            }
         }
     }
     LaunchedEffect(projectId) {
@@ -151,6 +162,7 @@ fun TaskListScreenSkeleton(
     addTime: (Long, LocalDate) -> Unit = { _, _ -> },
     getTasks: (LocalDate) -> Unit = { _ -> },
 ) {
+    val context = LocalContext.current
     var logTaskId by remember {
         mutableIntStateOf(-1)
     }
@@ -173,9 +185,10 @@ fun TaskListScreenSkeleton(
     var currentDate by remember {
         mutableStateOf(LocalDate.now(ZoneOffset.UTC))
     }
+    val calendarPreferences = remember { CalendarPreferences(context) }
 
     var selectedDate by remember {
-        mutableStateOf(LocalDate.now(ZoneOffset.UTC))
+        mutableStateOf(calendarPreferences.getSelectedDate() ?: LocalDate.now(ZoneOffset.UTC))
     }
 
     var logStartDate by remember { mutableStateOf(localDateToDate(LocalDate.now())) }
@@ -190,7 +203,6 @@ fun TaskListScreenSkeleton(
                 }
             }
     }
-    val context = LocalContext.current
     Scaffold(
         topBar =
             {
@@ -229,7 +241,7 @@ fun TaskListScreenSkeleton(
                     selectedDate = date.date
                     onDateChange(date.date)
                 },
-                currentDate = currentDate,
+                calendarPreferences = calendarPreferences,
             )
             Spacer(modifier = Modifier.height(16.dp))
             val filteredTasks =
@@ -354,6 +366,9 @@ fun TaskListScreenSkeleton(
                                         },
                                     )
                                 }
+                                else{
+                                    Toast.makeText(context, "This task is for future", Toast.LENGTH_SHORT).show()
+                                }
                             },
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -366,9 +381,12 @@ fun TaskListScreenSkeleton(
                 currentStatus = currentStatus,
                 onDismiss = { showTaskChangeDialog = false },
                 onSave = { status ->
-                    if(timerState?.taskId != logTaskId) {
+                    if (timerState?.taskId != logTaskId) {
                         showTaskChangeDialog = false
                         changeTaskStatus(logTaskId, status, currentDate)
+                    }
+                    else{
+                        Toast.makeText(context, "Task is running", Toast.LENGTH_SHORT).show()
                     }
                 },
             )
@@ -380,9 +398,12 @@ fun TaskListScreenSkeleton(
                 },
                 title = "Are you sure you want to delete this task?",
                 onDeleteClicked = {
-                    if(timerState?.taskId != logTaskId){
+                    if (timerState?.taskId != logTaskId) {
                         showDeleteDialog = false
                         deleteTask(logTaskId, currentDate)
+                    }
+                    else{
+                        Toast.makeText(context, "Task is running", Toast.LENGTH_SHORT).show()
                     }
                 },
             )

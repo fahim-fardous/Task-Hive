@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.taskhive.utils.SelectableProperties.backgroundColors
 import com.example.taskhive.utils.SelectableProperties.colors
-import com.example.taskhive.utils.SelectableProperties.icons
 
 @Composable
 fun TaskGroup(
@@ -31,19 +30,20 @@ fun TaskGroup(
     project: String,
     numberOfTask: Int,
     progress: Float,
-    selectedIcon:Int = 0,
-    selectedIconColor:Int = 0,
-    selectedBorderColor:Int = 0,
-    textColor:Color = MaterialTheme.colorScheme.onBackground,
+    selectedIcon: Int = 0,
+    selectedIconColor: Int = 0,
+    selectedBorderColor: Int = 0,
+    textColor: Color = MaterialTheme.colorScheme.onBackground,
     id: Int = 0,
 ) {
     Card(
         shape = RoundedCornerShape(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                onClick()
-            },
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable {
+                    onClick()
+                },
         elevation = CardDefaults.elevatedCardElevation(2.dp),
         colors =
             CardDefaults.elevatedCardColors(
@@ -52,21 +52,27 @@ fun TaskGroup(
     ) {
         Row(
             modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TaskGroupIcon(selectedIcon, selectedIconColor, selectedBorderColor, size = 40.dp, padding = 4.dp)
+            TaskGroupIcon(
+                selectedIcon,
+                selectedIconColor,
+                selectedBorderColor,
+                size = 40.dp,
+                padding = 4.dp,
+            )
             Column(
                 modifier =
-                Modifier
-                    .weight(1f)
-                    .padding(start = 16.dp),
+                    Modifier
+                        .weight(1f)
+                        .padding(start = 16.dp),
             ) {
                 Text(text = project, color = MaterialTheme.colorScheme.onBackground)
                 Text(
-                    text = if(numberOfTask > 1) "$numberOfTask tasks" else "$numberOfTask task",
+                    text = if (numberOfTask > 1) "$numberOfTask tasks" else "$numberOfTask task",
                     color = Color(0xFF6E6A7C),
                     modifier = Modifier.padding(top = 6.dp),
                 )
@@ -75,7 +81,7 @@ fun TaskGroup(
                 progress = progress,
                 color = colors[selectedIconColor],
                 strokeWidth = 8f,
-                size = 70.dp,
+                size = 60.dp,
                 textSize = 12.sp,
                 trackColor = backgroundColors[selectedBorderColor],
                 textColor = textColor,
@@ -90,9 +96,9 @@ fun TaskGroup(
 private fun TaskGroupPreview() {
     Column(
         modifier =
-        Modifier
-            .fillMaxSize()
-            .background(color = Color.Black),
+            Modifier
+                .fillMaxSize()
+                .background(color = Color.Black),
     ) {
         TaskGroup(project = "Office Project", numberOfTask = 23, progress = 0.6f, onClick = {})
     }

@@ -20,8 +20,6 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun Header(
     data: CalendarUiModel,
-    onPreviousDayClick: (LocalDate) -> Unit,
-    onNextDayClick: (LocalDate) -> Unit
 ) {
     Row(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -39,13 +37,6 @@ fun Header(
                 .align(Alignment.CenterVertically),
             fontWeight = FontWeight.Bold
         )
-//        IconButton(onClick = { onPreviousDayClick(data.startDate.date) }) {
-//            Icon(imageVector = Icons.Filled.ChevronLeft, contentDescription = "Previous")
-//        }
-//        IconButton(onClick = { onNextDayClick(data.endDate.date
-//        ) }) {
-//            Icon(imageVector = Icons.Filled.ChevronRight, contentDescription = "Next")
-//        }
     }
 }
 

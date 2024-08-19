@@ -1,5 +1,6 @@
 package com.example.taskhive.presentation.task.list
 
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskhive.domain.model.Day
@@ -11,6 +12,7 @@ import com.example.taskhive.domain.repository.DayRepository
 import com.example.taskhive.domain.repository.ProjectRepository
 import com.example.taskhive.domain.repository.TaskRepository
 import com.example.taskhive.presentation.task.model.TaskUiModel
+import com.example.taskhive.service.TimerService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,6 +45,7 @@ class TaskListViewModel
             date: LocalDate,
             projectId: Int? = null,
         ) = viewModelScope.launch {
+            println(date)
             if (projectId == null) {
                 _tasks.value = taskRepository.getAllTasks(localDateToDate(date)).map { it.toUiModel() }
             } else {
@@ -51,6 +54,7 @@ class TaskListViewModel
                     taskRepository
                         .getTaskByProject(localDateToDate(date), project)
                         .map { it.toUiModel() }
+                println(tasks)
 
                 _tasks.value = tasks
             }
@@ -86,6 +90,8 @@ class TaskListViewModel
             date: LocalDate,
             status: TaskStatus,
         ) = viewModelScope.launch {
+            println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+            println(localDateToDate(date))
             val task = taskRepository.getTaskById(taskId)
             taskRepository.saveTask(task.copy(taskStatus = status))
             getTaskByProject(projectId, date)

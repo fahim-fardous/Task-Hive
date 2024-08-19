@@ -54,6 +54,7 @@ fun TaskStatusDialog(
             Button(
                 onClick = {
                     onSave(status)
+                    onDismiss()
                 },
             ) {
                 Text("Update")
