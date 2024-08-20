@@ -36,16 +36,27 @@ fun ProgressCard(
 ) {
     Row(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .height(180.dp)
-            .background(color = appColor, shape = RoundedCornerShape(32.dp))
-            .padding(32.dp),
+            Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .background(color = appColor, shape = RoundedCornerShape(32.dp))
+                .padding(32.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(.5f), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(
-                text = if (progress <= 0.5f) "Complete your today's task" else "Your today's task almost done",
+                text =
+                    if (progress ==
+                        1f
+                    ) {
+                        "Your today's tasks are done"
+                    } else if (progress <=
+                        0.5f
+                    ) {
+                        "Please complete your today's tasks"
+                    } else {
+                        "Your today's tasks are almost done"
+                    },
                 color = Color.White,
                 fontSize = 18.sp,
                 maxLines = 2,
@@ -54,12 +65,12 @@ fun ProgressCard(
             Spacer(modifier = Modifier.weight(1f))
             Box(
                 modifier =
-                Modifier
-                    .background(color = Color(0xFFEDE8FE), shape = RoundedCornerShape(8.dp))
-                    .padding(horizontal = 24.dp, vertical = 10.dp)
-                    .clickable {
-                        onViewTaskClick()
-                    },
+                    Modifier
+                        .background(color = Color(0xFFEDE8FE), shape = RoundedCornerShape(8.dp))
+                        .padding(horizontal = 24.dp, vertical = 10.dp)
+                        .clickable {
+                            onViewTaskClick()
+                        },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(text = "View Task", color = appColor, fontWeight = FontWeight.Bold)
@@ -70,18 +81,30 @@ fun ProgressCard(
             textColor = Color.White,
             color = Color(0xFFEDE8FE),
             trackColor =
-            Color(
-                0xFF8664FE,
-            ),
+                Color(
+                    0xFF8664FE,
+                ),
             strokeWidth = 8f,
         )
-        Box(modifier = Modifier
-            .weight(.25f)
-            .fillMaxHeight(), contentAlignment = Alignment.TopEnd) {
-            Box(modifier = Modifier
-                .size(36.dp)
-                .background(color = Color(0xFF9E84EC), shape = RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center){
-                Icon(imageVector = Icons.Filled.MoreHoriz, contentDescription = "show more", tint = Color.White)
+        Box(
+            modifier =
+                Modifier
+                    .weight(.25f)
+                    .fillMaxHeight(),
+            contentAlignment = Alignment.TopEnd,
+        ) {
+            Box(
+                modifier =
+                    Modifier
+                        .size(36.dp)
+                        .background(color = Color(0xFF9E84EC), shape = RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.MoreHoriz,
+                    contentDescription = "show more",
+                    tint = Color.White,
+                )
             }
         }
     }

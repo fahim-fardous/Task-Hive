@@ -53,8 +53,14 @@ interface TaskDao {
     suspend fun deleteTask(taskId: Int)
 
     @Query("SELECT COUNT(*) FROM tasks WHERE project=:project AND taskStatus = :taskStatus")
-    suspend fun getNumberOfCompletedTask(
+    suspend fun getNumberOfCompletedTaskByProject(
         project: Project,
+        taskStatus: TaskStatus = TaskStatus.DONE,
+    ): Int
+
+    @Query("SELECT COUNT(*) FROM tasks WHERE plannedStartDate = :startDate AND taskStatus = :taskStatus")
+    suspend fun getNumberOfCompletedTask(
+        startDate: Date,
         taskStatus: TaskStatus = TaskStatus.DONE,
     ): Int
 

@@ -164,7 +164,7 @@ private sealed class HomeTabScreen(
     data object Home : HomeTabScreen("home_screen", "Home", Icons.Filled.Home)
 
     data object TaskList :
-        HomeTabScreen("task_list_screen/{projectId", "Task List", Icons.Filled.CalendarMonth)
+        HomeTabScreen("task_list_screen/{projectId}", "Task List", Icons.Filled.CalendarMonth)
 
     data object Notes : HomeTabScreen("notes_screen", "Analytics", Icons.Default.Analytics)
 

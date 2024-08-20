@@ -33,6 +33,7 @@ fun CircularProgressWithText(
     textColor:Color,
     fontWeight: FontWeight = FontWeight.Bold
 ) {
+    println((progress*100).toInt())
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier

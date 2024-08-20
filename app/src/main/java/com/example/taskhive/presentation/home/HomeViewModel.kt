@@ -73,12 +73,12 @@ class HomeViewModel
 
         fun getTaskProgress() =
             viewModelScope.launch {
-                val tasks = taskRepository.getTodaysTasks(localDateToDate(LocalDate.now()), null)
+                val tasks = taskRepository.getAllTasks(localDateToDate(LocalDate.now()))
                 _progress.value =
-                    (tasks.filter { it.taskStatus == TaskStatus.DONE }.size.toFloat() / tasks.size)
+                    (taskRepository.getCompletedTaskCount(localDateToDate(LocalDate.now())).toFloat() / tasks.size)
             }
 
-        private suspend fun getNumberOfCompletedTask(project: Project): Int = taskRepository.getCompletedTaskCount(project)
+        private suspend fun getNumberOfCompletedTask(project: Project): Int = taskRepository.getCompletedTaskCountByProject(project)
 
         private suspend fun getNumberOfTask(project: Project): Int = projectRepository.getTaskCountByProject(project)
 

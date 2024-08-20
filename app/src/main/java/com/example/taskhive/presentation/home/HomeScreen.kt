@@ -175,7 +175,9 @@ fun HomeScreenSkeleton(
                     .padding(16.dp),
         ) {
             ProgressCard(
-                onViewTaskClick = {  },
+                onViewTaskClick = {
+
+                },
                 progress = progress,
                 textColor = Color.White,
             )

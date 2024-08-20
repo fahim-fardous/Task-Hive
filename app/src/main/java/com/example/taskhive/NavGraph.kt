@@ -35,7 +35,12 @@ sealed class Screen(
     data object Splash : Screen("splash")
 
     data object TaskList : Screen("task/list/{projectId}") {
-        fun createRoute(projectId: Int?) = route.replaceFirst("{projectId}", "$projectId")
+        fun createRoute(projectId: Int? = null): String =
+            if (projectId == null) {
+                "task/list"
+            } else {
+                "task/list/$projectId"
+            }
     }
 
     data object TaskAdd : Screen("task/add/{projectId}") {
@@ -187,7 +192,6 @@ fun MainNavHost(
                         Screen.LogList.createRoute(taskId = taskId),
                     )
                 },
-
             )
         }
 

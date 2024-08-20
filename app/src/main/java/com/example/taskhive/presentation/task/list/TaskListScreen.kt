@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.taskhive.Screen
 import com.example.taskhive.components.CalendarCard
 import com.example.taskhive.components.CalendarPreferences
 import com.example.taskhive.components.DeleteAlertDialog
@@ -62,6 +63,7 @@ fun TaskListScreen(
     viewModel: TaskListViewModel,
 ) {
     val context = LocalContext.current
+    println(Screen.TaskList.route + " " + projectId)
     LaunchedEffect(Unit) {
         if (projectId != null) {
             if (CalendarPreferences(context).getSelectedDate() == null) {
@@ -229,9 +231,9 @@ fun TaskListScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .padding(16.dp),
+            Modifier
+                .padding(innerPadding)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             CalendarCard(
