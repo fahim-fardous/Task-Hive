@@ -14,6 +14,7 @@ import java.time.LocalDate
 fun CalendarCard(
     selectedDate: (CalendarUiModel.Date) -> Unit = {},
     calendarPreferences: CalendarPreferences,
+    onCalendarClick: () -> Unit = {},
 ) {
     val savedSelectedDate = remember { calendarPreferences.getSelectedDate() }
     val dataSource = CalendarDataSource()
@@ -23,6 +24,7 @@ fun CalendarCard(
     Column(modifier = Modifier.fillMaxWidth()) {
         Header(
             data = calendarUiModel,
+            onCalendarClick = onCalendarClick,
         )
         Content(data = calendarUiModel, onDateClick = { date ->
             calendarUiModel =

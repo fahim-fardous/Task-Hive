@@ -34,13 +34,8 @@ sealed class Screen(
 
     data object Splash : Screen("splash")
 
-    data object TaskList : Screen("task/list/{projectId}") {
-        fun createRoute(projectId: Int? = null): String =
-            if (projectId == null) {
-                "task/list"
-            } else {
-                "task/list/$projectId"
-            }
+    data object TaskList : Screen("task/list/{projectId?}") {
+        fun createRoute(projectId: Int? = null): String = route.replaceFirst("{projectId}", "$projectId")
     }
 
     data object TaskAdd : Screen("task/add/{projectId}") {
@@ -101,7 +96,13 @@ fun MainNavHost(
         }
         composable(
             route = Screen.TaskList.route,
-            arguments = listOf(navArgument("projectId") { type = NavType.IntType }),
+            arguments =
+                listOf(
+                    navArgument("projectId") {
+                        type = NavType.StringType
+                        nullable = true
+                    },
+                ),
         ) { backStackEntry ->
             val viewModel: TaskListViewModel = hiltViewModel()
             TaskListScreen(
@@ -123,10 +124,11 @@ fun MainNavHost(
                         Screen.LogList.createRoute(taskId = taskId),
                     )
                 },
-                projectId = backStackEntry.arguments?.getInt("projectId"),
+                projectId = backStackEntry.arguments?.getString("projectId")?.toIntOrNull(),
                 viewModel = viewModel,
             )
         }
+
         composable(Screen.ProjectAdd.route) {
             val viewModel: ProjectAddViewModel = hiltViewModel()
             ProjectAddScreen(goBack = { navController.popBackStack() }, viewModel = viewModel)

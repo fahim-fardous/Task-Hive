@@ -176,7 +176,7 @@ fun HomeScreenSkeleton(
         ) {
             ProgressCard(
                 onViewTaskClick = {
-
+                    goToTaskList(null)
                 },
                 progress = progress,
                 textColor = Color.White,

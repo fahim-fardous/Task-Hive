@@ -58,6 +58,7 @@ class TaskListViewModel
 
                 _tasks.value = tasks
             }
+            println(_tasks.value)
         }
 
         private suspend fun getTaskByProject(
