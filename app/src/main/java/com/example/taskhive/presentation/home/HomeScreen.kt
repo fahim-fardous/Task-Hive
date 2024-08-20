@@ -1,5 +1,6 @@
 package com.example.taskhive.presentation.home
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -42,12 +43,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.R
 import com.example.taskhive.components.InProgressCard
 import com.example.taskhive.components.ProgressCard
 import com.example.taskhive.components.TaskGroup
 import com.example.taskhive.presentation.task.model.ProjectUiModel
+import com.example.taskhive.presentation.task.model.TaskUiModel
+import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
 import com.example.taskhive.utils.SelectableProperties.backgroundColors
 import com.example.taskhive.utils.SelectableProperties.colors
@@ -57,7 +61,7 @@ import com.example.taskhive.utils.SelectableProperties.icons
 fun HomeScreen(
     goToAddProject: () -> Unit,
     goToTaskList: (Int?) -> Unit = {},
-    viewModel: HomeViewModel = viewModel(),
+    viewModel: HomeViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(Unit) {
         viewModel.getProjects()
@@ -66,20 +70,24 @@ fun HomeScreen(
         viewModel.getNumberOfProject()
     }
     LaunchedEffect(Unit) {
-        viewModel.getInProgressProjects()
+        viewModel.getInProgressTasks()
+    }
+    LaunchedEffect(Unit) {
+        viewModel.getTaskProgress()
     }
     val projects by viewModel.projects.collectAsState()
-    val inProgressProjects by viewModel.inProgressProjects.collectAsState()
+    val inProgressTasks by viewModel.inProgressTasks.collectAsState()
     val numberOfProject by viewModel.count.collectAsState()
+    val progress by viewModel.progress.collectAsState()
     HomeScreenSkeleton(
         goToAddProject = goToAddProject,
         projects = projects,
-        inProgressProjects = inProgressProjects,
+        inProgressTasks = inProgressTasks,
         numberOfProject = numberOfProject,
         goToTaskList = { projectId ->
-            println(projectId.toString())
             goToTaskList(projectId)
         },
+        progress = progress,
     )
 }
 
@@ -87,43 +95,49 @@ fun HomeScreen(
 fun HomeScreenSkeleton(
     goToAddProject: () -> Unit = {},
     projects: List<ProjectUiModel> = emptyList(),
-    inProgressProjects: List<ProjectUiModel> = emptyList(),
+    inProgressTasks: List<TaskUiModel> = emptyList(),
     numberOfProject: Int = 0,
     goToTaskList: (Int?) -> Unit = {},
+    progress: Float = 0.0f,
 ) {
     Scaffold(
         topBar = {
             Row(
                 modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.my_img),
                     contentDescription = "my photo",
                     modifier =
-                    Modifier
-                        .size(48.dp)
-                        .clip(
-                            CircleShape,
-                        ),
+                        Modifier
+                            .size(48.dp)
+                            .clip(
+                                CircleShape,
+                            ),
                     contentScale = ContentScale.Crop,
                 )
                 Column(
                     modifier =
-                    Modifier
-                        .padding(start = 16.dp)
-                        .weight(1f),
+                        Modifier
+                            .padding(start = 16.dp)
+                            .weight(1f),
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text(text = "Hello!", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        text = "Hello!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
                     Text(
                         text = "Fahim",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
                 }
                 BadgedBox(modifier = Modifier.padding(end = 8.dp), badge = {
@@ -135,7 +149,7 @@ fun HomeScreenSkeleton(
                     Icon(
                         Icons.Filled.Notifications,
                         contentDescription = "Notifications",
-                        tint = Color.Black,
+                        tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.padding(start = 8.dp),
                     )
                 }
@@ -155,20 +169,26 @@ fun HomeScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(16.dp),
+                Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .padding(16.dp),
         ) {
-            ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f)
-            if (inProgressProjects.isNotEmpty()) {
+            ProgressCard(
+                onViewTaskClick = {
+
+                },
+                progress = progress,
+                textColor = Color.White,
+            )
+            if (inProgressTasks.isNotEmpty()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         modifier = Modifier.padding(top = 16.dp),
                         text = "In Progress",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
                     Box(
                         modifier =
@@ -182,7 +202,7 @@ fun HomeScreenSkeleton(
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            text = inProgressProjects.size.toString(),
+                            text = inProgressTasks.size.toString(),
                             color = appColor,
                             fontWeight = FontWeight.Bold,
                         )
@@ -198,14 +218,15 @@ fun HomeScreenSkeleton(
                             end = 0.dp,
                         ),
                 ) {
-                    items(inProgressProjects) { project ->
+                    items(inProgressTasks) { task ->
                         InProgressCard(
-                            projectName = project.name,
-                            progress = project.progress,
-                            projectId = project.id,
-                            icon = icons[project.selectedIcon],
-                            iconColor = colors[project.selectedIconColor],
-                            borderColor = backgroundColors[project.selectedBorderColor],
+                            projectName = task.project.name,
+                            taskName = task.title,
+                            progress = 0.5f,
+                            projectId = task.project.id,
+                            icon = icons[task.project.selectedIcon],
+                            iconColor = colors[task.project.selectedIconColor],
+                            borderColor = backgroundColors[task.project.selectedBorderColor],
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                     }
@@ -218,7 +239,7 @@ fun HomeScreenSkeleton(
                     text = "Projects",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
                 )
                 Box(
                     modifier =
@@ -255,7 +276,7 @@ fun HomeScreenSkeleton(
                         },
                         project = project.name,
                         numberOfTask = project.numberOfTask,
-                        progress = 0.0f,
+                        progress = if (project.progress.isNaN()) 0.0f else project.progress,
                         selectedIcon = project.selectedIcon,
                         selectedIconColor = project.selectedIconColor,
                         selectedBorderColor = project.selectedBorderColor,
@@ -271,5 +292,15 @@ fun HomeScreenSkeleton(
 @Preview(showBackground = true)
 @Composable
 private fun HomeScreenSkeletonPreview() {
-    HomeScreenSkeleton()
+    TaskHiveTheme {
+        HomeScreenSkeleton()
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun HomeScreenSkeletonPreviewDark() {
+    TaskHiveTheme {
+        HomeScreenSkeleton()
+    }
 }

@@ -7,18 +7,17 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.taskhive.presentation.analytics.AnalyticsScreen
+import com.example.taskhive.presentation.analytics.AnalyticsViewModel
 import com.example.taskhive.presentation.home.HomeScreen
 import com.example.taskhive.presentation.home.index.HomeIndexScreen
 import com.example.taskhive.presentation.log.list.LogListScreen
 import com.example.taskhive.presentation.log.list.LogListViewModel
-import com.example.taskhive.presentation.notes.NoteScreen
 import com.example.taskhive.presentation.onboard.OnBoardScreen
 import com.example.taskhive.presentation.onboard.OnBoardViewModel
 import com.example.taskhive.presentation.profile.ProfileScreen
 import com.example.taskhive.presentation.project.add.ProjectAddScreen
 import com.example.taskhive.presentation.project.add.ProjectAddViewModel
-import com.example.taskhive.presentation.splash.SplashScreen
-import com.example.taskhive.presentation.splash.SplashViewModel
 import com.example.taskhive.presentation.task.add.TaskAddScreen
 import com.example.taskhive.presentation.task.add.TaskAddViewModel
 import com.example.taskhive.presentation.task.edit.TaskEditScreen
@@ -36,7 +35,12 @@ sealed class Screen(
     data object Splash : Screen("splash")
 
     data object TaskList : Screen("task/list/{projectId}") {
-        fun createRoute(projectId: Int?) = route.replaceFirst("{projectId}", "$projectId")
+        fun createRoute(projectId: Int? = null): String =
+            if (projectId == null) {
+                "task/list"
+            } else {
+                "task/list/$projectId"
+            }
     }
 
     data object TaskAdd : Screen("task/add/{projectId}") {
@@ -49,7 +53,7 @@ sealed class Screen(
 
     data object ProjectAdd : Screen("project/add")
 
-    data object Notes : Screen("notes")
+    data object Analytics : Screen("analytics")
 
     data object Profile : Screen("profile")
 
@@ -65,8 +69,11 @@ sealed class Screen(
 }
 
 @Composable
-fun MainNavHost(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Screen.Splash.route) {
+fun MainNavHost(
+    navController: NavHostController,
+    startDestination: String,
+) {
+    NavHost(navController = navController, startDestination = startDestination) {
         composable(Screen.Home.route) {
             HomeScreen(
                 goToAddProject = { navController.navigate(Screen.ProjectAdd.route) },
@@ -90,26 +97,6 @@ fun MainNavHost(navController: NavHostController) {
                     }
                 },
                 viewModel = viewModel,
-            )
-        }
-        composable(Screen.Splash.route) {
-            val viewModel: SplashViewModel = hiltViewModel()
-            SplashScreen(
-                viewModel = viewModel,
-                goToOnboardScreen = {
-                    navController.navigate(Screen.OnBoard.route) {
-                        popUpTo(Screen.Splash.route) {
-                            inclusive = true
-                        }
-                    }
-                },
-                goToHomeScreen = {
-                    navController.navigate(Screen.HomeIndex.route) {
-                        popUpTo(Screen.Splash.route) {
-                            inclusive = true
-                        }
-                    }
-                },
             )
         }
         composable(
@@ -171,8 +158,11 @@ fun MainNavHost(navController: NavHostController) {
                 viewModel = viewModel,
             )
         }
-        composable(Screen.Notes.route) {
-            NoteScreen()
+        composable(Screen.Analytics.route) {
+            val viewModel: AnalyticsViewModel = hiltViewModel()
+            AnalyticsScreen(
+                viewModel = viewModel,
+            )
         }
         composable(Screen.Profile.route) {
             ProfileScreen()
@@ -183,6 +173,23 @@ fun MainNavHost(navController: NavHostController) {
                 goToTaskList = { projectId ->
                     navController.navigate(
                         Screen.TaskList.createRoute(projectId),
+                    )
+                },
+                goToAddTask = { projectId ->
+                    navController.navigate(
+                        Screen.TaskAdd.createRoute(
+                            projectId = projectId,
+                        ),
+                    )
+                },
+                goToEditTask = { taskId ->
+                    navController.navigate(
+                        Screen.TaskEdit.createRoute(taskId = taskId),
+                    )
+                },
+                goToLogListScreen = { taskId ->
+                    navController.navigate(
+                        Screen.LogList.createRoute(taskId = taskId),
                     )
                 },
             )

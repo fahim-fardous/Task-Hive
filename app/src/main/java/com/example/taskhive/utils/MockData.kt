@@ -5,11 +5,13 @@ import androidx.compose.material.icons.filled.Backpack
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.Color
+import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.MockModel
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.domain.model.toUiModel
+import java.time.LocalDate
 import java.util.Date
 
 object MockData {
@@ -114,4 +116,14 @@ object MockData {
         project = project,
         taskStatus = TaskStatus.IN_PROGRESS
     ).toUiModel()
+
+    val log = Log(
+        id = 1,
+        startTime = Date(),
+        endTime = Date(),
+        duration = 3600L,
+        taskId = 1,
+        startDate = localDateToDate(LocalDate.now()),
+        endDate = localDateToDate(LocalDate.now())
+    )
 }

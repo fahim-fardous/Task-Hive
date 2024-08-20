@@ -18,7 +18,9 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun Header(data: CalendarUiModel) {
+fun Header(
+    data: CalendarUiModel,
+) {
     Row(modifier = Modifier.fillMaxWidth()) {
         Text(
             text =
@@ -35,12 +37,6 @@ fun Header(data: CalendarUiModel) {
                 .align(Alignment.CenterVertically),
             fontWeight = FontWeight.Bold
         )
-        IconButton(onClick = { /*TODO*/ }) {
-            Icon(imageVector = Icons.Filled.ChevronLeft, contentDescription = "Previous")
-        }
-        IconButton(onClick = { /*TODO*/ }) {
-            Icon(imageVector = Icons.Filled.ChevronRight, contentDescription = "Next")
-        }
     }
 }
 

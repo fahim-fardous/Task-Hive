@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -20,36 +24,43 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun CircularProgressWithText(
     modifier: Modifier = Modifier,
-    progress: Float = 0.85f,
+    progress: Float,
     strokeWidth: Float = 4f,
     color: Color = Color.Blue,
-    size:Dp = 100.dp,
+    size:Dp = 90.dp,
     textSize:TextUnit = 18.sp,
-    tracColor:Color = Color(0xFF8664FE),
-    textColor:Color = Color.White,
+    trackColor:Color = Color(0xFF8664FE),
+    textColor:Color,
     fontWeight: FontWeight = FontWeight.Bold
 ) {
+    println((progress*100).toInt())
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .size(size)
-            .padding(start = 16.dp),
+            ,
     ) {
         CircularProgressIndicator(
             progress = { progress },
             modifier = Modifier
-                .fillMaxSize()
-                .rotate(90f),
+                .fillMaxSize(),
             color = color,
             strokeWidth = strokeWidth.dp,
-            trackColor = tracColor,
+            trackColor = trackColor,
+            strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap,
         )
         Text(
             text = "${(progress * 100).toInt()}%",
             fontSize = textSize,
             color = textColor,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 16.dp),
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center
         )
     }
+}
+
+@Preview
+@Composable
+private fun CircularProgressWithTextPreview() {
+    CircularProgressWithText(progress = 0f, textColor = Color.White, strokeWidth = 8f)
 }

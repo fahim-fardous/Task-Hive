@@ -30,9 +30,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.taskhive.ui.theme.hintColor
 import com.example.taskhive.utils.SelectableProperties.backgroundColors
 import com.example.taskhive.utils.SelectableProperties.colors
 import com.example.taskhive.utils.SelectableProperties.icons
@@ -41,6 +43,7 @@ import com.example.taskhive.utils.SelectableProperties.progressIndicatorColors
 @Composable
 fun InProgressCard(
     projectName: String,
+    taskName: String,
     progress: Float,
     projectId: Int,
     icon: ImageVector = Icons.Filled.Backpack,
@@ -51,7 +54,7 @@ fun InProgressCard(
         modifier =
             Modifier
                 .width(220.dp)
-                .height(120.dp)
+                .height(140.dp)
                 .background(
                     color = backgroundColors[projectId % backgroundColors.size],
                     shape = RoundedCornerShape(16.dp),
@@ -69,7 +72,7 @@ fun InProgressCard(
                     fontWeight = FontWeight.Medium,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 18.sp,
-                    maxLines = 2,
+                    maxLines = 1,
                     modifier =
                         Modifier
                             .weight(1f)
@@ -95,6 +98,8 @@ fun InProgressCard(
                 }
             }
 
+            Text(text = taskName, color = hintColor, maxLines = 2, overflow = TextOverflow.Ellipsis)
+
             LinearProgressIndicator(
                 modifier =
                     Modifier
@@ -105,6 +110,7 @@ fun InProgressCard(
                 progress = { progress },
                 color =
                     progressIndicatorColors[projectId % progressIndicatorColors.size],
+                trackColor = Color.White
             )
         }
     }
@@ -119,6 +125,7 @@ private fun InProgressCardPreview() {
                 items(5) { id ->
                     InProgressCard(
                         projectName = "Task Hive",
+                        taskName = "Design a dashboard screen with something",
                         progress = 0.5f,
                         projectId = id,
                         icon = icons[id % icons.size],

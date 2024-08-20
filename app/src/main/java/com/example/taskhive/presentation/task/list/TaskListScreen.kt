@@ -1,5 +1,8 @@
 package com.example.taskhive.presentation.task.list
 
+import android.content.Intent
+import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -24,13 +27,17 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.taskhive.Screen
 import com.example.taskhive.components.CalendarCard
+import com.example.taskhive.components.CalendarPreferences
 import com.example.taskhive.components.DeleteAlertDialog
+import com.example.taskhive.components.NoTaskCard
 import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.TaskCard
 import com.example.taskhive.components.TaskStatusDialog
@@ -39,22 +46,37 @@ import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.presentation.task.model.TaskUiModel
+import com.example.taskhive.service.TimerService
 import com.example.taskhive.ui.theme.TaskHiveTheme
+import com.example.taskhive.utils.MockData
+import com.example.taskhive.utils.localDateToDate
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 @Composable
 fun TaskListScreen(
     goBack: () -> Unit,
-    goToAddTask: (Int) -> Unit = {},
-    goToEditTask: (Int) -> Unit = {},
-    goToLogListScreen: (Int) -> Unit = {},
+    goToAddTask: (Int) -> Unit,
+    goToEditTask: (Int) -> Unit,
+    goToLogListScreen: (Int) -> Unit,
     projectId: Int? = null,
-    viewModel: TaskListViewModel = hiltViewModel(),
+    viewModel: TaskListViewModel,
 ) {
+    val context = LocalContext.current
+    println(Screen.TaskList.route + " " + projectId)
     LaunchedEffect(Unit) {
         if (projectId != null) {
-            viewModel.getTasksById(projectId)
+            if (CalendarPreferences(context).getSelectedDate() == null) {
+                viewModel.getTasks(LocalDate.now(ZoneOffset.UTC), projectId)
+            } else {
+                viewModel.getTasks(CalendarPreferences(context).getSelectedDate()!!, projectId)
+            }
         } else {
-            viewModel.getAllTasks()
+            if (CalendarPreferences(context).getSelectedDate() == null) {
+                viewModel.getTasks(LocalDate.now(ZoneOffset.UTC))
+            } else {
+                viewModel.getTasks(CalendarPreferences(context).getSelectedDate()!!)
+            }
         }
     }
     LaunchedEffect(projectId) {
@@ -72,31 +94,58 @@ fun TaskListScreen(
         projectId = projectId,
         tasks = tasks,
         project = project,
-        saveLog = { log ->
-            viewModel.saveLog(log)
+        saveLog = { log, date ->
+            if (projectId != null) {
+                viewModel.saveLog(log, projectId, date)
+            } else {
+                viewModel.saveLog(log, null, date)
+            }
         },
         goToLogScreen = { taskId ->
             goToLogListScreen(taskId)
         },
-        deleteTask = { taskId ->
+        deleteTask = { taskId, date ->
             if (projectId != null) {
-                viewModel.deleteTask(taskId, projectId)
+                viewModel.deleteTask(taskId, projectId, date)
             } else {
-                viewModel.deleteTask(taskId, null)
+                viewModel.deleteTask(taskId, null, date)
             }
         },
-        changeTaskStatus = { taskId, status ->
-            viewModel.changeTaskStatus(taskId, status)
+        changeTaskStatus = { taskId, status, date ->
+            if (projectId != null) {
+                viewModel.changeTaskStatus(
+                    taskId = taskId,
+                    projectId = projectId,
+                    status = status,
+                    date = date,
+                )
+            } else {
+                viewModel.changeTaskStatus(
+                    taskId = taskId,
+                    projectId = null,
+                    status = status,
+                    date = date,
+                )
+            }
+        },
+        onDateChange = { date ->
+            if (projectId != null) {
+                viewModel.getTasks(date, projectId)
+            } else {
+                viewModel.getTasks(date)
+            }
+        },
+        addTime = { timer, date ->
+            viewModel.addTime(timer, date)
+        },
+        getTasks = { date ->
+            if (projectId != null) {
+                viewModel.getTasks(date, projectId)
+            } else {
+                viewModel.getTasks(date)
+            }
         },
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun TaskListScreenSkeletonPreview() {
-    TaskHiveTheme {
-        TaskListScreenSkeleton()
-    }
 }
 
 @Composable
@@ -107,11 +156,15 @@ fun TaskListScreenSkeleton(
     projectId: Int? = null,
     tasks: List<TaskUiModel> = emptyList(),
     project: Project? = null,
-    saveLog: (Log) -> Unit = {},
+    saveLog: (Log, LocalDate) -> Unit = { _, _ -> },
     goToLogScreen: (Int) -> Unit = {},
-    deleteTask: (Int) -> Unit = { _ -> },
-    changeTaskStatus: (Int, TaskStatus) -> Unit = { _, _ -> },
+    deleteTask: (Int, LocalDate) -> Unit = { _, _ -> },
+    changeTaskStatus: (Int, TaskStatus, LocalDate) -> Unit = { _, _, _ -> },
+    onDateChange: (date: LocalDate) -> Unit = {},
+    addTime: (Long, LocalDate) -> Unit = { _, _ -> },
+    getTasks: (LocalDate) -> Unit = { _ -> },
 ) {
+    val context = LocalContext.current
     var logTaskId by remember {
         mutableIntStateOf(-1)
     }
@@ -130,6 +183,27 @@ fun TaskListScreenSkeleton(
     }
     var currentStatus by remember {
         mutableStateOf(TaskStatus.TODO)
+    }
+    var currentDate by remember {
+        mutableStateOf(LocalDate.now(ZoneOffset.UTC))
+    }
+    val calendarPreferences = remember { CalendarPreferences(context) }
+
+    var selectedDate by remember {
+        mutableStateOf(calendarPreferences.getSelectedDate() ?: LocalDate.now(ZoneOffset.UTC))
+    }
+
+    var logStartDate by remember { mutableStateOf(localDateToDate(LocalDate.now())) }
+    var logEndDate by remember { mutableStateOf(localDateToDate(LocalDate.now())) }
+
+    val timerState by TimerService.timerItem.collectAsState()
+    LaunchedEffect(key1 = timerState) {
+        snapshotFlow { timerState?.isRunning }
+            .collect { isRunning ->
+                if (isRunning == null) {
+                    getTasks(selectedDate)
+                }
+            }
     }
     Scaffold(
         topBar =
@@ -157,13 +231,21 @@ fun TaskListScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .padding(16.dp),
+            Modifier
+                .padding(innerPadding)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            CalendarCard()
-            Spacer(modifier = Modifier.height(16.dp)) // Use a more efficient way to filter tasks
+            CalendarCard(
+                selectedDate = { date ->
+                    selectedTaskStatus = 0
+                    currentDate = date.date
+                    selectedDate = date.date
+                    onDateChange(date.date)
+                },
+                calendarPreferences = calendarPreferences,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             val filteredTasks =
                 when (selectedTaskStatus) {
                     0 -> tasks
@@ -204,52 +286,95 @@ fun TaskListScreenSkeleton(
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn {
-                items(
-                    filteredTasks,
-                ) { task ->
-                    logTaskId = task.id
-                    TaskCard(
-                        onClick = { goToEditTask(task.id) },
-                        onPauseClicked = { totalSpend, timer, startTime, endTime ->
-                            totalTimeSpend = totalSpend
-                            logSpendTime = timer
-                            saveLog(
-                                Log(
-                                    taskId = task.id,
-                                    startTime = startTime,
-                                    endTime = endTime,
-                                    duration = timer,
-                                ),
-                            )
-                        },
-                        goToLogScreen = {
-                            goToLogScreen(task.id)
-                        },
-                        projectName = project?.name ?: "",
-                        taskName = task.title,
-                        duration = task.totalTimeSpend,
-                        status =
-                            when (task.taskStatus) {
-                                TaskStatus.TODO -> "To-do"
-                                TaskStatus.IN_PROGRESS -> "In Progress"
-                                TaskStatus.DONE -> "Done"
+            if (filteredTasks.isEmpty()) {
+                NoTaskCard(selectedStatus = selectedTaskStatus)
+            } else {
+                LazyColumn {
+                    if (filteredTasks.isEmpty()) {
+                        item {
+                            NoTaskCard(selectedStatus = selectedTaskStatus)
+                        }
+                    }
+                    items(
+                        items = filteredTasks,
+                    ) { task ->
+                        TaskCard(
+                            onClick = { goToEditTask(task.id) },
+                            onPauseClicked = { totalSpend, timer, startTime, endTime ->
+                                if (task.id == timerState?.taskId) {
+                                    context.stopService(
+                                        Intent(context, TimerService::class.java).apply {
+                                            putExtra("taskId", task.id)
+                                        },
+                                    )
+                                    logTaskId = task.id
+                                    totalTimeSpend = totalSpend
+                                    logSpendTime = timer
+                                    saveLog(
+                                        Log(
+                                            taskId = task.id,
+                                            startTime = startTime,
+                                            endTime = endTime,
+                                            duration = timer,
+                                            startDate = logStartDate,
+                                            endDate = logEndDate,
+                                        ),
+                                        currentDate,
+                                    )
+                                    addTime(timer, selectedDate)
+                                    getTasks(selectedDate)
+                                    logEndDate = localDateToDate(LocalDate.now())
+                                }
                             },
-                        icon = project?.selectedIcon ?: 0,
-                        iconColor = project?.selectedIconColor ?: 0,
-                        backgroundColor = project?.selectedBorderColor ?: 0,
-                        onTaskDelete = {
-                            showDeleteDialog = true
-                        },
-                        onTaskChangeStatus = {
-                            showTaskChangeDialog = true
-                            currentStatus = task.taskStatus
-                        },
-                        onTaskShowLogs = {
-                            goToLogScreen(task.id)
-                        },
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
+                            projectName = task.project.name,
+                            taskId = task.id,
+                            taskName = task.title,
+                            duration = task.totalTimeSpend,
+                            time = if (timerState?.taskId == task.id) timerState?.time else 0L,
+                            onTaskDelete = {
+                                showDeleteDialog = true
+                                logTaskId = task.id
+                            },
+                            onTaskChangeStatus = {
+                                showTaskChangeDialog = true
+                                currentStatus = task.taskStatus
+                                logTaskId = task.id
+                            },
+                            onTaskShowLogs = {
+                                goToLogScreen(task.id)
+                            },
+                            onPlayClicked = {
+                                if (timerState?.taskId == null &&
+                                    (
+                                        (
+                                            task.plannedStartDate?.equals(
+                                                localDateToDate(LocalDate.now()),
+                                            ) == true
+                                        ) ||
+                                            (
+                                                task.plannedStartDate?.before(
+                                                    localDateToDate(
+                                                        LocalDate.now(),
+                                                    ),
+                                                ) == true
+                                            )
+                                    )
+                                ) {
+                                    logStartDate = localDateToDate(LocalDate.now())
+                                    context.startService(
+                                        Intent(context, TimerService::class.java).apply {
+                                            putExtra("taskId", task.id)
+                                            putExtra("taskName", task.title)
+                                        },
+                                    )
+                                }
+                                else{
+                                    Toast.makeText(context, "This task is for future", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
             }
         }
@@ -258,19 +383,83 @@ fun TaskListScreenSkeleton(
                 currentStatus = currentStatus,
                 onDismiss = { showTaskChangeDialog = false },
                 onSave = { status ->
-                    changeTaskStatus(logTaskId, status)
-                    showTaskChangeDialog = false
+                    if (timerState?.taskId != logTaskId) {
+                        showTaskChangeDialog = false
+                        changeTaskStatus(logTaskId, status, currentDate)
+                    }
+                    else{
+                        Toast.makeText(context, "Task is running", Toast.LENGTH_SHORT).show()
+                    }
                 },
             )
         }
         if (showDeleteDialog) {
             DeleteAlertDialog(
+                showDeleteDialog = {
+                    showDeleteDialog = it
+                },
                 title = "Are you sure you want to delete this task?",
                 onDeleteClicked = {
-                    showDeleteDialog = false
-                    deleteTask(logTaskId)
+                    if (timerState?.taskId != logTaskId) {
+                        showDeleteDialog = false
+                        deleteTask(logTaskId, currentDate)
+                    }
+                    else{
+                        Toast.makeText(context, "Task is running", Toast.LENGTH_SHORT).show()
+                    }
                 },
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TaskListScreenSkeletonPreview() {
+    TaskHiveTheme {
+        val tasks = mutableListOf<TaskUiModel>()
+        repeat(5) {
+            tasks.add(MockData.task)
+        }
+        TaskListScreenSkeleton(
+            tasks = tasks,
+        )
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun TaskListScreenSkeletonPreviewDark() {
+    TaskHiveTheme {
+        val tasks = mutableListOf<TaskUiModel>()
+        repeat(5) {
+            tasks.add(MockData.task)
+        }
+        TaskListScreenSkeleton(
+            tasks = tasks,
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TaskListScreenSkeletonWithoutTaskPreview() {
+    TaskHiveTheme {
+        val tasks = mutableListOf<TaskUiModel>()
+
+        TaskListScreenSkeleton(
+            tasks = tasks,
+        )
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun TaskListScreenSkeletonWithoutTaskPreviewDark() {
+    TaskHiveTheme {
+        val tasks = mutableListOf<TaskUiModel>()
+        TaskListScreenSkeleton(
+            tasks = tasks,
+        )
     }
 }

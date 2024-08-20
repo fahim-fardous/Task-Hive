@@ -13,3 +13,20 @@ val Pink40 = Color(0xFF7D5260)
 val appColor = Color(0xFF5F33E1)
 var hintColor = Color(0xFF6E6A7C)
 var secondaryColor = Color(0xFFE5DEFD)
+
+sealed class ThemeColors(
+    val background:Color,
+    val textColor:Color,
+    val iconColor:Color
+){
+    data object Day:ThemeColors(
+        background = Color.White,
+        iconColor = Color.Black,
+        textColor = Color.Black,
+    )
+    data object Night:ThemeColors(
+        background = Color.Black,
+        iconColor = Color.White,
+        textColor = Color.White,
+    )
+}

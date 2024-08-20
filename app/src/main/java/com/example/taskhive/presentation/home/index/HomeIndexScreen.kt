@@ -3,10 +3,9 @@ package com.example.taskhive.presentation.home.index
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Note
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Note
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -28,9 +27,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.taskhive.presentation.analytics.AnalyticsScreen
+import com.example.taskhive.presentation.analytics.AnalyticsViewModel
 import com.example.taskhive.presentation.home.HomeScreen
 import com.example.taskhive.presentation.home.HomeViewModel
-import com.example.taskhive.presentation.notes.NoteScreen
 import com.example.taskhive.presentation.profile.ProfileScreen
 import com.example.taskhive.presentation.task.list.TaskListScreen
 import com.example.taskhive.presentation.task.list.TaskListViewModel
@@ -39,12 +39,18 @@ import com.example.taskhive.presentation.task.list.TaskListViewModel
 fun HomeIndexScreen(
     goToAddProject: () -> Unit,
     goToTaskList: (Int?) -> Unit,
+    goToAddTask: (Int) -> Unit = {},
+    goToEditTask: (Int) -> Unit = {},
+    goToLogListScreen: (Int) -> Unit = {},
 ) {
     val navController = rememberNavController()
     HomeIndexScreenSkeleton(
         navController = navController,
         goToAddProject = goToAddProject,
         goToTaskList = goToTaskList,
+        goToAddTask = goToAddTask,
+        goToEditTask = goToEditTask,
+        goToLogListScreen = goToLogListScreen,
     )
 }
 
@@ -53,6 +59,9 @@ fun HomeIndexScreenSkeleton(
     navController: NavHostController,
     goToAddProject: () -> Unit = {},
     goToTaskList: (Int?) -> Unit = {},
+    goToAddTask: (Int) -> Unit = {},
+    goToEditTask: (Int) -> Unit = {},
+    goToLogListScreen: (Int) -> Unit = {},
 ) {
     val items =
         listOf(
@@ -104,21 +113,31 @@ fun HomeIndexScreenSkeleton(
                 val viewModel: HomeViewModel = hiltViewModel()
                 HomeScreen(
                     goToAddProject = { goToAddProject() },
-                    goToTaskList = {projectId->
+                    goToTaskList = { projectId ->
                         goToTaskList(projectId)
                     },
-                    //viewModel = viewModel
+                    viewModel = viewModel,
                 )
             }
             composable(HomeTabScreen.TaskList.route) {
                 val viewModel: TaskListViewModel = hiltViewModel()
                 TaskListScreen(
                     goBack = { navController.popBackStack() },
-                    //viewModel = viewModel
+                    viewModel = viewModel,
+                    goToAddTask = { projectId ->
+                        goToAddTask(projectId)
+                    },
+                    goToEditTask = { taskId ->
+                        goToEditTask(taskId)
+                    },
+                    goToLogListScreen = { taskId ->
+                        goToLogListScreen(taskId)
+                    }
                 )
             }
             composable(HomeTabScreen.Notes.route) {
-                NoteScreen()
+                val viewModel: AnalyticsViewModel = hiltViewModel()
+                AnalyticsScreen(viewModel = viewModel)
             }
             composable(HomeTabScreen.Profile.route) {
                 ProfileScreen()
@@ -145,9 +164,9 @@ private sealed class HomeTabScreen(
     data object Home : HomeTabScreen("home_screen", "Home", Icons.Filled.Home)
 
     data object TaskList :
-        HomeTabScreen("task_list_screen/{projectId", "Task List", Icons.Filled.CalendarMonth)
+        HomeTabScreen("task_list_screen/{projectId}", "Task List", Icons.Filled.CalendarMonth)
 
-    data object Notes : HomeTabScreen("notes_screen", "Notes", Icons.AutoMirrored.Filled.Note)
+    data object Notes : HomeTabScreen("notes_screen", "Analytics", Icons.Default.Analytics)
 
     data object Profile : HomeTabScreen("profile_screen", "Profile", Icons.Filled.Person)
 }

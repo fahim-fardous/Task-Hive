@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Task Hive</string>
+    <string name="Stop_timer">Stop timer</string>
 </resources>

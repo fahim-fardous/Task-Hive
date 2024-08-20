@@ -1,7 +1,9 @@
 package com.example.taskhive.presentation.project.add
 
+import android.content.res.Configuration
 import android.icu.util.Calendar
 import android.icu.util.TimeZone
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +24,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
@@ -37,7 +40,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -56,10 +59,16 @@ import com.example.taskhive.utils.getReadableDate
 import java.util.Date
 
 @Composable
-fun ProjectAddScreen(goBack: () -> Unit, viewModel: ProjectAddViewModel = hiltViewModel()) {
+fun ProjectAddScreen(
+    goBack: () -> Unit,
+    viewModel: ProjectAddViewModel = hiltViewModel(),
+) {
+    val context = LocalContext.current
     val showMessage by viewModel.showMessage.collectAsState()
     LaunchedEffect(showMessage) {
         if (showMessage != null) {
+            Toast.makeText(context, showMessage, Toast.LENGTH_SHORT).show()
+            viewModel.updateMessage()
             if (showMessage == "Project saved") {
                 goBack()
             }
@@ -71,14 +80,6 @@ fun ProjectAddScreen(goBack: () -> Unit, viewModel: ProjectAddViewModel = hiltVi
             viewModel.saveProject(project)
         },
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun TaskAddScreenSkeletonPreview() {
-    TaskHiveTheme {
-        ProjectAddScreenSkeleton()
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -117,7 +118,7 @@ fun ProjectAddScreenSkeleton(
                                 selectedIconColor = selectedColor,
                                 selectedBorderColor = selectedBorderColor,
                                 endDate = Date(System.currentTimeMillis() + 86400000),
-                            )
+                            ),
                         )
                     },
                 text = "Add Project",
@@ -162,7 +163,11 @@ fun ProjectAddScreenSkeleton(
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
-            Text(text = "Select an icon", color = Color.Black, fontWeight = FontWeight.Bold)
+            Text(
+                text = "Select an icon",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.Bold,
+            )
             Spacer(modifier = Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 items(icons) { icon ->
@@ -174,7 +179,11 @@ fun ProjectAddScreenSkeleton(
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
-            Text(text = "Select icon color", color = Color.Black, fontWeight = FontWeight.Bold)
+            Text(
+                text = "Select icon color",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.Bold,
+            )
             Spacer(modifier = Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 items(colors) { color ->
@@ -188,7 +197,7 @@ fun ProjectAddScreenSkeleton(
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "Select icon background color",
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontWeight = FontWeight.Bold,
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -264,5 +273,21 @@ fun ProjectAddScreenSkeleton(
                 )
             })
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TaskAddScreenSkeletonPreview() {
+    TaskHiveTheme {
+        ProjectAddScreenSkeleton()
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun TaskAddScreenSkeletonPreviewDark() {
+    TaskHiveTheme {
+        ProjectAddScreenSkeleton()
     }
 }

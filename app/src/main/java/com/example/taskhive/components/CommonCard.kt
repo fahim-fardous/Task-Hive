@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -17,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,7 +34,6 @@ fun CommonCard(
     height: Dp = 200.dp,
     readOnly: Boolean = false,
 ) {
-    println("It is $value value")
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier =
@@ -40,7 +41,7 @@ fun CommonCard(
         elevation = CardDefaults.elevatedCardElevation(4.dp),
         colors =
             CardDefaults.elevatedCardColors(
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.background,
             ),
     ) {
         TextField(
@@ -63,7 +64,7 @@ fun CommonCard(
                 TextStyle(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
                 ),
             label = {
                 Text(
@@ -75,6 +76,7 @@ fun CommonCard(
             },
             maxLines = lines,
             readOnly = readOnly,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Next)
         )
     }
 }

@@ -20,6 +20,12 @@ class LogListViewModel @Inject constructor(
     private val _logs = MutableStateFlow<List<Log>>(emptyList())
     val logs = _logs.asStateFlow()
 
+    fun saveLog(log: Log) = viewModelScope.launch {
+        taskRepository.saveLog(log)
+        val logs = taskRepository.getLogsByTaskId(log.taskId)
+        _logs.value = logs
+    }
+
     fun getLogs(taskId: Int) = viewModelScope.launch {
         val logs = taskRepository.getLogsByTaskId(taskId)
         if (logs.isNotEmpty()) {

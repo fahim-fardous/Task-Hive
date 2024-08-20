@@ -36,4 +36,8 @@ class ProjectAddViewModel @Inject constructor(
         projectRepository.saveProject(project)
         _showMessage.value = "Project saved"
     }
+
+    fun updateMessage() = viewModelScope.launch {
+        _showMessage.value = null
+    }
 }

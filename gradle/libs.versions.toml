@@ -1,5 +1,6 @@
 [versions]
 agp = "8.5.0"
+coreSplashscreen = "1.0.1"
 hiltAndroidCompiler = "2.48"
 hiltNavigationCompose = "1.1.0"
 coilCompose = "2.6.0"
@@ -9,6 +10,7 @@ coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
+lazytable = "1.8.0"
 lifecycleRuntimeKtx = "2.8.2"
 activityCompose = "1.9.0"
 composeBom = "2024.04.01"
@@ -19,6 +21,7 @@ roomRuntime = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -43,6 +46,7 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+lazytable = { module = "io.github.oleksandrbalan:lazytable", version.ref = "lazytable" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

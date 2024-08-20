@@ -3,14 +3,38 @@ package com.example.taskhive.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import java.time.LocalDate
 
 @Composable
-fun CalendarCard(modifier: Modifier = Modifier) {
+fun CalendarCard(
+    selectedDate: (CalendarUiModel.Date) -> Unit = {},
+    calendarPreferences: CalendarPreferences,
+) {
+    val savedSelectedDate = remember { calendarPreferences.getSelectedDate() }
     val dataSource = CalendarDataSource()
-    val calendarUiModel = dataSource.getData(lastSelectedDate = dataSource.today)
+    var calendarUiModel by remember {
+        mutableStateOf(dataSource.getData(lastSelectedDate = savedSelectedDate ?: dataSource.today))
+    }
     Column(modifier = Modifier.fillMaxWidth()) {
-        Header(data = calendarUiModel)
-        Content(data = calendarUiModel)
+        Header(
+            data = calendarUiModel,
+        )
+        Content(data = calendarUiModel, onDateClick = { date ->
+            calendarUiModel =
+                calendarUiModel.copy(
+                    selectedDate = date,
+                    visibleDates =
+                        calendarUiModel.visibleDates.map {
+                            it.copy(isSelected = it.date.isEqual(date.date))
+                        },
+                )
+            selectedDate(date)
+            calendarPreferences.saveSelectedDate(date.date)
+        })
     }
 }
