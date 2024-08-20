@@ -2,6 +2,8 @@ package com.example.taskhive.presentation.task.list
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.icu.util.Calendar
+import android.icu.util.TimeZone
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,13 +16,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -33,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.taskhive.Screen
 import com.example.taskhive.components.CalendarCard
 import com.example.taskhive.components.CalendarPreferences
 import com.example.taskhive.components.DeleteAlertDialog
@@ -51,7 +59,9 @@ import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.utils.MockData
 import com.example.taskhive.utils.localDateToDate
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.util.Date
 
 @Composable
 fun TaskListScreen(
@@ -63,7 +73,7 @@ fun TaskListScreen(
     viewModel: TaskListViewModel,
 ) {
     val context = LocalContext.current
-    println(Screen.TaskList.route + " " + projectId)
+
     LaunchedEffect(Unit) {
         if (projectId != null) {
             if (CalendarPreferences(context).getSelectedDate() == null) {
@@ -148,6 +158,7 @@ fun TaskListScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListScreenSkeleton(
     goBack: () -> Unit = {},
@@ -181,6 +192,9 @@ fun TaskListScreenSkeleton(
     var showDeleteDialog by remember {
         mutableStateOf(false)
     }
+    var showCalendarDialog by remember {
+        mutableStateOf(false)
+    }
     var currentStatus by remember {
         mutableStateOf(TaskStatus.TODO)
     }
@@ -188,11 +202,12 @@ fun TaskListScreenSkeleton(
         mutableStateOf(LocalDate.now(ZoneOffset.UTC))
     }
     val calendarPreferences = remember { CalendarPreferences(context) }
-
     var selectedDate by remember {
         mutableStateOf(calendarPreferences.getSelectedDate() ?: LocalDate.now(ZoneOffset.UTC))
     }
-
+    var calendarSelectedDate by remember {
+        mutableStateOf<Date?>(null)
+    }
     var logStartDate by remember { mutableStateOf(localDateToDate(LocalDate.now())) }
     var logEndDate by remember { mutableStateOf(localDateToDate(LocalDate.now())) }
 
@@ -231,9 +246,9 @@ fun TaskListScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .padding(16.dp),
+                Modifier
+                    .padding(innerPadding)
+                    .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             CalendarCard(
@@ -242,6 +257,9 @@ fun TaskListScreenSkeleton(
                     currentDate = date.date
                     selectedDate = date.date
                     onDateChange(date.date)
+                },
+                onCalendarClick = {
+                    showCalendarDialog = true
                 },
                 calendarPreferences = calendarPreferences,
             )
@@ -367,9 +385,13 @@ fun TaskListScreenSkeleton(
                                             putExtra("taskName", task.title)
                                         },
                                     )
-                                }
-                                else{
-                                    Toast.makeText(context, "This task is for future", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            "This task is for future",
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
                                 }
                             },
                         )
@@ -386,8 +408,7 @@ fun TaskListScreenSkeleton(
                     if (timerState?.taskId != logTaskId) {
                         showTaskChangeDialog = false
                         changeTaskStatus(logTaskId, status, currentDate)
-                    }
-                    else{
+                    } else {
                         Toast.makeText(context, "Task is running", Toast.LENGTH_SHORT).show()
                     }
                 },
@@ -403,12 +424,67 @@ fun TaskListScreenSkeleton(
                     if (timerState?.taskId != logTaskId) {
                         showDeleteDialog = false
                         deleteTask(logTaskId, currentDate)
-                    }
-                    else{
+                    } else {
                         Toast.makeText(context, "Task is running", Toast.LENGTH_SHORT).show()
                     }
                 },
             )
+        }
+        if (showCalendarDialog) {
+            val initialSelectedDate =
+                remember {
+                    val localCalender = Calendar.getInstance()
+                    val utcCalender = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                    utcCalender.clear()
+                    utcCalender.set(
+                        localCalender.get(Calendar.YEAR),
+                        localCalender.get(Calendar.MONTH),
+                        localCalender.get(Calendar.DATE),
+                    )
+                    utcCalender.timeInMillis
+                }
+
+            val datePickerState =
+                rememberDatePickerState(
+                    initialSelectedDateMillis = initialSelectedDate,
+                )
+            val datePickerConfirmButtonEnabled =
+                remember {
+                    derivedStateOf { datePickerState.selectedDateMillis != null }
+                }
+
+            DatePickerDialog(onDismissRequest = { showCalendarDialog = false }, confirmButton = {
+                TextButton(
+                    onClick = {
+                        showCalendarDialog = false
+
+                        datePickerState.selectedDateMillis?.let {
+                            calendarSelectedDate = Date(it)
+                            onDateChange(
+                                LocalDateTime
+                                    .ofInstant(
+                                        Date(it).toInstant(),
+                                        ZoneOffset.UTC,
+                                    ).toLocalDate(),
+                            )
+                        }
+                    },
+                    enabled = datePickerConfirmButtonEnabled.value,
+                ) {
+                    Text(text = "OK")
+                }
+            }, dismissButton = {
+                TextButton(onClick = { showCalendarDialog = false }) {
+                    Text(text = "Cancel")
+                }
+            }) {
+                DatePicker(state = datePickerState, title = {
+                    Text(
+                        text = "Task Date",
+                        Modifier.padding(start = 24.dp, end = 12.dp, top = 16.dp),
+                    )
+                })
+            }
         }
     }
 }
