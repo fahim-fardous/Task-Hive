@@ -1,5 +1,6 @@
 package com.example.taskhive.service
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -14,6 +15,7 @@ import com.example.taskhive.R
 import com.example.taskhive.components.TimerItem
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.repository.TaskRepository
+import com.example.taskhive.utils.localDateToDate
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,12 +24,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.Date
+import java.time.LocalDate
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class TimerService : Service() {
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private val NOTIFICATION_ID = 1
 
     @Inject
@@ -52,6 +54,7 @@ class TimerService : Service() {
         when (intent?.action) {
             STOP_TIMER_ACTION -> {
                 stopTimer()
+                return START_NOT_STICKY
             }
 
             else -> {
@@ -60,7 +63,7 @@ class TimerService : Service() {
                 val currentTimer = _timerItem.value
 
                 if (currentTimer?.isRunning == true) {
-                    println("Another task is already running. Ignoring the new request.")
+                    println("Timer already running")
                 } else {
                     startTimer(taskId, taskName)
                 }
@@ -73,8 +76,7 @@ class TimerService : Service() {
         taskId: Int,
         taskName: String,
     ) {
-        stopTimer()
-
+        println("coming here to start")
         val stopIntent =
             Intent(this, TimerService::class.java).apply {
                 action = STOP_TIMER_ACTION
@@ -82,47 +84,56 @@ class TimerService : Service() {
         val stopPendingIntent =
             PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE)
 
-        _timerItem.value = TimerItem(taskId = taskId, isRunning = true, startTime = Date())
+        _timerItem.value =
+            TimerItem(
+                taskId = taskId,
+                isRunning = true,
+                startTime = localDateToDate(LocalDate.now()),
+            )
+        updateNotification(taskName, stopPendingIntent)
+        startForeground(NOTIFICATION_ID,updateNotification(taskName, stopPendingIntent))
 
-        updateNotification(taskName, formatTime(0L), stopPendingIntent)
 
         coroutineScope.launch {
             while (_timerItem.value?.isRunning == true) {
                 delay(1000L)
                 _timerItem.value = _timerItem.value?.copy(time = _timerItem.value!!.time + 1000L)
-
-                updateNotification(
-                    taskName,
-                    formatTime(_timerItem.value?.time ?: 0L),
-                    stopPendingIntent,
-                )
             }
         }
     }
 
     private fun stopTimer() {
         _timerItem.value?.let {
+            println(it.taskId)
             coroutineScope.launch {
                 val task = taskRepository.getTaskById(it.taskId)
                 taskRepository.saveLog(
                     Log(
                         duration = it.time,
                         startTime = it.startTime,
-                        endTime = Date(),
+                        endTime = localDateToDate(LocalDate.now()),
                         taskId = it.taskId,
+                        startDate = it.startTime,
+                        endDate = localDateToDate(LocalDate.now()),
                     ),
                 )
                 taskRepository.saveTask(task.copy(totalTimeSpend = task.totalTimeSpend + it.time))
-                taskRepository.getTaskByProject(task.plannedStartDate!!, task.project)
+                println("Saved to database")
+                _timerItem.value = null
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                NotificationManagerCompat.from(this@TimerService).cancel(NOTIFICATION_ID)
+                stopSelf()
             }
         }
-        _timerItem.value = null
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID)
+            println("Timer stopped by clicking button")
+            _timerItem.value = null
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            NotificationManagerCompat.from(this@TimerService).cancel(NOTIFICATION_ID)
     }
 
     override fun onDestroy() {
         coroutineScope.cancel()
+        println("Timer service destroyed")
         stopTimer()
         super.onDestroy()
     }
@@ -144,9 +155,8 @@ class TimerService : Service() {
 
     private fun updateNotification(
         taskName: String,
-        timerText: String,
         stopPendingIntent: PendingIntent,
-    ) {
+    ): Notification {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent =
             PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
@@ -154,9 +164,9 @@ class TimerService : Service() {
         val notification =
             NotificationCompat
                 .Builder(this, "TimerServiceChannel")
-                .setUsesChronometer(false)
+                .setUsesChronometer(true)
                 .setContentTitle("Task Hive")
-                .setContentText("$taskName - $timerText")
+                .setContentText(taskName)
                 .setSmallIcon(R.drawable.ic_stat_name)
                 .setContentIntent(pendingIntent)
                 .addAction(R.drawable.ic_stat_name, "Stop Timer", stopPendingIntent)
@@ -165,12 +175,6 @@ class TimerService : Service() {
 
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(NOTIFICATION_ID, notification)
-    }
-
-    private fun formatTime(millis: Long): String {
-        val hours = millis / 3600000
-        val minutes = (millis % 3600000) / 60000
-        val seconds = (millis % 60000) / 1000
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds)
+        return notification
     }
 }

@@ -72,4 +72,11 @@ fun convertMillisecondsToHoursFloat(milliseconds: Long): Float {
     return hours + 100f
 }
 
+fun formatDateToDDMMYYYY(date: Date): String {
+    val formatter = SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
+    return formatter.format(date)
+}
+
+
+
 fun localDateToDate(date: LocalDate): Date = Date.from(date.atStartOfDay(ZoneOffset.UTC).toInstant())

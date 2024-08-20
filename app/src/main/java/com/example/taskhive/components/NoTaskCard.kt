@@ -35,22 +35,6 @@ fun NoTaskCard(selectedStatus: Int = 0) {
             contentDescription = "no task",
             modifier = Modifier.size(150.dp),
         )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text =
-                when (selectedStatus) {
-                    0 -> "No Task Found"
-                    1 -> "No To Do Task Found"
-                    2 -> "No In Progress Task Found"
-                    3 -> "No Completed Task Found"
-                    else -> "No Task Found"
-                },
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 18.sp,
-            fontWeight = MaterialTheme.typography.titleMedium.fontWeight,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
     }
 }
 

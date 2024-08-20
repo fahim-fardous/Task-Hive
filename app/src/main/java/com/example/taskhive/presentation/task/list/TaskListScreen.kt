@@ -2,6 +2,7 @@ package com.example.taskhive.presentation.task.list
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -26,12 +27,15 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.taskhive.Screen
 import com.example.taskhive.components.CalendarCard
+import com.example.taskhive.components.CalendarPreferences
 import com.example.taskhive.components.DeleteAlertDialog
 import com.example.taskhive.components.NoTaskCard
 import com.example.taskhive.components.ProgressType
@@ -45,6 +49,7 @@ import com.example.taskhive.presentation.task.model.TaskUiModel
 import com.example.taskhive.service.TimerService
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.utils.MockData
+import com.example.taskhive.utils.localDateToDate
 import java.time.LocalDate
 import java.time.ZoneOffset
 
@@ -57,12 +62,21 @@ fun TaskListScreen(
     projectId: Int? = null,
     viewModel: TaskListViewModel,
 ) {
-    val timerState by TimerService.timerItem.collectAsState()
+    val context = LocalContext.current
+    println(Screen.TaskList.route + " " + projectId)
     LaunchedEffect(Unit) {
         if (projectId != null) {
-            viewModel.getTasks(LocalDate.now(ZoneOffset.UTC), projectId)
+            if (CalendarPreferences(context).getSelectedDate() == null) {
+                viewModel.getTasks(LocalDate.now(ZoneOffset.UTC), projectId)
+            } else {
+                viewModel.getTasks(CalendarPreferences(context).getSelectedDate()!!, projectId)
+            }
         } else {
-            viewModel.getTasks(LocalDate.now(ZoneOffset.UTC))
+            if (CalendarPreferences(context).getSelectedDate() == null) {
+                viewModel.getTasks(LocalDate.now(ZoneOffset.UTC))
+            } else {
+                viewModel.getTasks(CalendarPreferences(context).getSelectedDate()!!)
+            }
         }
     }
     LaunchedEffect(projectId) {
@@ -125,7 +139,6 @@ fun TaskListScreen(
             viewModel.addTime(timer, date)
         },
         getTasks = { date ->
-            println("Getting tasks for date: $date")
             if (projectId != null) {
                 viewModel.getTasks(date, projectId)
             } else {
@@ -151,6 +164,7 @@ fun TaskListScreenSkeleton(
     addTime: (Long, LocalDate) -> Unit = { _, _ -> },
     getTasks: (LocalDate) -> Unit = { _ -> },
 ) {
+    val context = LocalContext.current
     var logTaskId by remember {
         mutableIntStateOf(-1)
     }
@@ -173,16 +187,24 @@ fun TaskListScreenSkeleton(
     var currentDate by remember {
         mutableStateOf(LocalDate.now(ZoneOffset.UTC))
     }
+    val calendarPreferences = remember { CalendarPreferences(context) }
 
     var selectedDate by remember {
-        mutableStateOf(LocalDate.now(ZoneOffset.UTC))
+        mutableStateOf(calendarPreferences.getSelectedDate() ?: LocalDate.now(ZoneOffset.UTC))
     }
 
+    var logStartDate by remember { mutableStateOf(localDateToDate(LocalDate.now())) }
+    var logEndDate by remember { mutableStateOf(localDateToDate(LocalDate.now())) }
+
     val timerState by TimerService.timerItem.collectAsState()
-    LaunchedEffect(timerState?.isRunning) {
-        getTasks(selectedDate)
+    LaunchedEffect(key1 = timerState) {
+        snapshotFlow { timerState?.isRunning }
+            .collect { isRunning ->
+                if (isRunning == null) {
+                    getTasks(selectedDate)
+                }
+            }
     }
-    val context = LocalContext.current
     Scaffold(
         topBar =
             {
@@ -209,17 +231,19 @@ fun TaskListScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .padding(16.dp),
+            Modifier
+                .padding(innerPadding)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             CalendarCard(
                 selectedDate = { date ->
+                    selectedTaskStatus = 0
                     currentDate = date.date
                     selectedDate = date.date
                     onDateChange(date.date)
                 },
+                calendarPreferences = calendarPreferences,
             )
             Spacer(modifier = Modifier.height(16.dp))
             val filteredTasks =
@@ -292,11 +316,14 @@ fun TaskListScreenSkeleton(
                                             startTime = startTime,
                                             endTime = endTime,
                                             duration = timer,
+                                            startDate = logStartDate,
+                                            endDate = logEndDate,
                                         ),
                                         currentDate,
                                     )
                                     addTime(timer, selectedDate)
                                     getTasks(selectedDate)
+                                    logEndDate = localDateToDate(LocalDate.now())
                                 }
                             },
                             projectName = task.project.name,
@@ -317,13 +344,32 @@ fun TaskListScreenSkeleton(
                                 goToLogScreen(task.id)
                             },
                             onPlayClicked = {
-                                if (timerState?.taskId == null) {
+                                if (timerState?.taskId == null &&
+                                    (
+                                        (
+                                            task.plannedStartDate?.equals(
+                                                localDateToDate(LocalDate.now()),
+                                            ) == true
+                                        ) ||
+                                            (
+                                                task.plannedStartDate?.before(
+                                                    localDateToDate(
+                                                        LocalDate.now(),
+                                                    ),
+                                                ) == true
+                                            )
+                                    )
+                                ) {
+                                    logStartDate = localDateToDate(LocalDate.now())
                                     context.startService(
                                         Intent(context, TimerService::class.java).apply {
                                             putExtra("taskId", task.id)
                                             putExtra("taskName", task.title)
                                         },
                                     )
+                                }
+                                else{
+                                    Toast.makeText(context, "This task is for future", Toast.LENGTH_SHORT).show()
                                 }
                             },
                         )
@@ -337,17 +383,30 @@ fun TaskListScreenSkeleton(
                 currentStatus = currentStatus,
                 onDismiss = { showTaskChangeDialog = false },
                 onSave = { status ->
-                    showTaskChangeDialog = false
-                    changeTaskStatus(logTaskId, status, currentDate)
+                    if (timerState?.taskId != logTaskId) {
+                        showTaskChangeDialog = false
+                        changeTaskStatus(logTaskId, status, currentDate)
+                    }
+                    else{
+                        Toast.makeText(context, "Task is running", Toast.LENGTH_SHORT).show()
+                    }
                 },
             )
         }
         if (showDeleteDialog) {
             DeleteAlertDialog(
+                showDeleteDialog = {
+                    showDeleteDialog = it
+                },
                 title = "Are you sure you want to delete this task?",
                 onDeleteClicked = {
-                    showDeleteDialog = false
-                    deleteTask(logTaskId, currentDate)
+                    if (timerState?.taskId != logTaskId) {
+                        showDeleteDialog = false
+                        deleteTask(logTaskId, currentDate)
+                    }
+                    else{
+                        Toast.makeText(context, "Task is running", Toast.LENGTH_SHORT).show()
+                    }
                 },
             )
         }

@@ -29,7 +29,9 @@ interface TaskRepository {
 
     suspend fun getRecentInProgressTasks(): List<Task>
 
-    suspend fun getCompletedTaskCount(project: Project): Int
+    suspend fun getCompletedTaskCountByProject(project: Project): Int
+
+    suspend fun getCompletedTaskCount(startDate: Date): Int
 
     suspend fun getTodaysTasks(date:Date, project: Project?):List<Task>
 

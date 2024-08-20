@@ -72,9 +72,13 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         viewModel.getInProgressTasks()
     }
+    LaunchedEffect(Unit) {
+        viewModel.getTaskProgress()
+    }
     val projects by viewModel.projects.collectAsState()
     val inProgressTasks by viewModel.inProgressTasks.collectAsState()
     val numberOfProject by viewModel.count.collectAsState()
+    val progress by viewModel.progress.collectAsState()
     HomeScreenSkeleton(
         goToAddProject = goToAddProject,
         projects = projects,
@@ -83,6 +87,7 @@ fun HomeScreen(
         goToTaskList = { projectId ->
             goToTaskList(projectId)
         },
+        progress = progress,
     )
 }
 
@@ -93,6 +98,7 @@ fun HomeScreenSkeleton(
     inProgressTasks: List<TaskUiModel> = emptyList(),
     numberOfProject: Int = 0,
     goToTaskList: (Int?) -> Unit = {},
+    progress: Float = 0.0f,
 ) {
     Scaffold(
         topBar = {
@@ -168,7 +174,13 @@ fun HomeScreenSkeleton(
                     .fillMaxSize()
                     .padding(16.dp),
         ) {
-            ProgressCard(onClick = { /*TODO*/ }, progress = 0.85f, textColor = Color.White)
+            ProgressCard(
+                onViewTaskClick = {
+
+                },
+                progress = progress,
+                textColor = Color.White,
+            )
             if (inProgressTasks.isNotEmpty()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(

@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.taskhive.components.CalendarPreferences
 import com.example.taskhive.components.CommonCard
 import com.example.taskhive.components.CustomButton
 import com.example.taskhive.components.ProgressType
@@ -46,6 +47,7 @@ import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.utils.HelperFunctions.convert24HourTo12Hour
 import com.example.taskhive.utils.MockData.task
 import com.example.taskhive.utils.getReadableTime
+import com.example.taskhive.utils.localDateToDate
 import com.example.taskhive.utils.toDate
 import java.util.Date
 
@@ -125,6 +127,8 @@ fun TaskEditScreenSkeleton(
     }
     var showStartTimePickerDialog by remember { mutableStateOf(false) }
     var showEndTimePickerDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val calendarPreference = remember { CalendarPreferences(context) }
     Scaffold(
         topBar = {
             TopBar(
@@ -145,7 +149,8 @@ fun TaskEditScreenSkeleton(
                             editTask(
                                 task.title,
                                 task.description,
-                                task.plannedStartTime,
+                                task.plannedStartTime
+                                    ?: localDateToDate(calendarPreference.getSelectedDate()!!),
                                 task.plannedEndTime,
                                 task.taskStatus,
                             )

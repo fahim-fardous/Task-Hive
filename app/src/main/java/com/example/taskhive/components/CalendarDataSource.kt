@@ -39,9 +39,9 @@ class CalendarDataSource {
         CalendarUiModel(
             selectedDate = toItemUiModel(lastSelectedDate, true),
             visibleDates =
-                dateList.map {
-                    toItemUiModel(it, it.isEqual(lastSelectedDate))
-                },
+            dateList.map {
+                toItemUiModel(it, it.isEqual(lastSelectedDate))
+            },
         )
 
     private fun toItemUiModel(

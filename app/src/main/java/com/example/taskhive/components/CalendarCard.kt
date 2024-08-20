@@ -8,32 +8,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import java.time.LocalDate
 
 @Composable
-fun CalendarCard(selectedDate: (CalendarUiModel.Date) -> Unit = {}) {
+fun CalendarCard(
+    selectedDate: (CalendarUiModel.Date) -> Unit = {},
+    calendarPreferences: CalendarPreferences,
+) {
+    val savedSelectedDate = remember { calendarPreferences.getSelectedDate() }
     val dataSource = CalendarDataSource()
     var calendarUiModel by remember {
-        mutableStateOf(dataSource.getData(lastSelectedDate = dataSource.today))
+        mutableStateOf(dataSource.getData(lastSelectedDate = savedSelectedDate ?: dataSource.today))
     }
     Column(modifier = Modifier.fillMaxWidth()) {
         Header(
             data = calendarUiModel,
-            onPreviousDayClick = { startDate ->
-                val finalStartDate = startDate.minusDays(1)
-                calendarUiModel =
-                    dataSource.getData(
-                        startDate = finalStartDate,
-                        lastSelectedDate = calendarUiModel.selectedDate.date,
-                    )
-            },
-            onNextDayClick = { endDate ->
-                val finalEndDate = endDate.plusDays(1)
-                calendarUiModel =
-                    dataSource.getData(
-                        startDate = finalEndDate,
-                        lastSelectedDate = calendarUiModel.selectedDate.date,
-                    )
-            },
         )
         Content(data = calendarUiModel, onDateClick = { date ->
             calendarUiModel =
@@ -45,6 +34,7 @@ fun CalendarCard(selectedDate: (CalendarUiModel.Date) -> Unit = {}) {
                         },
                 )
             selectedDate(date)
+            calendarPreferences.saveSelectedDate(date.date)
         })
     }
 }
