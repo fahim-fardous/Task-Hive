@@ -34,7 +34,7 @@ sealed class Screen(
 
     data object Splash : Screen("splash")
 
-    data object TaskList : Screen("task/list/{projectId?}") {
+    data object TaskList : Screen("task/list/{projectId}") {
         fun createRoute(projectId: Int? = null): String = route.replaceFirst("{projectId}", "$projectId")
     }
 
