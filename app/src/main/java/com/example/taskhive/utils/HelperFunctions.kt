@@ -1,6 +1,7 @@
 package com.example.taskhive.utils
 
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 
 object HelperFunctions {
@@ -15,4 +16,20 @@ object HelperFunctions {
         // Format the Date object to the desired output format
         return outputFormat.format(date)
     }
+    fun isAfter12AM(date: Date): Boolean {
+        val calendar = Calendar.getInstance()
+        calendar.time = date
+
+        // Create a calendar instance representing 12:00 AM of the same day
+        val midnightCalendar = Calendar.getInstance()
+        midnightCalendar.time = date
+        midnightCalendar.set(Calendar.HOUR_OF_DAY, 0)
+        midnightCalendar.set(Calendar.MINUTE, 0)
+        midnightCalendar.set(Calendar.SECOND, 0)
+        midnightCalendar.set(Calendar.MILLISECOND, 0)
+
+        // Compare the given time with 12:00 AM
+        return calendar.after(midnightCalendar)
+    }
+
 }

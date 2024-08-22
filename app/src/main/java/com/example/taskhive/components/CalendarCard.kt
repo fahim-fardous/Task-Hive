@@ -9,12 +9,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import java.time.LocalDate
+import java.util.Date
 
 @Composable
 fun CalendarCard(
     selectedDate: (CalendarUiModel.Date) -> Unit = {},
     calendarPreferences: CalendarPreferences,
     onCalendarClick: () -> Unit = {},
+    onRangeClick: () -> Unit,
 ) {
     val savedSelectedDate = remember { calendarPreferences.getSelectedDate() }
     val dataSource = CalendarDataSource()
@@ -25,6 +27,7 @@ fun CalendarCard(
         Header(
             data = calendarUiModel,
             onCalendarClick = onCalendarClick,
+            onRangeClick = onRangeClick
         )
         Content(data = calendarUiModel, onDateClick = { date ->
             calendarUiModel =

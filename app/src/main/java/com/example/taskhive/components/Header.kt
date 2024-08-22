@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -12,11 +13,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import java.time.format.DateTimeFormatter
+import java.util.Date
 
 @Composable
 fun Header(
     data: CalendarUiModel,
-    onCalendarClick: () -> Unit = {},
+    onCalendarClick: () -> Unit,
+    onRangeClick: () -> Unit,
 ) {
     Row(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -36,6 +39,9 @@ fun Header(
         )
         IconButton(onClick = { onCalendarClick() }) {
             Icon(imageVector = Icons.Default.CalendarMonth, contentDescription = "select date")
+        }
+        IconButton(onClick = { onRangeClick() }) {
+            Icon(imageVector = Icons.Default.DateRange, contentDescription = "select date")
         }
     }
 }

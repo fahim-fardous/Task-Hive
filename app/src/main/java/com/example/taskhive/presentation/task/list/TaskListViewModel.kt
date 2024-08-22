@@ -1,6 +1,5 @@
 package com.example.taskhive.presentation.task.list
 
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskhive.domain.model.Day
@@ -12,7 +11,6 @@ import com.example.taskhive.domain.repository.DayRepository
 import com.example.taskhive.domain.repository.ProjectRepository
 import com.example.taskhive.domain.repository.TaskRepository
 import com.example.taskhive.presentation.task.model.TaskUiModel
-import com.example.taskhive.service.TimerService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -59,6 +57,28 @@ class TaskListViewModel
                 _tasks.value = tasks
             }
             println(_tasks.value)
+        }
+
+        fun getTaskByRange(
+            startDate: LocalDate,
+            endDate: LocalDate,
+            projectId: Int? = null,
+        ) = viewModelScope.launch {
+            if (projectId == null) {
+                _tasks.value =
+                    taskRepository
+                        .getTaskByRange(localDateToDate(startDate), localDateToDate(endDate))
+                        .map { it.toUiModel() }
+            } else {
+                val project = projectRepository.getProjectById(projectId)
+                _tasks.value =
+                    taskRepository
+                        .getTaskByRangeByProject(
+                            localDateToDate(startDate),
+                            localDateToDate(endDate),
+                            project,
+                        ).map { it.toUiModel() }
+            }
         }
 
         private suspend fun getTaskByProject(

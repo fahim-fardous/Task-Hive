@@ -90,4 +90,10 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks WHERE actualStartTime BETWEEN :startDate AND :endDate")
     suspend fun getWeeklyTask(startDate: Date, endDate: Date): List<Task>
+
+    @Query("SELECT * FROM tasks WHERE plannedStartDate BETWEEN :startDate AND :endDate")
+    suspend fun getTaskByRange(startDate: Date, endDate: Date): List<Task>
+
+    @Query("SELECT * FROM tasks WHERE project = :project AND plannedStartDate BETWEEN :startDate AND :endDate")
+    suspend fun getTaskByRangeAndProject(startDate: Date, endDate: Date, project: Project): List<Task>
 }

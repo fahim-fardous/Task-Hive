@@ -7,6 +7,7 @@ import android.icu.util.TimeZone
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -26,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,7 +45,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.taskhive.Screen
 import com.example.taskhive.components.CalendarCard
 import com.example.taskhive.components.CalendarPreferences
 import com.example.taskhive.components.DeleteAlertDialog
@@ -156,6 +158,16 @@ fun TaskListScreen(
                 viewModel.getTasks(date)
             }
         },
+        getTaskByRange = { start, end ->
+//            if (projectId != null) {
+//                viewModel.getTaskByRange(start, end, projectId)
+//            } else {
+//                viewModel.getTaskByRange(
+//                    LocalDate.ofInstant(Instant.ofEpochMilli(start), ZoneOffset.UTC)
+//                    (LocalDate.ofEpochDay(end)),
+//                )
+//            }
+        },
     )
 }
 
@@ -175,6 +187,7 @@ fun TaskListScreenSkeleton(
     onDateChange: (date: LocalDate) -> Unit = {},
     addTime: (Long, LocalDate) -> Unit = { _, _ -> },
     getTasks: (LocalDate) -> Unit = { _ -> },
+    getTaskByRange: (Long, Long) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
     var logTaskId by remember {
@@ -196,10 +209,19 @@ fun TaskListScreenSkeleton(
     var showCalendarDialog by remember {
         mutableStateOf(false)
     }
+    var showDateRangePicker by remember {
+        mutableStateOf(false)
+    }
     var currentStatus by remember {
         mutableStateOf(TaskStatus.TODO)
     }
     var currentDate by remember {
+        mutableStateOf(LocalDate.now(ZoneOffset.UTC))
+    }
+    var startDate by remember {
+        mutableStateOf(LocalDate.now(ZoneOffset.UTC))
+    }
+    var endDate by remember {
         mutableStateOf(LocalDate.now(ZoneOffset.UTC))
     }
     val calendarPreferences = remember { CalendarPreferences(context) }
@@ -263,6 +285,7 @@ fun TaskListScreenSkeleton(
                     showCalendarDialog = true
                 },
                 calendarPreferences = calendarPreferences,
+                onRangeClick = { showDateRangePicker = true },
             )
             Spacer(modifier = Modifier.height(16.dp))
             val filteredTasks =
@@ -485,6 +508,45 @@ fun TaskListScreenSkeleton(
                         Modifier.padding(start = 24.dp, end = 12.dp, top = 16.dp),
                     )
                 })
+            }
+        }
+        if (showDateRangePicker) {
+            val dateRangePickerState = rememberDateRangePickerState()
+
+            DatePickerDialog(
+                onDismissRequest = { showDateRangePicker = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+//                            getTaskByRange(
+//                                start = dateRangePickerState.selectedStartDateMillis!!,
+//                                end = dateRangePickerState.selectedEndDateMillis!!,
+//                            )
+                        },
+                    ) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {}) {
+                        Text("Cancel")
+                    }
+                },
+            ) {
+                DateRangePicker(
+                    state = dateRangePickerState,
+                    title = {
+                        Text(
+                            text = "Select date range",
+                        )
+                    },
+                    showModeToggle = false,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(500.dp)
+                            .padding(16.dp),
+                )
             }
         }
     }

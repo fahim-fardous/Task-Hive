@@ -41,4 +41,8 @@ interface TaskRepository {
 
     suspend fun getWeeklyTask(startDate: Date, endDate: Date): List<Task>
 
+    suspend fun getTaskByRange(startDate: Date, endDate: Date): List<Task>
+
+    suspend fun getTaskByRangeByProject(startDate: Date, endDate: Date, project: Project): List<Task>
+
 }

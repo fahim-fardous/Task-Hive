@@ -3,6 +3,7 @@ package com.example.taskhive.presentation.log.list
 import android.content.res.Configuration
 import android.icu.util.Calendar
 import android.icu.util.TimeZone
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -119,6 +121,7 @@ fun LogListScreenSkeleton(
     goBack: () -> Unit = {},
     saveLog: (Date, Date, Date, Date) -> Unit = { _, _, _, _ -> },
 ) {
+    val context = LocalContext.current
     val bottomSheetState = rememberModalBottomSheetState()
     var startTime by remember { mutableStateOf<Date?>(null) }
     var endTime by remember { mutableStateOf<Date?>(null) }
@@ -219,22 +222,18 @@ fun LogListScreenSkeleton(
                         Icon(Icons.Filled.CalendarMonth, contentDescription = "Add time")
                     }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    CommonCard(
-                        modifier = Modifier.weight(1f),
-                        value = endDate.getReadableDate(),
-                        onValueChange = { },
-                        label = "End Time",
-                        lines = 1,
-                        readOnly = true,
-                    )
-                    FloatingActionButton(onClick = { showEndDatePickerDialog = true }) {
-                        Icon(Icons.Filled.CalendarMonth, contentDescription = "Add time")
-                    }
-                }
                 CustomButton(text = "Save Log", onClick = {
                     showBottomSheet = false
-                    saveLog(startTime!!, endTime!!, startDate!!, endTime!!)
+                    if (startTime?.after(endTime!!) == true) {
+                        Toast
+                            .makeText(
+                                context,
+                                "Start time cannot be after end time",
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                    } else {
+                        saveLog(startTime!!, endTime!!, startDate!!, endDate!!)
+                    }
                 })
             }
         }
@@ -357,63 +356,6 @@ fun LogListScreenSkeleton(
             }
         }, dismissButton = {
             TextButton(onClick = { showStartDatePickerDialog = false }) {
-                Text(text = "Cancel")
-            }
-        }) {
-            DatePicker(state = datePickerState, title = {
-                Text(
-                    text = "Task Date",
-                    Modifier.padding(start = 24.dp, end = 12.dp, top = 16.dp),
-                )
-            })
-        }
-    }
-    if (showEndDatePickerDialog) {
-        val initialSelectedDate =
-            remember {
-                val localCalender = Calendar.getInstance()
-                val utcCalender = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-                utcCalender.clear()
-                utcCalender.set(
-                    localCalender.get(Calendar.YEAR),
-                    localCalender.get(Calendar.MONTH),
-                    localCalender.get(Calendar.DATE),
-                )
-                utcCalender.timeInMillis
-            }
-
-        val datePickerState =
-            rememberDatePickerState(
-                initialSelectedDateMillis = initialSelectedDate,
-                selectableDates =
-                    object : SelectableDates {
-                        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-
-                        override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis >= calendar.timeInMillis
-
-                        override fun isSelectableYear(year: Int): Boolean = year >= calendar.get(Calendar.YEAR)
-                    },
-            )
-        val datePickerConfirmButtonEnabled =
-            remember {
-                derivedStateOf { datePickerState.selectedDateMillis != null }
-            }
-
-        DatePickerDialog(onDismissRequest = { showEndDatePickerDialog = false }, confirmButton = {
-            TextButton(
-                onClick = {
-                    showEndDatePickerDialog = false
-
-                    datePickerState.selectedDateMillis?.let {
-                        startDate = Date(it)
-                    }
-                },
-                enabled = datePickerConfirmButtonEnabled.value,
-            ) {
-                Text(text = "OK")
-            }
-        }, dismissButton = {
-            TextButton(onClick = { showEndDatePickerDialog = false }) {
                 Text(text = "Cancel")
             }
         }) {
