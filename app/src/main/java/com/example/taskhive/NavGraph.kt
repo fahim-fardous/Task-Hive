@@ -7,6 +7,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.example.taskhive.presentation.analytics.AnalyticsScreen
 import com.example.taskhive.presentation.analytics.AnalyticsViewModel
 import com.example.taskhive.presentation.home.HomeScreen
@@ -103,6 +104,12 @@ fun MainNavHost(
                         nullable = true
                     },
                 ),
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = "taskhive://task/list/{projectId}"
+                    action = android.content.Intent.ACTION_VIEW
+                }
+            )
         ) { backStackEntry ->
             val viewModel: TaskListViewModel = hiltViewModel()
             TaskListScreen(

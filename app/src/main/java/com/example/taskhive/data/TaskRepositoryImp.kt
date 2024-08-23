@@ -21,9 +21,12 @@ class TaskRepositoryImp
                 db.taskDao().saveTask(task)
             }
 
-        override suspend fun getTaskByProject(date: Date, project: Project): List<Task> =
+        override suspend fun getTaskByProject(
+            date: Date,
+            project: Project,
+        ): List<Task> =
             withContext(Dispatchers.IO) {
-                db.taskDao().getTaskByProject(date,project)
+                db.taskDao().getTaskByProject(date, project)
             }
 
         override suspend fun getTaskCountByProject(project: Project): Int =
@@ -71,11 +74,12 @@ class TaskRepositoryImp
                 db.taskDao().getNumberOfCompletedTaskByProject(project)
             }
 
-    override suspend fun getCompletedTaskCount(startDate: Date):Int = withContext(Dispatchers.IO){
-        db.taskDao().getNumberOfCompletedTask(startDate)
-    }
+        override suspend fun getCompletedTaskCount(startDate: Date): Int =
+            withContext(Dispatchers.IO) {
+                db.taskDao().getNumberOfCompletedTask(startDate)
+            }
 
-    override suspend fun getTodaysTasks(
+        override suspend fun getTodaysTasks(
             date: Date,
             project: Project?,
         ): List<Task> =
@@ -88,19 +92,36 @@ class TaskRepositoryImp
                 db.taskDao().getAllTasks(date)
             }
 
-    override suspend fun getProgressForWeek(startDate: Date, endDate: Date): List<ProjectProgress> = withContext(Dispatchers.IO){
-        db.taskDao().getProgressForWeek(startDate, endDate)
-    }
+        override suspend fun getProgressForWeek(
+            startDate: Date,
+            endDate: Date,
+        ): List<ProjectProgress> =
+            withContext(Dispatchers.IO) {
+                db.taskDao().getProgressForWeek(startDate, endDate)
+            }
 
-    override suspend fun getWeeklyTask(startDate: Date, endDate: Date): List<Task> = withContext(Dispatchers.IO){
-        db.taskDao().getWeeklyTask(startDate, endDate)
-    }
+        override suspend fun getWeeklyTask(
+            startDate: Date,
+            endDate: Date,
+        ): List<Task> =
+            withContext(Dispatchers.IO) {
+                db.taskDao().getWeeklyTask(startDate, endDate)
+            }
 
-    override suspend fun getTaskByRange(startDate: Date, endDate: Date): List<Task> = withContext(Dispatchers.IO){
-        db.taskDao().getTaskByRange(startDate, endDate)
-    }
+        override suspend fun getTaskByRange(
+            startDate: Date,
+            endDate: Date,
+        ): List<Task> =
+            withContext(Dispatchers.IO) {
+                db.taskDao().getTaskByRange(startDate, endDate)
+            }
 
-    override suspend fun getTaskByRangeByProject(startDate: Date, endDate: Date, project: Project): List<Task> = withContext(Dispatchers.IO){
-        db.taskDao().getTaskByRangeAndProject(startDate, endDate, project)
+        override suspend fun getTaskByRangeByProject(
+            startDate: Date,
+            endDate: Date,
+            project: Project,
+        ): List<Task> =
+            withContext(Dispatchers.IO) {
+                db.taskDao().getTaskByRangeAndProject(startDate, endDate, project)
+            }
     }
-}

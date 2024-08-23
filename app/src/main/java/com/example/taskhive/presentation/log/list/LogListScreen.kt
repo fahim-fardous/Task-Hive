@@ -224,15 +224,12 @@ fun LogListScreenSkeleton(
                 }
                 CustomButton(text = "Save Log", onClick = {
                     showBottomSheet = false
-                    if (startTime?.after(endTime!!) == true) {
-                        Toast
-                            .makeText(
-                                context,
-                                "Start time cannot be after end time",
-                                Toast.LENGTH_SHORT,
-                            ).show()
-                    } else {
-                        saveLog(startTime!!, endTime!!, startDate!!, endDate!!)
+                    if(startTime != null && endTime != null && startDate != null){
+                        if(startTime?.after(endTime)==true){
+                            Toast.makeText(context, "Start time cannot be after end time", Toast.LENGTH_SHORT).show()
+                        }else{
+                            saveLog(startTime!!, endTime!!, startDate!!, endDate!!)
+                        }
                     }
                 })
             }

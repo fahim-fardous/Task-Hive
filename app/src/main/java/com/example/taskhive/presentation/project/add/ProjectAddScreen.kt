@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.taskhive.components.CalendarPreferences
 import com.example.taskhive.components.CommonCard
 import com.example.taskhive.components.CustomButton
 import com.example.taskhive.components.SelectableColor
@@ -88,6 +89,7 @@ fun ProjectAddScreenSkeleton(
     goBack: () -> Unit = {},
     saveProject: (Project) -> Unit = { _ -> },
 ) {
+    val context = LocalContext.current
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var endDate by remember { mutableStateOf<Date?>(null) }
@@ -120,6 +122,7 @@ fun ProjectAddScreenSkeleton(
                                 endDate = Date(System.currentTimeMillis() + 86400000),
                             ),
                         )
+                        CalendarPreferences(context = context).clearSelectedDate()
                     },
                 text = "Add Project",
                 trailingIcon = null,

@@ -40,9 +40,6 @@ class MainActivity : ComponentActivity() {
             viewModel.isLoading.value
         }
         calendarPreferences = CalendarPreferences(this)
-        // TODO Question here
-        println("==============")
-        println(calendarPreferences.getSelectedDate())
         setContent {
             TaskHiveTheme {
                 val startDestination by viewModel.startDestination.collectAsState()

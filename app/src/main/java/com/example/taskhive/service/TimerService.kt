@@ -5,11 +5,13 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.app.TaskStackBuilder
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.net.toUri
 import com.example.taskhive.MainActivity
 import com.example.taskhive.R
 import com.example.taskhive.components.TimerItem
@@ -60,12 +62,13 @@ class TimerService : Service() {
             else -> {
                 val taskId = intent?.getIntExtra("taskId", 0) ?: 0
                 val taskName = intent?.getStringExtra("taskName") ?: ""
+                val projectId = intent?.getIntExtra("projectId", 0) ?: 0
                 val currentTimer = _timerItem.value
 
                 if (currentTimer?.isRunning == true) {
                     println("Timer already running")
                 } else {
-                    startTimer(taskId, taskName)
+                    startTimer(taskId, taskName, projectId)
                 }
             }
         }
@@ -75,6 +78,7 @@ class TimerService : Service() {
     private fun startTimer(
         taskId: Int,
         taskName: String,
+        projectId: Int? = null,
     ) {
         println("coming here to start")
         val stopIntent =
@@ -90,9 +94,8 @@ class TimerService : Service() {
                 isRunning = true,
                 startTime = localDateToDate(LocalDate.now()),
             )
-        updateNotification(taskName, stopPendingIntent)
-        startForeground(NOTIFICATION_ID,updateNotification(taskName, stopPendingIntent))
-
+        updateNotification(taskName, projectId, stopPendingIntent)
+        startForeground(NOTIFICATION_ID, updateNotification(taskName, projectId, stopPendingIntent))
 
         coroutineScope.launch {
             while (_timerItem.value?.isRunning == true) {
@@ -125,10 +128,10 @@ class TimerService : Service() {
                 stopSelf()
             }
         }
-            println("Timer stopped by clicking button")
-            _timerItem.value = null
-            stopForeground(STOP_FOREGROUND_REMOVE)
-            NotificationManagerCompat.from(this@TimerService).cancel(NOTIFICATION_ID)
+        println("Timer stopped by clicking button")
+        _timerItem.value = null
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        NotificationManagerCompat.from(this@TimerService).cancel(NOTIFICATION_ID)
     }
 
     override fun onDestroy() {
@@ -155,11 +158,21 @@ class TimerService : Service() {
 
     private fun updateNotification(
         taskName: String,
+        projectId: Int? = null,
         stopPendingIntent: PendingIntent,
     ): Notification {
-        val notificationIntent = Intent(this, MainActivity::class.java)
+        val notificationIntent =
+            Intent(
+                Intent.ACTION_VIEW,
+                "taskhive://task/list/$projectId".toUri(),
+                this,
+                MainActivity::class.java,
+            )
         val pendingIntent =
-            PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
+            TaskStackBuilder.create(this).run {
+                addNextIntentWithParentStack(notificationIntent)
+                getPendingIntent(0, PendingIntent.FLAG_IMMUTABLE)
+            }
 
         val notification =
             NotificationCompat

@@ -61,6 +61,7 @@ import com.example.taskhive.service.TimerService
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.utils.MockData
 import com.example.taskhive.utils.localDateToDate
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -80,9 +81,12 @@ fun TaskListScreen(
     LaunchedEffect(Unit) {
         if (projectId != null) {
             if (CalendarPreferences(context).getSelectedDate() == null) {
-                viewModel.getTasks(LocalDate.now(ZoneOffset.UTC), projectId)
+                viewModel.getTasks(LocalDate.now(ZoneOffset.UTC), projectId = projectId)
             } else {
-                viewModel.getTasks(CalendarPreferences(context).getSelectedDate()!!, projectId)
+                viewModel.getTasks(
+                    CalendarPreferences(context).getSelectedDate()!!,
+                    projectId = projectId,
+                )
             }
         } else {
             if (CalendarPreferences(context).getSelectedDate() == null) {
@@ -107,66 +111,58 @@ fun TaskListScreen(
         projectId = projectId,
         tasks = tasks,
         project = project,
-        saveLog = { log, date ->
-            if (projectId != null) {
-                viewModel.saveLog(log, projectId, date)
-            } else {
-                viewModel.saveLog(log, null, date)
-            }
+        saveLog = { log, fromDate, toDate ->
+            viewModel.saveLog(log, fromDate, toDate, projectId)
         },
         goToLogScreen = { taskId ->
             goToLogListScreen(taskId)
         },
-        deleteTask = { taskId, date ->
-            if (projectId != null) {
-                viewModel.deleteTask(taskId, projectId, date)
-            } else {
-                viewModel.deleteTask(taskId, null, date)
-            }
+        deleteTask = { taskId, fromDate, toDate ->
+            viewModel.deleteTask(taskId, fromDate, toDate, projectId)
         },
-        changeTaskStatus = { taskId, status, date ->
-            if (projectId != null) {
-                viewModel.changeTaskStatus(
-                    taskId = taskId,
-                    projectId = projectId,
-                    status = status,
-                    date = date,
-                )
-            } else {
-                viewModel.changeTaskStatus(
-                    taskId = taskId,
-                    projectId = null,
-                    status = status,
-                    date = date,
-                )
-            }
+        changeTaskStatus = { taskId, status, fromDate, toDate ->
+            viewModel.changeTaskStatus(
+                taskId = taskId,
+                projectId = projectId,
+                status = status,
+                fromDate = fromDate,
+                toDate = toDate,
+            )
         },
-        onDateChange = { date ->
-            if (projectId != null) {
-                viewModel.getTasks(date, projectId)
-            } else {
-                viewModel.getTasks(date)
-            }
+        onDateChange = { fromDate, toDate ->
+            viewModel.getTasks(fromDate, toDate, projectId)
         },
         addTime = { timer, date ->
             viewModel.addTime(timer, date)
         },
-        getTasks = { date ->
-            if (projectId != null) {
-                viewModel.getTasks(date, projectId)
-            } else {
-                viewModel.getTasks(date)
-            }
+        getTasks = { fromDate, toDate ->
+            viewModel.getTasks(fromDate, toDate, projectId)
         },
         getTaskByRange = { start, end ->
-//            if (projectId != null) {
-//                viewModel.getTaskByRange(start, end, projectId)
-//            } else {
-//                viewModel.getTaskByRange(
-//                    LocalDate.ofInstant(Instant.ofEpochMilli(start), ZoneOffset.UTC)
-//                    (LocalDate.ofEpochDay(end)),
-//                )
-//            }
+            if (projectId != null) {
+                viewModel.getTaskByRange(
+                    Instant
+                        .ofEpochMilli(start)
+                        .atZone(ZoneOffset.UTC)
+                        .toLocalDate(),
+                    Instant
+                        .ofEpochMilli(end)
+                        .atZone(ZoneOffset.UTC)
+                        .toLocalDate(),
+                    projectId,
+                )
+            } else {
+                viewModel.getTaskByRange(
+                    Instant
+                        .ofEpochMilli(start)
+                        .atZone(ZoneOffset.UTC)
+                        .toLocalDate(),
+                    Instant
+                        .ofEpochMilli(end)
+                        .atZone(ZoneOffset.UTC)
+                        .toLocalDate(),
+                )
+            }
         },
     )
 }
@@ -180,13 +176,13 @@ fun TaskListScreenSkeleton(
     projectId: Int? = null,
     tasks: List<TaskUiModel> = emptyList(),
     project: Project? = null,
-    saveLog: (Log, LocalDate) -> Unit = { _, _ -> },
+    saveLog: (Log, LocalDate, LocalDate?) -> Unit = { _, _, _ -> },
     goToLogScreen: (Int) -> Unit = {},
-    deleteTask: (Int, LocalDate) -> Unit = { _, _ -> },
-    changeTaskStatus: (Int, TaskStatus, LocalDate) -> Unit = { _, _, _ -> },
-    onDateChange: (date: LocalDate) -> Unit = {},
+    deleteTask: (Int, LocalDate, LocalDate?) -> Unit = { _, _, _ -> },
+    changeTaskStatus: (Int, TaskStatus, LocalDate, LocalDate?) -> Unit = { _, _, _, _ -> },
+    onDateChange: (LocalDate, LocalDate?) -> Unit = { _, _ -> },
     addTime: (Long, LocalDate) -> Unit = { _, _ -> },
-    getTasks: (LocalDate) -> Unit = { _ -> },
+    getTasks: (LocalDate, LocalDate?) -> Unit = { _, _ -> },
     getTaskByRange: (Long, Long) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
@@ -219,10 +215,10 @@ fun TaskListScreenSkeleton(
         mutableStateOf(LocalDate.now(ZoneOffset.UTC))
     }
     var startDate by remember {
-        mutableStateOf(LocalDate.now(ZoneOffset.UTC))
+        mutableStateOf<LocalDate?>(null)
     }
     var endDate by remember {
-        mutableStateOf(LocalDate.now(ZoneOffset.UTC))
+        mutableStateOf<LocalDate?>(null)
     }
     val calendarPreferences = remember { CalendarPreferences(context) }
     var selectedDate by remember {
@@ -239,7 +235,7 @@ fun TaskListScreenSkeleton(
         snapshotFlow { timerState?.isRunning }
             .collect { isRunning ->
                 if (isRunning == null) {
-                    getTasks(selectedDate)
+                    getTasks(selectedDate, null)
                 }
             }
     }
@@ -277,9 +273,9 @@ fun TaskListScreenSkeleton(
             CalendarCard(
                 selectedDate = { date ->
                     selectedTaskStatus = 0
-                    currentDate = date.date
+                    startDate = date.date
                     selectedDate = date.date
-                    onDateChange(date.date)
+                    onDateChange(date.date, null)
                 },
                 onCalendarClick = {
                     showCalendarDialog = true
@@ -361,10 +357,11 @@ fun TaskListScreenSkeleton(
                                             startDate = logStartDate,
                                             endDate = logEndDate,
                                         ),
-                                        currentDate,
+                                        startDate ?: selectedDate,
+                                        endDate,
                                     )
                                     addTime(timer, selectedDate)
-                                    getTasks(selectedDate)
+                                    getTasks(startDate ?: selectedDate, endDate)
                                     logEndDate = localDateToDate(LocalDate.now())
                                 }
                             },
@@ -402,11 +399,12 @@ fun TaskListScreenSkeleton(
                                             )
                                     )
                                 ) {
-                                    logStartDate = localDateToDate(LocalDate.now())
+                                    logStartDate = localDateToDate(startDate ?: LocalDate.now())
                                     context.startService(
                                         Intent(context, TimerService::class.java).apply {
                                             putExtra("taskId", task.id)
                                             putExtra("taskName", task.title)
+                                            putExtra("projectId",task.project.id)
                                         },
                                     )
                                 } else {
@@ -431,7 +429,7 @@ fun TaskListScreenSkeleton(
                 onSave = { status ->
                     if (timerState?.taskId != logTaskId) {
                         showTaskChangeDialog = false
-                        changeTaskStatus(logTaskId, status, currentDate)
+                        changeTaskStatus(logTaskId, status, startDate ?: currentDate, endDate)
                     } else {
                         Toast.makeText(context, "Task is running", Toast.LENGTH_SHORT).show()
                     }
@@ -447,7 +445,7 @@ fun TaskListScreenSkeleton(
                 onDeleteClicked = {
                     if (timerState?.taskId != logTaskId) {
                         showDeleteDialog = false
-                        deleteTask(logTaskId, currentDate)
+                        deleteTask(logTaskId, startDate ?: currentDate, endDate)
                     } else {
                         Toast.makeText(context, "Task is running", Toast.LENGTH_SHORT).show()
                     }
@@ -490,6 +488,7 @@ fun TaskListScreenSkeleton(
                                         Date(it).toInstant(),
                                         ZoneOffset.UTC,
                                     ).toLocalDate(),
+                                endDate,
                             )
                         }
                     },
@@ -518,17 +517,28 @@ fun TaskListScreenSkeleton(
                 confirmButton = {
                     TextButton(
                         onClick = {
-//                            getTaskByRange(
-//                                start = dateRangePickerState.selectedStartDateMillis!!,
-//                                end = dateRangePickerState.selectedEndDateMillis!!,
-//                            )
+                            showDateRangePicker = false
+                            startDate =
+                                Instant
+                                    .ofEpochMilli(dateRangePickerState.selectedStartDateMillis!!)
+                                    .atZone(ZoneOffset.UTC)
+                                    .toLocalDate()
+                            endDate =
+                                Instant
+                                    .ofEpochMilli(dateRangePickerState.selectedEndDateMillis!!)
+                                    .atZone(ZoneOffset.UTC)
+                                    .toLocalDate()
+                            getTaskByRange(
+                                dateRangePickerState.selectedStartDateMillis!!,
+                                dateRangePickerState.selectedEndDateMillis!!,
+                            )
                         },
                     ) {
                         Text("OK")
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = {}) {
+                    TextButton(onClick = { showDateRangePicker = false }) {
                         Text("Cancel")
                     }
                 },
