@@ -2,6 +2,7 @@ package com.example.taskhive.presentation.task.add
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.taskhive.domain.model.Entry
 import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.domain.repository.ProjectRepository
@@ -45,7 +46,6 @@ class TaskAddViewModel
         }
 
         fun saveTask(
-            id: Int,
             title: String,
             description: String,
             plannedStartTime: Date,
@@ -68,9 +68,8 @@ class TaskAddViewModel
                 return@launch
             }
             val project = projectRepository.getProjectById(projectId)
-            taskRepository.saveTask(
+            val id = taskRepository.saveTask(
                 Task(
-                    id = id,
                     title = title,
                     description = description,
                     plannedStartTime = plannedStartTime,
@@ -79,6 +78,12 @@ class TaskAddViewModel
                     project = project,
                     taskStatus = TaskStatus.TODO,
                 ),
+            )
+            taskRepository.saveEntry(
+                Entry(
+                    taskId = id.toInt(),
+                    startDate = startDate ?: Date(),
+                )
             )
             _showMessage.value = "Task saved"
         }

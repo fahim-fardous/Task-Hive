@@ -77,7 +77,6 @@ fun TaskAddScreen(
         goBack = goBack,
         saveTask = { title, description, startTime, endTime, startDate ->
             viewModel.saveTask(
-                id = 0,
                 title = title,
                 description = description,
                 plannedStartTime = startTime ?: Date(),

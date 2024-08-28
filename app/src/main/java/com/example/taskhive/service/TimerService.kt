@@ -63,12 +63,13 @@ class TimerService : Service() {
                 val taskId = intent?.getIntExtra("taskId", 0) ?: 0
                 val taskName = intent?.getStringExtra("taskName") ?: ""
                 val projectId = intent?.getIntExtra("projectId", 0) ?: 0
+                val plannedDate = intent?.getLongExtra("plannedDate", 0) ?: 0
                 val currentTimer = _timerItem.value
 
                 if (currentTimer?.isRunning == true) {
                     println("Timer already running")
                 } else {
-                    startTimer(taskId, taskName, projectId)
+                    startTimer(taskId, taskName, projectId, plannedDate)
                 }
             }
         }
@@ -79,8 +80,8 @@ class TimerService : Service() {
         taskId: Int,
         taskName: String,
         projectId: Int? = null,
+        plannedDate: Long? = null,
     ) {
-        println("coming here to start")
         val stopIntent =
             Intent(this, TimerService::class.java).apply {
                 action = STOP_TIMER_ACTION
@@ -94,8 +95,8 @@ class TimerService : Service() {
                 isRunning = true,
                 startTime = localDateToDate(LocalDate.now()),
             )
-        updateNotification(taskName, projectId, stopPendingIntent)
-        startForeground(NOTIFICATION_ID, updateNotification(taskName, projectId, stopPendingIntent))
+        updateNotification(taskName, projectId, plannedDate, stopPendingIntent)
+        startForeground(NOTIFICATION_ID, updateNotification(taskName, projectId, plannedDate, stopPendingIntent))
 
         coroutineScope.launch {
             while (_timerItem.value?.isRunning == true) {
@@ -159,12 +160,13 @@ class TimerService : Service() {
     private fun updateNotification(
         taskName: String,
         projectId: Int? = null,
+        plannedDate: Long? = null,
         stopPendingIntent: PendingIntent,
     ): Notification {
         val notificationIntent =
             Intent(
                 Intent.ACTION_VIEW,
-                "taskhive://task/list/$projectId".toUri(),
+                "taskhive://task/list/$projectId/$plannedDate".toUri(),
                 this,
                 MainActivity::class.java,
             )

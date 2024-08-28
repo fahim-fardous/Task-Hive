@@ -4,11 +4,13 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.taskhive.domain.model.Entry
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.ProjectProgress
 import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.model.TaskStatus
+import com.example.taskhive.domain.model.TaskWithEntries
 import java.util.Date
 
 @Dao
@@ -17,17 +19,22 @@ interface TaskDao {
     suspend fun saveTask(task: Task): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveEntry(entry: Entry): Long
+
+    @Query("SELECT * FROM tasks WHERE id = :taskId")
+    suspend fun getTaskWithEntries(taskId: Int): TaskWithEntries
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveLog(log: Log): Long
 
     @Query("SELECT * FROM tasks")
-    suspend fun getAllTasks(): List<Task>
+    suspend fun getAllTask(): List<Task>
 
     @Query("SELECT * FROM tasks WHERE plannedStartDate = :date AND project = :project")
     suspend fun getTaskByProject(
         date: Date,
         project: Project,
     ): List<Task>
-
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     suspend fun getTaskById(taskId: Int): Task
@@ -74,7 +81,8 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE plannedStartDate=:date")
     suspend fun getAllTasks(date: Date): List<Task>
 
-    @Query("""
+    @Query(
+        """
         SELECT 
             DATE(plannedStartDate / 1000, 'unixepoch', 'localtime') as date, 
             SUM(totalTimeSpend) as totalTimeSpent
@@ -83,18 +91,29 @@ interface TaskDao {
         AND plannedStartDate BETWEEN :startDate AND :endDate
         GROUP BY DATE(plannedStartDate / 1000, 'unixepoch', 'localtime')
         ORDER BY date ASC
-    """)
+    """,
+    )
     suspend fun getProgressForWeek(
         startDate: Date,
         endDate: Date,
     ): List<ProjectProgress>
 
     @Query("SELECT * FROM tasks WHERE actualStartTime BETWEEN :startDate AND :endDate")
-    suspend fun getWeeklyTask(startDate: Date, endDate: Date): List<Task>
+    suspend fun getWeeklyTask(
+        startDate: Date,
+        endDate: Date,
+    ): List<Task>
 
     @Query("SELECT * FROM tasks WHERE plannedStartDate BETWEEN :startDate AND :endDate")
-    suspend fun getTaskByRange(startDate: Date, endDate: Date): List<Task>
+    suspend fun getTaskByRange(
+        startDate: Date,
+        endDate: Date,
+    ): List<Task>
 
     @Query("SELECT * FROM tasks WHERE project = :project AND plannedStartDate BETWEEN :startDate AND :endDate")
-    suspend fun getTaskByRangeAndProject(startDate: Date, endDate: Date, project: Project): List<Task>
+    suspend fun getTaskByRangeAndProject(
+        startDate: Date,
+        endDate: Date,
+        project: Project,
+    ): List<Task>
 }

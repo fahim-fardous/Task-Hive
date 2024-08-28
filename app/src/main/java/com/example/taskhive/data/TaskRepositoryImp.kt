@@ -1,6 +1,7 @@
 package com.example.taskhive.data
 
 import com.example.taskhive.data.local.AppDatabase
+import com.example.taskhive.domain.model.Entry
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.ProjectProgress
@@ -19,6 +20,11 @@ class TaskRepositoryImp
         override suspend fun saveTask(task: Task): Long =
             withContext(Dispatchers.IO) {
                 db.taskDao().saveTask(task)
+            }
+
+        override suspend fun saveEntry(entry: Entry): Long =
+            withContext(Dispatchers.IO) {
+                db.taskDao().saveEntry(entry)
             }
 
         override suspend fun getTaskByProject(
@@ -123,5 +129,10 @@ class TaskRepositoryImp
         ): List<Task> =
             withContext(Dispatchers.IO) {
                 db.taskDao().getTaskByRangeAndProject(startDate, endDate, project)
+            }
+
+        override suspend fun getAllTask(): List<Task> =
+            withContext(Dispatchers.IO) {
+                db.taskDao().getAllTask()
             }
     }

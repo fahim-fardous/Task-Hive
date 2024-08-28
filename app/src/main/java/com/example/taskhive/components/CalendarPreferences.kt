@@ -12,6 +12,7 @@ class CalendarPreferences(context: Context) {
 
     companion object {
         private const val SELECTED_DATE_KEY = "selected_date"
+        private const val RANGE_SELECTED_KEY = "range_selected"
     }
 
     fun saveSelectedDate(date: LocalDate) {

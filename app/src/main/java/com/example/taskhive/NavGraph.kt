@@ -35,8 +35,11 @@ sealed class Screen(
 
     data object Splash : Screen("splash")
 
-    data object TaskList : Screen("task/list/{projectId}") {
-        fun createRoute(projectId: Int? = null): String = route.replaceFirst("{projectId}", "$projectId")
+    data object TaskList : Screen("task/list/{projectId}/{plannedDate}") {
+        fun createRoute(
+            projectId: Int? = null,
+            plannedDate: Long? = null,
+        ): String = "task/list/$projectId/$plannedDate"
     }
 
     data object TaskAdd : Screen("task/add/{projectId}") {
@@ -103,13 +106,18 @@ fun MainNavHost(
                         type = NavType.StringType
                         nullable = true
                     },
+                    navArgument("plannedDate") {
+                        type = NavType.StringType
+                        nullable = true
+                    }
                 ),
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern = "taskhive://task/list/{projectId}"
-                    action = android.content.Intent.ACTION_VIEW
-                }
-            )
+            deepLinks =
+                listOf(
+                    navDeepLink {
+                        uriPattern = "taskhive://task/list/{projectId}/{plannedDate}"
+                        action = android.content.Intent.ACTION_VIEW
+                    },
+                ),
         ) { backStackEntry ->
             val viewModel: TaskListViewModel = hiltViewModel()
             TaskListScreen(
@@ -132,6 +140,7 @@ fun MainNavHost(
                     )
                 },
                 projectId = backStackEntry.arguments?.getString("projectId")?.toIntOrNull(),
+                plannedDate = backStackEntry.arguments?.getString("plannedDate")?.toLongOrNull(),
                 viewModel = viewModel,
             )
         }

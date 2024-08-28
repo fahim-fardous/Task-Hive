@@ -10,12 +10,13 @@ import com.example.taskhive.data.local.dao.DayDao
 import com.example.taskhive.data.local.dao.ProjectDao
 import com.example.taskhive.data.local.dao.TaskDao
 import com.example.taskhive.domain.model.Day
+import com.example.taskhive.domain.model.Entry
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
 
 @Database(
-    entities = [Task::class, Project::class, Log::class, Day::class],
+    entities = [Task::class, Project::class, Log::class, Day::class, Entry::class],
     version = 1,
     exportSchema = false,
 )

@@ -74,19 +74,27 @@ fun TaskListScreen(
     goToEditTask: (Int) -> Unit,
     goToLogListScreen: (Int) -> Unit,
     projectId: Int? = null,
+    plannedDate: Long? = null,
     viewModel: TaskListViewModel,
 ) {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         if (projectId != null) {
-            if (CalendarPreferences(context).getSelectedDate() == null) {
-                viewModel.getTasks(LocalDate.now(ZoneOffset.UTC), projectId = projectId)
-            } else {
+            if (plannedDate != null) {
                 viewModel.getTasks(
-                    CalendarPreferences(context).getSelectedDate()!!,
+                    Instant.ofEpochMilli(plannedDate).atZone(ZoneOffset.UTC).toLocalDate(),
                     projectId = projectId,
                 )
+            } else {
+                if (CalendarPreferences(context).getSelectedDate() == null) {
+                    viewModel.getTasks(LocalDate.now(ZoneOffset.UTC), projectId = projectId)
+                } else {
+                    viewModel.getTasks(
+                        CalendarPreferences(context).getSelectedDate()!!,
+                        projectId = projectId,
+                    )
+                }
             }
         } else {
             if (CalendarPreferences(context).getSelectedDate() == null) {
@@ -281,7 +289,9 @@ fun TaskListScreenSkeleton(
                     showCalendarDialog = true
                 },
                 calendarPreferences = calendarPreferences,
-                onRangeClick = { showDateRangePicker = true },
+                onRangeClick = {
+                    showDateRangePicker = true
+                },
             )
             Spacer(modifier = Modifier.height(16.dp))
             val filteredTasks =
@@ -404,7 +414,8 @@ fun TaskListScreenSkeleton(
                                         Intent(context, TimerService::class.java).apply {
                                             putExtra("taskId", task.id)
                                             putExtra("taskName", task.title)
-                                            putExtra("projectId",task.project.id)
+                                            putExtra("projectId", task.project.id)
+                                            putExtra("plannedDate", task.plannedStartDate!!.time)
                                         },
                                     )
                                 } else {
