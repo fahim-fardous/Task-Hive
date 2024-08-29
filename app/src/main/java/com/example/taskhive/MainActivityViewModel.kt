@@ -22,7 +22,7 @@ class MainActivityViewModel
                 val entries = taskRepository.getAllEntry()
                 entries.forEach { entry ->
                     val task = taskRepository.getTaskById(entry.taskId)
-                    if (task.taskStatus == TaskStatus.TODO &&
+                    if (task.taskStatus != TaskStatus.DONE &&
                         task.plannedStartDate?.before(
                             localDateToDate(LocalDate.now()),
                         ) == true

@@ -36,6 +36,7 @@ class MainActivity : ComponentActivity() {
         installSplashScreen().setKeepOnScreenCondition {
             viewModel.isLoading.value
         }
+        mainActivityViewModel.incompleteTask()
         calendarPreferences = CalendarPreferences(this)
         setContent {
             TaskHiveTheme {
