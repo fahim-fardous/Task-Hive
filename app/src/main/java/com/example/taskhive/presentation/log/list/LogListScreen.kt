@@ -24,6 +24,7 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
@@ -47,7 +48,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.taskhive.components.CommonCard
 import com.example.taskhive.components.CustomButton
 import com.example.taskhive.components.TimePickerDialog
 import com.example.taskhive.components.TopBar
@@ -159,6 +159,8 @@ fun LogListScreenSkeleton(
         ) {
             LazyColumn {
                 items(logs) { log ->
+                    println("-------------------------")
+                    println(log.endTime.getReadableTime())
                     LogItem(
                         isFirst = logs.indexOf(log) == 0,
                         startTime = log.startTime,
@@ -184,12 +186,12 @@ fun LogListScreenSkeleton(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    CommonCard(
+                    OutlinedTextField(
                         modifier = Modifier.weight(1f),
                         value = startTime.getReadableTime(),
-                        onValueChange = { },
-                        label = "Start Time",
-                        lines = 1,
+                        onValueChange = {},
+                        placeholder = { Text(text = "Start Time") },
+                        maxLines = 1,
                         readOnly = true,
                     )
                     FloatingActionButton(onClick = { showStartTimePickerDialog = true }) {
@@ -197,12 +199,12 @@ fun LogListScreenSkeleton(
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    CommonCard(
+                    OutlinedTextField(
                         modifier = Modifier.weight(1f),
                         value = endTime.getReadableTime(),
-                        onValueChange = { },
-                        label = "End Time",
-                        lines = 1,
+                        onValueChange = {},
+                        placeholder = { Text(text = "End Time") },
+                        maxLines = 1,
                         readOnly = true,
                     )
                     FloatingActionButton(onClick = { showEndTimePickerDialog = true }) {
@@ -210,12 +212,12 @@ fun LogListScreenSkeleton(
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    CommonCard(
+                    OutlinedTextField(
                         modifier = Modifier.weight(1f),
                         value = startDate.getReadableDate(),
-                        onValueChange = { },
-                        label = "End Time",
-                        lines = 1,
+                        onValueChange = {},
+                        placeholder = { Text(text = "End Date") },
+                        maxLines = 1,
                         readOnly = true,
                     )
                     FloatingActionButton(onClick = { showStartDatePickerDialog = true }) {
@@ -224,10 +226,15 @@ fun LogListScreenSkeleton(
                 }
                 CustomButton(text = "Save Log", onClick = {
                     showBottomSheet = false
-                    if(startTime != null && endTime != null && startDate != null){
-                        if(startTime?.after(endTime)==true){
-                            Toast.makeText(context, "Start time cannot be after end time", Toast.LENGTH_SHORT).show()
-                        }else{
+                    if (startTime != null && endTime != null && startDate != null) {
+                        if (startTime?.after(endTime) == true) {
+                            Toast
+                                .makeText(
+                                    context,
+                                    "Start time cannot be after end time",
+                                    Toast.LENGTH_SHORT,
+                                ).show()
+                        } else {
                             saveLog(startTime!!, endTime!!, startDate!!, endDate!!)
                         }
                     }

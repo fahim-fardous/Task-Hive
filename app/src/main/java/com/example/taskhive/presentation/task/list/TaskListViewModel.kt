@@ -3,6 +3,7 @@ package com.example.taskhive.presentation.task.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskhive.domain.model.Day
+import com.example.taskhive.domain.model.Entry
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.TaskStatus
@@ -11,7 +12,6 @@ import com.example.taskhive.domain.repository.DayRepository
 import com.example.taskhive.domain.repository.ProjectRepository
 import com.example.taskhive.domain.repository.TaskRepository
 import com.example.taskhive.presentation.task.model.TaskUiModel
-import com.example.taskhive.utils.getReadableDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,11 +35,10 @@ class TaskListViewModel
         private val _project = MutableStateFlow<Project?>(null)
         val project = _project.asStateFlow()
 
-        fun getProjectById(
-            projectId: Int,
-        ) = viewModelScope.launch {
-            _project.value = projectRepository.getProjectById(projectId)
-        }
+        fun getProjectById(projectId: Int) =
+            viewModelScope.launch {
+                _project.value = projectRepository.getProjectById(projectId)
+            }
 
         fun getTasks(
             fromDate: LocalDate,
@@ -74,8 +73,12 @@ class TaskListViewModel
                                 localDateToDate(toDate),
                             ).map { it.toUiModel() }
                 } else {
-                    _tasks.value =
-                        taskRepository.getAllTasks(localDateToDate(fromDate)).map { it.toUiModel() }
+                    taskRepository.getTaskWithEntriesByDate(localDateToDate(fromDate)).map {
+                        _tasks.value =
+                            it.tasks.map { task ->
+                                task.toUiModel()
+                            }
+                    }
                 }
             } else {
                 val project = projectRepository.getProjectById(projectId)
@@ -135,6 +138,13 @@ class TaskListViewModel
                     taskStatus = if ((task.totalTimeSpend + log.duration) > 0L) TaskStatus.IN_PROGRESS else TaskStatus.TODO,
                 )
             taskRepository.saveTask(updatedTask)
+            taskRepository.saveEntry(
+                Entry(
+                    date = log.startDate,
+                    taskId = log.taskId,
+                    duration = log.duration,
+                ),
+            )
             getTaskByProject(fromDate, toDate, projectId)
             println("Calling project block from save log")
         }

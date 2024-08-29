@@ -11,12 +11,15 @@ import com.example.taskhive.data.local.dao.ProjectDao
 import com.example.taskhive.data.local.dao.TaskDao
 import com.example.taskhive.domain.model.Day
 import com.example.taskhive.domain.model.Entry
+import com.example.taskhive.domain.model.EntryWithTasks
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.domain.model.TaskEntryCrossRef
+import com.example.taskhive.domain.model.TaskWithEntries
 
 @Database(
-    entities = [Task::class, Project::class, Log::class, Day::class, Entry::class],
+    entities = [Task::class, Project::class, Log::class, Day::class, Entry::class, TaskEntryCrossRef::class],
     version = 1,
     exportSchema = false,
 )

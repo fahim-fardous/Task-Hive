@@ -372,7 +372,7 @@ fun TaskListScreenSkeleton(
                                     )
                                     addTime(timer, selectedDate)
                                     getTasks(startDate ?: selectedDate, endDate)
-                                    logEndDate = localDateToDate(LocalDate.now())
+                                    logEndDate = Date()
                                 }
                             },
                             projectName = task.project.name,
@@ -409,7 +409,7 @@ fun TaskListScreenSkeleton(
                                             )
                                     )
                                 ) {
-                                    logStartDate = localDateToDate(startDate ?: LocalDate.now())
+                                    logStartDate = Date()
                                     context.startService(
                                         Intent(context, TimerService::class.java).apply {
                                             putExtra("taskId", task.id)

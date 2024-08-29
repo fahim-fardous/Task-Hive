@@ -4,12 +4,12 @@ import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
 
-data class TaskWithEntries(
-    @Embedded val task: Task,
+data class EntryWithTasks(
+    @Embedded val entry: Entry,
     @Relation(
-        parentColumn = "id",
-        entityColumn = "date",
+        parentColumn = "date",
+        entityColumn = "id",
         associateBy = Junction(TaskEntryCrossRef::class)
     )
-    val entries: List<Entry>
+    val tasks: List<Task>
 )

@@ -63,27 +63,28 @@ class TaskAddViewModel
             ) {
                 return@launch
             }
-            if(plannedStartTime.after(plannedEndTime)){
+            if (plannedStartTime.after(plannedEndTime)) {
                 _showMessage.value = "Start time cannot be after end time"
                 return@launch
             }
             val project = projectRepository.getProjectById(projectId)
-            val id = taskRepository.saveTask(
-                Task(
-                    title = title,
-                    description = description,
-                    plannedStartTime = plannedStartTime,
-                    plannedEndTime = plannedEndTime,
-                    plannedStartDate = startDate,
-                    project = project,
-                    taskStatus = TaskStatus.TODO,
-                ),
-            )
+            val id =
+                taskRepository.saveTask(
+                    Task(
+                        title = title,
+                        description = description,
+                        plannedStartTime = plannedStartTime,
+                        plannedEndTime = plannedEndTime,
+                        plannedStartDate = startDate,
+                        project = project,
+                        taskStatus = TaskStatus.TODO,
+                    ),
+                )
             taskRepository.saveEntry(
                 Entry(
+                    date = startDate ?: Date(),
                     taskId = id.toInt(),
-                    startDate = startDate ?: Date(),
-                )
+                ),
             )
             _showMessage.value = "Task saved"
         }

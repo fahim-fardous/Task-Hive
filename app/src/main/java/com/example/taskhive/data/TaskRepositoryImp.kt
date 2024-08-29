@@ -2,6 +2,7 @@ package com.example.taskhive.data
 
 import com.example.taskhive.data.local.AppDatabase
 import com.example.taskhive.domain.model.Entry
+import com.example.taskhive.domain.model.EntryWithTasks
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.ProjectProgress
@@ -135,4 +136,16 @@ class TaskRepositoryImp
             withContext(Dispatchers.IO) {
                 db.taskDao().getAllTask()
             }
+
+    override suspend fun getTaskWithEntriesByDate(date: Date): List<EntryWithTasks> = withContext(Dispatchers.IO){
+        db.taskDao().getTaskWithEntriesByDate(date)
     }
+
+    override suspend fun getAllEntry(): List<Entry> = withContext(Dispatchers.IO){
+        db.taskDao().getAllEntry()
+    }
+
+    override suspend fun getEntryByDate(date: Date, taskId: Int): Int = withContext(Dispatchers.IO){
+        db.taskDao().getEntryByDate(date, taskId)
+    }
+}

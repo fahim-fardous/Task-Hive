@@ -33,6 +33,7 @@ fun LogItem(
     duration: Long,
     taskId: Int = 0,
 ) {
+    println("${startTime.getReadableTime()} - ${endTime.getReadableTime()}")
     Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             if (!isFirst) {
