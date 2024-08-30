@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.taskhive.domain.model.Entry
-import com.example.taskhive.domain.model.EntryWithTasks
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.ProjectProgress
@@ -31,11 +30,20 @@ interface TaskDao {
     @Query("SELECT * FROM tasks")
     suspend fun getAllTask(): List<Task>
 
-    @Query("SELECT * FROM tasks AS t LEFT JOIN entries AS e ON t.id = e.taskId WHERE e.date = :date")
-    suspend fun getTaskWithEntriesByDate(date: Date): List<EntryWithTasks>
+    @Query(
+        """
+    SELECT * FROM tasks AS t 
+    INNER JOIN entries AS e ON t.id = e.taskId 
+    WHERE e.date = :date
+""",
+    )
+    suspend fun getTaskWithEntries(date: Date): List<TaskWithEntries>
 
     @Query("SELECT COUNT(*) FROM entries WHERE date=:date AND taskId=:taskId")
-    suspend fun getEntryByDate(date: Date, taskId: Int): Int
+    suspend fun getEntryByDate(
+        date: Date,
+        taskId: Int,
+    ): Int
 
     @Query("SELECT * FROM entries")
     suspend fun getAllEntry(): List<Entry>

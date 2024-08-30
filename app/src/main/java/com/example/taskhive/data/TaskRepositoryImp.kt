@@ -2,11 +2,11 @@ package com.example.taskhive.data
 
 import com.example.taskhive.data.local.AppDatabase
 import com.example.taskhive.domain.model.Entry
-import com.example.taskhive.domain.model.EntryWithTasks
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.ProjectProgress
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.domain.model.TaskWithEntries
 import com.example.taskhive.domain.repository.TaskRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -137,15 +137,21 @@ class TaskRepositoryImp
                 db.taskDao().getAllTask()
             }
 
-    override suspend fun getTaskWithEntriesByDate(date: Date): List<EntryWithTasks> = withContext(Dispatchers.IO){
-        db.taskDao().getTaskWithEntriesByDate(date)
-    }
+        override suspend fun getTaskWithEntries(date: Date): List<TaskWithEntries> =
+            withContext(Dispatchers.IO) {
+                db.taskDao().getTaskWithEntries(date)
+            }
 
-    override suspend fun getAllEntry(): List<Entry> = withContext(Dispatchers.IO){
-        db.taskDao().getAllEntry()
-    }
+        override suspend fun getAllEntry(): List<Entry> =
+            withContext(Dispatchers.IO) {
+                db.taskDao().getAllEntry()
+            }
 
-    override suspend fun getEntryByDate(date: Date, taskId: Int): Int = withContext(Dispatchers.IO){
-        db.taskDao().getEntryByDate(date, taskId)
+        override suspend fun getEntryByDate(
+            date: Date,
+            taskId: Int,
+        ): Int =
+            withContext(Dispatchers.IO) {
+                db.taskDao().getEntryByDate(date, taskId)
+            }
     }
-}

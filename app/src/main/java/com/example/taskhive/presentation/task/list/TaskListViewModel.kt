@@ -73,12 +73,11 @@ class TaskListViewModel
                                 localDateToDate(toDate),
                             ).map { it.toUiModel() }
                 } else {
-                    taskRepository.getTaskWithEntriesByDate(localDateToDate(fromDate)).map {
-                        _tasks.value =
-                            it.tasks.map { task ->
-                                task.toUiModel()
-                            }
-                    }
+                    _tasks.value =
+                        taskRepository.getTaskWithEntries(localDateToDate(fromDate)).map {
+                            println("Coming home ${it.task}")
+                            it.task.toUiModel()
+                        }
                 }
             } else {
                 val project = projectRepository.getProjectById(projectId)
@@ -91,10 +90,12 @@ class TaskListViewModel
                                 project,
                             ).map { it.toUiModel() }
                 } else {
+                    println("Coming home top")
+                    val taskWithEntries = taskRepository.getTaskWithEntries(localDateToDate(fromDate))
                     _tasks.value =
-                        taskRepository
-                            .getTaskByProject(localDateToDate(fromDate), project)
-                            .map { it.toUiModel() }
+                        taskWithEntries.map {
+                            it.task.toUiModel()
+                        }
                 }
             }
         }

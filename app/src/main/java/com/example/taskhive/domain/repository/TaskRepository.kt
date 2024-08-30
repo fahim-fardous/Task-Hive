@@ -1,11 +1,11 @@
 package com.example.taskhive.domain.repository
 
 import com.example.taskhive.domain.model.Entry
-import com.example.taskhive.domain.model.EntryWithTasks
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.ProjectProgress
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.domain.model.TaskWithEntries
 import java.util.Date
 
 interface TaskRepository {
@@ -68,7 +68,7 @@ interface TaskRepository {
 
     suspend fun getAllTask(): List<Task>
 
-    suspend fun getTaskWithEntriesByDate(date: Date): List<EntryWithTasks>
+    suspend fun getTaskWithEntries(date: Date): List<TaskWithEntries>
 
     suspend fun getAllEntry(): List<Entry>
 

@@ -3,8 +3,8 @@ package com.example.taskhive.domain.model
 import androidx.room.Entity
 import java.util.Date
 
-@Entity(primaryKeys = ["id", "date"])
+@Entity(primaryKeys = ["id", "taskId"])
 data class TaskEntryCrossRef(
     val id: Int,
-    val date: Date
+    val taskId:Int
 )

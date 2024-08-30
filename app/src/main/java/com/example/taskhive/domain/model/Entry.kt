@@ -7,8 +7,8 @@ import java.util.Date
 @Entity(tableName = "entries")
 data class Entry(
     @PrimaryKey(autoGenerate = true)
-    val id:Int = 0,
-    val date: Date,
+    val entryId: Int = 0,
     val taskId: Int,
-    val duration:Long = 0L
+    val date: Date,
+    val duration: Long = 0L,
 )

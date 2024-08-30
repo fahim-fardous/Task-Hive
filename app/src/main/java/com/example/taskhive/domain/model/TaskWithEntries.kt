@@ -8,8 +8,7 @@ data class TaskWithEntries(
     @Embedded val task: Task,
     @Relation(
         parentColumn = "id",
-        entityColumn = "date",
-        associateBy = Junction(TaskEntryCrossRef::class)
+        entityColumn = "taskId",
     )
     val entries: List<Entry>
 )
