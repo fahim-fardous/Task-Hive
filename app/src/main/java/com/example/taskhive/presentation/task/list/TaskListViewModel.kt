@@ -93,7 +93,7 @@ class TaskListViewModel
                     println("Coming home top")
                     val taskWithEntries = taskRepository.getTaskWithEntries(localDateToDate(fromDate))
                     _tasks.value =
-                        taskWithEntries.map {
+                        taskWithEntries.filter { it.task.project.id == project.id }.map {
                             it.task.toUiModel()
                         }
                 }

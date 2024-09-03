@@ -45,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.taskhive.components.CommonCard
+import com.example.taskhive.components.CommonDatePicker
 import com.example.taskhive.components.CustomButton
 import com.example.taskhive.components.TimePickerDialog
 import com.example.taskhive.components.TopBar
@@ -291,60 +292,10 @@ fun TaskAddScreenSkeleton(
     // -----------------------------------------------------------------------------------
 
     if (showDatePickerDialog) {
-        val initialSelectedDate =
-            remember {
-                val localCalender = Calendar.getInstance()
-                val utcCalender = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-                utcCalender.clear()
-                utcCalender.set(
-                    localCalender.get(Calendar.YEAR),
-                    localCalender.get(Calendar.MONTH),
-                    localCalender.get(Calendar.DATE),
-                )
-                utcCalender.timeInMillis
-            }
-
-        val datePickerState =
-            rememberDatePickerState(
-                initialSelectedDateMillis = initialSelectedDate,
-                selectableDates =
-                    object : SelectableDates {
-                        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-
-                        override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis >= calendar.timeInMillis
-
-                        override fun isSelectableYear(year: Int): Boolean = year >= calendar.get(Calendar.YEAR)
-                    },
-            )
-        val datePickerConfirmButtonEnabled =
-            remember {
-                derivedStateOf { datePickerState.selectedDateMillis != null }
-            }
-
-        DatePickerDialog(onDismissRequest = { showDatePickerDialog = false }, confirmButton = {
-            TextButton(
-                onClick = {
-                    showDatePickerDialog = false
-
-                    datePickerState.selectedDateMillis?.let {
-                        startDate = Date(it)
-                    }
-                },
-                enabled = datePickerConfirmButtonEnabled.value,
-            ) {
-                Text(text = "OK")
-            }
-        }, dismissButton = {
-            TextButton(onClick = { showDatePickerDialog = false }) {
-                Text(text = "Cancel")
-            }
-        }) {
-            DatePicker(state = datePickerState, title = {
-                Text(
-                    text = "Task Date",
-                    Modifier.padding(start = 24.dp, end = 12.dp, top = 16.dp),
-                )
-            })
-        }
+        CommonDatePicker(title = "Select Start Date", onDateSelected = {
+            startDate = Date(it)
+        }, onDismiss = {
+            showDatePickerDialog = false
+        })
     }
 }

@@ -1,8 +1,6 @@
 package com.example.taskhive.presentation.project.add
 
 import android.content.res.Configuration
-import android.icu.util.Calendar
-import android.icu.util.TimeZone
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,22 +16,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.taskhive.components.CalendarPreferences
 import com.example.taskhive.components.CommonCard
+import com.example.taskhive.components.CommonDatePicker
 import com.example.taskhive.components.CustomButton
 import com.example.taskhive.components.SelectableColor
 import com.example.taskhive.components.SelectableIcon
@@ -157,7 +150,7 @@ fun ProjectAddScreenSkeleton(
                     modifier = Modifier.weight(1f),
                     value = endDate.getReadableDate(),
                     onValueChange = { },
-                    label = "End Time",
+                    label = "End Date",
                     lines = 1,
                     readOnly = true,
                 )
@@ -221,61 +214,9 @@ fun ProjectAddScreenSkeleton(
     // -----------------------------------------------------------------------------------
 
     if (showDatePickerDialog) {
-        val initialSelectedDate =
-            remember {
-                val localCalender = Calendar.getInstance()
-                val utcCalender = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-                utcCalender.clear()
-                utcCalender.set(
-                    localCalender.get(Calendar.YEAR),
-                    localCalender.get(Calendar.MONTH),
-                    localCalender.get(Calendar.DATE),
-                )
-                utcCalender.timeInMillis
-            }
-
-        val datePickerState =
-            rememberDatePickerState(
-                initialSelectedDateMillis = initialSelectedDate,
-                selectableDates =
-                    object : SelectableDates {
-                        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-
-                        override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis >= calendar.timeInMillis
-
-                        override fun isSelectableYear(year: Int): Boolean = year >= calendar.get(Calendar.YEAR)
-                    },
-            )
-        val datePickerConfirmButtonEnabled =
-            remember {
-                derivedStateOf { datePickerState.selectedDateMillis != null }
-            }
-
-        DatePickerDialog(onDismissRequest = { showDatePickerDialog = false }, confirmButton = {
-            TextButton(
-                onClick = {
-                    showDatePickerDialog = false
-
-                    datePickerState.selectedDateMillis?.let {
-                        endDate = Date(it)
-                    }
-                },
-                enabled = datePickerConfirmButtonEnabled.value,
-            ) {
-                Text(text = "OK")
-            }
-        }, dismissButton = {
-            TextButton(onClick = { showDatePickerDialog = false }) {
-                Text(text = "Cancel")
-            }
-        }) {
-            DatePicker(state = datePickerState, title = {
-                Text(
-                    text = "Task Date",
-                    Modifier.padding(start = 24.dp, end = 12.dp, top = 16.dp),
-                )
-            })
-        }
+        CommonDatePicker(title = "Select End Date", onDateSelected = {
+            endDate = Date(it)
+        }, onDismiss = { showDatePickerDialog = false })
     }
 }
 

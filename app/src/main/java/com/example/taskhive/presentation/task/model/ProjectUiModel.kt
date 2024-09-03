@@ -1,5 +1,7 @@
 package com.example.taskhive.presentation.task.model
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import java.util.Date
 
 data class ProjectUiModel(
@@ -12,4 +14,5 @@ data class ProjectUiModel(
     val selectedIcon: Int,
     val selectedIconColor: Int,
     val selectedBorderColor: Int,
+    var isSelected: MutableState<Boolean> = mutableStateOf(false)
 )

@@ -98,6 +98,7 @@ class TimerService : Service() {
         updateNotification(taskName, projectId, plannedDate, stopPendingIntent)
         startForeground(NOTIFICATION_ID, updateNotification(taskName, projectId, plannedDate, stopPendingIntent))
 
+
         coroutineScope.launch {
             while (_timerItem.value?.isRunning == true) {
                 delay(1000L)
@@ -145,14 +146,14 @@ class TimerService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel =
                 NotificationChannel(
                     "TimerServiceChannel",
                     "Timer Service Channel",
                     NotificationManager.IMPORTANCE_LOW,
                 )
-            val manager = getSystemService(NotificationManager::class.java)
+            val manager = getSystemService(NotificationManager::class.java) as NotificationManager
             manager.createNotificationChannel(channel)
         }
     }

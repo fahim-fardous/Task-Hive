@@ -132,12 +132,12 @@ fun HomeIndexScreenSkeleton(
                     },
                     goToLogListScreen = { taskId ->
                         goToLogListScreen(taskId)
-                    }
+                    },
                 )
             }
             composable(HomeTabScreen.Notes.route) {
                 val viewModel: AnalyticsViewModel = hiltViewModel()
-                AnalyticsScreen(viewModel = viewModel)
+                AnalyticsScreen(goBack = { navController.popBackStack() }, viewModel = viewModel)
             }
             composable(HomeTabScreen.Profile.route) {
                 ProfileScreen()

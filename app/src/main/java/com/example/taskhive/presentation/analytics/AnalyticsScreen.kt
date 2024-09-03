@@ -1,8 +1,6 @@
 package com.example.taskhive.presentation.analytics
 
 import android.content.Context
-import android.content.Intent
-import android.os.Environment
 import android.widget.Toast
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
@@ -13,6 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
@@ -20,6 +20,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,59 +34,109 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.taskhive.components.CommonDateRangePicker
 import com.example.taskhive.components.HeaderItem
+import com.example.taskhive.components.SelectProjectsDialog
 import com.example.taskhive.components.TableItem
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.presentation.task.model.ProjectUiModel
 import com.example.taskhive.utils.MockData
-import com.example.taskhive.utils.formatDateToDDMMYYYY
-import com.example.taskhive.utils.formatTime
 import com.example.taskhive.utils.getReadableDate
 import com.example.taskhive.utils.getReadableTime
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileWriter
-import java.io.IOException
+import com.example.taskhive.utils.localDateToDate
 import java.util.Date
 
 @Composable
-fun AnalyticsScreen(viewModel: AnalyticsViewModel = hiltViewModel()) {
+fun AnalyticsScreen(
+    goBack: () -> Unit,
+    viewModel: AnalyticsViewModel = hiltViewModel(),
+) {
     // TODO Adjustable cell size
     // TODO Notification recreate issue
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.getWeeklyTask()
+        viewModel.getAllProjects()
     }
     val weeklyReport by viewModel.weeklyTask.collectAsState()
+    val projects by viewModel.projects.collectAsState()
+    val showMessage by viewModel.showMessage.collectAsState()
 
-    AnalyticsScreenSkeleton(context = context, tasks = weeklyReport)
+    LaunchedEffect(showMessage) {
+        if (showMessage != null) {
+            Toast.makeText(context, showMessage, Toast.LENGTH_SHORT).show()
+            viewModel.resetMessage()
+        }
+    }
+
+    AnalyticsScreenSkeleton(
+        context = context,
+        goBack = goBack,
+        tasks = weeklyReport,
+        projects,
+        exportData = { selectedProjects ->
+            viewModel.downloadReport(context, selectedProjects)
+        },
+        taskByRange = { startDate, endDate ->
+            viewModel.getWeeklyTask(startDate, endDate)
+        },
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnalyticsScreenSkeleton(
     context: Context = LocalContext.current,
+    goBack: () -> Unit = {},
     tasks: List<Task> = emptyList(),
+    projects: List<ProjectUiModel> = emptyList(),
+    exportData: (List<ProjectUiModel>) -> Unit = {},
+    taskByRange: (Date, Date) -> Unit = { _, _ -> },
 ) {
     var showDropdownMenu by remember { mutableStateOf(false) }
+    var showSelectProjectDialog by remember { mutableStateOf(false) }
+    var showDateRangePickerDialog by remember {
+        mutableStateOf(false)
+    }
     Scaffold(topBar = {
-        CenterAlignedTopAppBar(title = { Text(text = "Analytics") }, actions = {
-            IconButton(onClick = { showDropdownMenu = true }) {
-                Icon(Icons.Filled.MoreVert, contentDescription = "show options")
-                DropdownMenu(
-                    expanded = showDropdownMenu,
-                    onDismissRequest = { showDropdownMenu = false },
-                ) {
-                    DropdownMenuItem(text = { Text(text = "Download report") }, onClick = {
-                        downloadReport(context, tasks)
-                        showDropdownMenu = false
-                    })
+        CenterAlignedTopAppBar(
+            title = { Text(text = "Analytics", color = MaterialTheme.colorScheme.onBackground) },
+            navigationIcon = {
+                IconButton(onClick = { goBack() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "go back",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                    )
                 }
-            }
-        })
+            },
+            actions = {
+                IconButton(onClick = { showDateRangePickerDialog = true }) {
+                    Icon(
+                        imageVector = Icons.Filled.DateRange,
+                        contentDescription = "date range",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                    )
+                }
+                IconButton(onClick = { showDropdownMenu = true }) {
+                    Icon(
+                        Icons.Filled.MoreVert,
+                        contentDescription = "show options",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                    )
+                    DropdownMenu(
+                        expanded = showDropdownMenu,
+                        onDismissRequest = { showDropdownMenu = false },
+                    ) {
+                        DropdownMenuItem(text = { Text(text = "Download report") }, onClick = {
+                            showSelectProjectDialog = true
+                            showDropdownMenu = false
+                        })
+                    }
+                }
+            },
+        )
     }) { innerPadding ->
         Column(
             modifier =
@@ -127,73 +178,28 @@ fun AnalyticsScreenSkeleton(
             }
         }
     }
-}
 
-private fun downloadReport(
-    context: Context,
-    tasks: List<Task>,
-) {
-    val coroutineScope = CoroutineScope(Dispatchers.IO)
-
-    coroutineScope.launch {
-        val csvContent = generateCsvContent(tasks)
-        val csvFile = saveCsvFile(context, csvContent)
-
-        if (csvFile != null) {
-            shareCsvFile(context, csvFile)
-        } else {
-            // Handle the error
-            Toast.makeText(context, "Error saving CSV file", Toast.LENGTH_SHORT).show()
-        }
-    }
-}
-
-private fun generateCsvContent(tasks: List<Task>): String {
-    val csvBuilder = StringBuilder()
-    csvBuilder.append("Project, Task, Tag, Start Date, Start Time, End Time, Duration\n")
-    for (task in tasks) {
-        csvBuilder.append(
-            "${task.project.name}, ${task.title}, Tag, ${formatDateToDDMMYYYY(task.plannedStartDate!!)}, ${task.plannedStartTime.getReadableTime()}, ${task.plannedEndTime.getReadableTime()}, ${
-                formatTime(
-                    task.totalTimeSpend,
-                )
-            }\n",
+    if (showSelectProjectDialog) {
+        SelectProjectsDialog(
+            projects = projects,
+            onDismissRequest = { showSelectProjectDialog = false },
+            onConfirm = { selectedProjects ->
+                println("SelectedProducts: $selectedProjects")
+                exportData(selectedProjects)
+                showSelectProjectDialog = false
+            },
         )
     }
-    return csvBuilder.toString()
-}
 
-private fun saveCsvFile(
-    context: Context,
-    csvContent: String,
-): File? {
-    val fileName = "task_report.csv"
-    val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), fileName)
-
-    try {
-        val fileWriter = FileWriter(file)
-        fileWriter.append(csvContent)
-        fileWriter.flush()
-        fileWriter.close()
-        return file
-    } catch (e: IOException) {
-        e.printStackTrace()
+    if (showDateRangePickerDialog) {
+        CommonDateRangePicker(
+            title = "Select date range",
+            onRangeSelected = { startDate, endDate ->
+                taskByRange(localDateToDate(startDate), localDateToDate(endDate))
+            },
+            onDismiss = { showDateRangePickerDialog = false },
+        )
     }
-    return null
-}
-
-private fun shareCsvFile(
-    context: Context,
-    file: File,
-) {
-    val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-    val shareIntent =
-        Intent().apply {
-            action = Intent.ACTION_VIEW
-            setDataAndType(fileUri, "text/csv")
-            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-        }
-    context.startActivity(Intent.createChooser(shareIntent, "Share CSV File"))
 }
 
 @Preview

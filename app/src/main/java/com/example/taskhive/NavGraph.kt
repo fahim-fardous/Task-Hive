@@ -179,6 +179,7 @@ fun MainNavHost(
         composable(Screen.Analytics.route) {
             val viewModel: AnalyticsViewModel = hiltViewModel()
             AnalyticsScreen(
+                goBack = {navController.popBackStack()},
                 viewModel = viewModel,
             )
         }
