@@ -6,7 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -31,7 +31,8 @@ import com.example.taskhive.presentation.analytics.AnalyticsScreen
 import com.example.taskhive.presentation.analytics.AnalyticsViewModel
 import com.example.taskhive.presentation.home.HomeScreen
 import com.example.taskhive.presentation.home.HomeViewModel
-import com.example.taskhive.presentation.profile.ProfileScreen
+import com.example.taskhive.presentation.profile.SettingsScreen
+import com.example.taskhive.presentation.profile.SettingsViewModel
 import com.example.taskhive.presentation.task.list.TaskListScreen
 import com.example.taskhive.presentation.task.list.TaskListViewModel
 
@@ -140,7 +141,13 @@ fun HomeIndexScreenSkeleton(
                 AnalyticsScreen(goBack = { navController.popBackStack() }, viewModel = viewModel)
             }
             composable(HomeTabScreen.Profile.route) {
-                ProfileScreen()
+                val viewModel: SettingsViewModel = hiltViewModel()
+                SettingsScreen(
+                    viewModel = viewModel,
+                    goBack = {
+                        navController.popBackStack()
+                    }
+                )
             }
         }
     }
@@ -168,5 +175,5 @@ private sealed class HomeTabScreen(
 
     data object Notes : HomeTabScreen("notes_screen", "Analytics", Icons.Default.Analytics)
 
-    data object Profile : HomeTabScreen("profile_screen", "Profile", Icons.Filled.Person)
+    data object Profile : HomeTabScreen("settings_screen", "Setting", Icons.Filled.Settings)
 }

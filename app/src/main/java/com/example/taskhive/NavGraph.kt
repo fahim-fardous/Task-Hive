@@ -16,7 +16,8 @@ import com.example.taskhive.presentation.log.list.LogListScreen
 import com.example.taskhive.presentation.log.list.LogListViewModel
 import com.example.taskhive.presentation.onboard.OnBoardScreen
 import com.example.taskhive.presentation.onboard.OnBoardViewModel
-import com.example.taskhive.presentation.profile.ProfileScreen
+import com.example.taskhive.presentation.profile.SettingsScreen
+import com.example.taskhive.presentation.profile.SettingsViewModel
 import com.example.taskhive.presentation.project.add.ProjectAddScreen
 import com.example.taskhive.presentation.project.add.ProjectAddViewModel
 import com.example.taskhive.presentation.task.add.TaskAddScreen
@@ -54,7 +55,7 @@ sealed class Screen(
 
     data object Analytics : Screen("analytics")
 
-    data object Profile : Screen("profile")
+    data object Settings : Screen("settings")
 
     data object HomeIndex : Screen("home/index")
 
@@ -183,8 +184,12 @@ fun MainNavHost(
                 viewModel = viewModel,
             )
         }
-        composable(Screen.Profile.route) {
-            ProfileScreen()
+        composable(Screen.Settings.route) {
+            val viewModel:SettingsViewModel = hiltViewModel()
+            SettingsScreen(
+                viewModel = viewModel,
+                goBack = {navController.popBackStack()}
+            )
         }
         composable(Screen.HomeIndex.route) {
             HomeIndexScreen(

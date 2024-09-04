@@ -63,11 +63,13 @@ class AnalyticsViewModel
             }
 
         fun getWeeklyTask(
-            startDate: Date = Date(),
-            endDate: Date = Date(),
+            startDate: Date = localDateToDate(startOfWeek),
+            endDate: Date = localDateToDate(endOfWeek),
         ) = viewModelScope.launch {
+            println("Start date $startDate and End date $endDate")
             val weeklyTasks = taskRepository.getWeeklyTask(startDate, endDate)
             if (weeklyTasks.isNotEmpty()) {
+                println("Coming here to print")
                 _weeklyTask.value = weeklyTasks
             } else {
                 _showMessage.value = "No tasks found for the selected date range."

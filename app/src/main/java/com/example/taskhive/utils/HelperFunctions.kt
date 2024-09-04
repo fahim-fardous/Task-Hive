@@ -3,6 +3,7 @@ package com.example.taskhive.utils
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
 object HelperFunctions {
     fun convert24HourTo12Hour(time24: String): String {
@@ -30,6 +31,11 @@ object HelperFunctions {
 
         // Compare the given time with 12:00 AM
         return calendar.after(midnightCalendar)
+    }
+
+    fun getDateTimeFromMillis(millis: Long, pattern: String): String {
+        val simpleDateFormat = SimpleDateFormat(pattern, Locale.getDefault())
+        return simpleDateFormat.format(Date(millis))
     }
 
 }

@@ -116,7 +116,7 @@ interface TaskDao {
         endDate: Date,
     ): List<ProjectProgress>
 
-    @Query("SELECT * FROM tasks WHERE actualStartTime BETWEEN :startDate AND :endDate")
+    @Query("SELECT * FROM tasks WHERE plannedStartDate BETWEEN :startDate AND :endDate")
     suspend fun getWeeklyTask(
         startDate: Date,
         endDate: Date,
