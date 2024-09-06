@@ -2,8 +2,6 @@ package com.example.taskhive.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,12 +14,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.taskhive.domain.model.Day
-import com.example.taskhive.domain.model.ProjectProgress
 import com.example.taskhive.ui.theme.appColor
 import com.example.taskhive.utils.convertMillisecondsToHoursFloat
 
@@ -30,16 +25,19 @@ fun WeeklyProgressBarChart(progressList: List<Day>) {
     val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     var chartData: List<Pair<String, Float>> = emptyList()
     progressList.forEach { _ ->
-        chartData = days.map { day ->
-            val matchingProgress = progressList.find { progress ->
-                day == progress.date.toString().take(3)
+        chartData =
+            days.map { day ->
+                val matchingProgress =
+                    progressList.find { progress ->
+                        day == progress.date.toString().take(3)
+                    }
+                val hoursSpent =
+                    matchingProgress?.totalTimeSpend?.let {
+                        convertMillisecondsToHoursFloat(it)
+                    } ?: 0f
+                println(hoursSpent)
+                Pair(day, hoursSpent)
             }
-            val hoursSpent = matchingProgress?.totalTimeSpend?.let {
-                convertMillisecondsToHoursFloat(it)
-            } ?: 0f
-            println(hoursSpent)
-            Pair(day, hoursSpent)
-        }
     }
     val spacingFromLeft = 100f
     val spacingFromBottom = 60f
@@ -63,11 +61,11 @@ fun WeeklyProgressBarChart(progressList: List<Day>) {
 
     Canvas(
         modifier =
-        Modifier
-            .fillMaxSize()
-            .height(400.dp)
-            .background(androidx.compose.ui.graphics.Color.White)
-            .padding(16.dp),
+            Modifier
+                .fillMaxSize()
+                .height(400.dp)
+                .background(androidx.compose.ui.graphics.Color.White)
+                .padding(16.dp),
     ) {
         val canvasHeight = size.height
         val canvasWidth = size.width
@@ -141,5 +139,3 @@ fun WeeklyProgressBarChart(progressList: List<Day>) {
         )
     }
 }
-
-

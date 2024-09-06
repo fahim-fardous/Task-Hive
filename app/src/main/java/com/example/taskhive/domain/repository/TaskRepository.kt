@@ -72,5 +72,8 @@ interface TaskRepository {
 
     suspend fun getAllEntry(): List<Entry>
 
-    suspend fun getEntryByDate(date:Date, taskId: Int):Int
+    suspend fun getEntryByDate(
+        date: Date,
+        taskId: Int,
+    ): Int
 }

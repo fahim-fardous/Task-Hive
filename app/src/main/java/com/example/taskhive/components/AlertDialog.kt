@@ -11,31 +11,32 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 
 @Composable
-fun DeleteAlertDialog(
-    showDeleteDialog: (Boolean) -> Unit = {},
+fun AlertDialog(
+    showDialog: (Boolean) -> Unit = {},
     title: String,
-    onDeleteClicked: () -> Unit,
+    confirmText: String = "Delete",
+    onClicked: () -> Unit,
 ) {
-    var showDialog by remember { mutableStateOf(false) }
+    var showAlertDialog by remember { mutableStateOf(false) }
     AlertDialog(
         text = { Text(text = title) },
         onDismissRequest = {
-            showDialog = false
-            showDeleteDialog(false)
+            showAlertDialog = false
+            showDialog(false)
         },
         confirmButton = {
             TextButton(onClick = {
-                showDialog = false
-                showDeleteDialog(false)
-                onDeleteClicked()
+                showAlertDialog = false
+                showDialog(false)
+                onClicked()
             }) {
-                Text(text = "Delete", color = Color.Red)
+                Text(text = confirmText, color = Color.Red)
             }
         },
         dismissButton = {
             TextButton(onClick = {
-                showDialog = false
-                showDeleteDialog(false)
+                showAlertDialog = false
+                showDialog(false)
             }) {
                 Text(text = "Cancel")
             }

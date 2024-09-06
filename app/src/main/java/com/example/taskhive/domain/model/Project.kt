@@ -17,12 +17,13 @@ data class Project(
     val selectedBorderColor: Int,
 )
 
-fun Project.toUiModel() = ProjectUiModel(
-    id = id,
-    name = name,
-    description = description,
-    endDate = endDate,
-    selectedIcon = selectedIcon,
-    selectedIconColor = selectedIconColor,
-    selectedBorderColor = selectedBorderColor
-)
+fun Project.toUiModel() =
+    ProjectUiModel(
+        id = id,
+        name = name,
+        description = description,
+        endDate = endDate,
+        selectedIcon = selectedIcon,
+        selectedIconColor = selectedIconColor,
+        selectedBorderColor = selectedBorderColor,
+    )

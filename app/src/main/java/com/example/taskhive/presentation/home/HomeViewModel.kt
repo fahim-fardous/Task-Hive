@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskhive.domain.model.Project
-import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.domain.model.toUiModel
 import com.example.taskhive.domain.repository.ProjectRepository
 import com.example.taskhive.domain.repository.TaskRepository
@@ -75,7 +74,11 @@ class HomeViewModel
             viewModelScope.launch {
                 val tasks = taskRepository.getAllTasks(localDateToDate(LocalDate.now()))
                 _progress.value =
-                    (taskRepository.getCompletedTaskCount(localDateToDate(LocalDate.now())).toFloat() / tasks.size)
+                    (
+                        taskRepository
+                            .getCompletedTaskCount(localDateToDate(LocalDate.now()))
+                            .toFloat() / tasks.size
+                    )
             }
 
         private suspend fun getNumberOfCompletedTask(project: Project): Int = taskRepository.getCompletedTaskCountByProject(project)

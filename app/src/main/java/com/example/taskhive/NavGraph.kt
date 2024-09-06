@@ -16,8 +16,8 @@ import com.example.taskhive.presentation.log.list.LogListScreen
 import com.example.taskhive.presentation.log.list.LogListViewModel
 import com.example.taskhive.presentation.onboard.OnBoardScreen
 import com.example.taskhive.presentation.onboard.OnBoardViewModel
-import com.example.taskhive.presentation.profile.SettingsScreen
-import com.example.taskhive.presentation.profile.SettingsViewModel
+import com.example.taskhive.presentation.settings.SettingsScreen
+import com.example.taskhive.presentation.settings.SettingsViewModel
 import com.example.taskhive.presentation.project.add.ProjectAddScreen
 import com.example.taskhive.presentation.project.add.ProjectAddViewModel
 import com.example.taskhive.presentation.task.add.TaskAddScreen
@@ -110,7 +110,7 @@ fun MainNavHost(
                     navArgument("plannedDate") {
                         type = NavType.StringType
                         nullable = true
-                    }
+                    },
                 ),
             deepLinks =
                 listOf(
@@ -180,15 +180,15 @@ fun MainNavHost(
         composable(Screen.Analytics.route) {
             val viewModel: AnalyticsViewModel = hiltViewModel()
             AnalyticsScreen(
-                goBack = {navController.popBackStack()},
+                goBack = { navController.popBackStack() },
                 viewModel = viewModel,
             )
         }
         composable(Screen.Settings.route) {
-            val viewModel:SettingsViewModel = hiltViewModel()
+            val viewModel: SettingsViewModel = hiltViewModel()
             SettingsScreen(
                 viewModel = viewModel,
-                goBack = {navController.popBackStack()}
+                goBack = { navController.popBackStack() },
             )
         }
         composable(Screen.HomeIndex.route) {

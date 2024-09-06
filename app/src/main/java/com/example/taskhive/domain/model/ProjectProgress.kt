@@ -4,5 +4,5 @@ import java.util.Date
 
 data class ProjectProgress(
     val date: Date,
-    val totalTimeSpent: Long
+    val totalTimeSpent: Long,
 )

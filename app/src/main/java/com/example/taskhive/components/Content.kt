@@ -12,7 +12,7 @@ fun Content(
     LazyRow {
         items(data.visibleDates) { date ->
             ContentItem(
-                date
+                date,
             ) { onDateClick(date) }
         }
     }

@@ -3,7 +3,6 @@ package com.example.taskhive.di
 import android.content.Context
 import android.content.SharedPreferences
 import com.example.taskhive.data.local.AppDatabase
-import com.example.taskhive.service.TimerService
 import com.example.taskhive.utils.PreferenceHelper
 import dagger.Module
 import dagger.Provides
@@ -19,7 +18,7 @@ class AppModule {
     @Singleton
     fun provideDatabase(
         @ApplicationContext context: Context,
-    ): AppDatabase = AppDatabase(context)
+    ): AppDatabase = AppDatabase.getInstance(context)
 
     @Provides
     @Singleton
@@ -30,5 +29,4 @@ class AppModule {
     @Provides
     @Singleton
     fun providePreferenceHelper(preferences: SharedPreferences): PreferenceHelper = PreferenceHelper(preferences)
-
 }

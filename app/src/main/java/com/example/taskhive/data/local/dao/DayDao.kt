@@ -18,5 +18,8 @@ interface DayDao {
     suspend fun getDays(): List<Day>
 
     @Query("SELECT * FROM days WHERE date BETWEEN :startDate AND :endDate")
-    suspend fun getWeeklyReportByDay(startDate: Date, endDate: Date): List<Day>
+    suspend fun getWeeklyReportByDay(
+        startDate: Date,
+        endDate: Date,
+    ): List<Day>
 }

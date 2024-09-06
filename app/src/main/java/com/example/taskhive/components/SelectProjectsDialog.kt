@@ -52,7 +52,7 @@ fun SelectProjectsDialog(
                             checked = project.isSelected.value,
                             onCheckedChange = { isChecked ->
                                 project.isSelected.value = isChecked
-                            }
+                            },
                         )
 
                         Text(

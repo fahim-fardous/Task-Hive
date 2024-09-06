@@ -14,22 +14,14 @@ class DataTypeConverters {
     fun dateToTimeStamp(date: Date?): Long? = date?.time
 
     @TypeConverter
-    fun fromProject(project: Project?): String {
-        return Gson().toJson(project)
-    }
+    fun fromProject(project: Project?): String = Gson().toJson(project)
 
     @TypeConverter
-    fun toProject(json: String): Project? {
-        return Gson().fromJson(json, Project::class.java)
-    }
+    fun toProject(json: String): Project? = Gson().fromJson(json, Project::class.java)
 
     @TypeConverter
-    fun fromList(list: List<Task>): String {
-        return Gson().toJson(list)
-    }
+    fun fromList(list: List<Task>): String = Gson().toJson(list)
 
     @TypeConverter
-    fun toList(json: String): List<Task> {
-        return Gson().fromJson(json, Array<Task>::class.java).toList()
-    }
+    fun toList(json: String): List<Task> = Gson().fromJson(json, Array<Task>::class.java).toList()
 }

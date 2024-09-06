@@ -34,7 +34,8 @@ fun ProgressType(
                 .background(
                     color = if (isSelected) appColor else Color(0xFFECE7FE),
                     shape = RoundedCornerShape(8.dp),
-                ).padding(horizontal = 16.dp, vertical = 4.dp).clickable {
+                ).padding(horizontal = 16.dp, vertical = 4.dp)
+                .clickable {
                     onClick()
                 },
         contentAlignment = Alignment.Center,
@@ -51,8 +52,10 @@ fun ProgressType(
 @Preview(showBackground = true)
 @Composable
 private fun ProgressTypePreview() {
-    Column(modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
         ProgressType(onClick = {}, text = "All", true)
         ProgressType(onClick = {}, text = "To do", false)
         ProgressType(onClick = {}, text = "In Progress", false)

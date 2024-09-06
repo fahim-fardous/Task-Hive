@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.taskhive.domain.model.Project
-import java.util.Date
 
 @Dao
 interface ProjectDao {

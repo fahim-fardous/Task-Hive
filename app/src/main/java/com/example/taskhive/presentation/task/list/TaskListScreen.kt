@@ -47,7 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.taskhive.components.CalendarCard
 import com.example.taskhive.components.CalendarPreferences
-import com.example.taskhive.components.DeleteAlertDialog
+import com.example.taskhive.components.AlertDialog
 import com.example.taskhive.components.NoTaskCard
 import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.TaskCard
@@ -448,12 +448,12 @@ fun TaskListScreenSkeleton(
             )
         }
         if (showDeleteDialog) {
-            DeleteAlertDialog(
-                showDeleteDialog = {
+            AlertDialog(
+                showDialog = {
                     showDeleteDialog = it
                 },
                 title = "Are you sure you want to delete this task?",
-                onDeleteClicked = {
+                onClicked = {
                     if (timerState?.taskId != logTaskId) {
                         showDeleteDialog = false
                         deleteTask(logTaskId, startDate ?: currentDate, endDate)

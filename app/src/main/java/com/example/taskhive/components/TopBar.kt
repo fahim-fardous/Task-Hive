@@ -1,7 +1,6 @@
 package com.example.taskhive.components
 
 import android.content.res.Configuration
-import android.content.res.Resources.Theme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -49,7 +48,7 @@ fun TopBar(
             Text(
                 text = title,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
             )
         },
         navigationIcon = {
@@ -75,11 +74,11 @@ fun TopBar(
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onBackground,
                             modifier =
-                            Modifier
-                                .padding(start = 8.dp)
-                                .clickable {
-                                    onNotificationClick()
-                                },
+                                Modifier
+                                    .padding(start = 8.dp)
+                                    .clickable {
+                                        onNotificationClick()
+                                    },
                         )
                     }
                 } else {
@@ -88,11 +87,11 @@ fun TopBar(
                         contentDescription = null,
                         tint = Color.Black,
                         modifier =
-                        Modifier
-                            .padding(start = 8.dp)
-                            .clickable {
-                                showMoreMenu = true
-                            },
+                            Modifier
+                                .padding(start = 8.dp)
+                                .clickable {
+                                    showMoreMenu = true
+                                },
                     )
                     // Dropdown Menu
                     if (showMoreMenu) {

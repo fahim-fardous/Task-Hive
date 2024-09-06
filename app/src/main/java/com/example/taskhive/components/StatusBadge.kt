@@ -17,12 +17,12 @@ import com.example.taskhive.utils.MockData
 @Composable
 fun StatusBadge(
     status: String,
-    cornerShape:Dp = 8.dp,
-    margin:Dp = 8.dp,
-    horizontalPadding:Dp = 2.dp,
-    verticalPadding:Dp = 1.dp,
-    fontSize:Dp = 12.dp,
-    ) {
+    cornerShape: Dp = 8.dp,
+    margin: Dp = 8.dp,
+    horizontalPadding: Dp = 2.dp,
+    verticalPadding: Dp = 1.dp,
+    fontSize: Dp = 12.dp,
+) {
     Box(
         modifier =
             Modifier
@@ -37,7 +37,7 @@ fun StatusBadge(
             text = status,
             color = MockData.statusTextColor[status] ?: Color.White,
             fontSize = 12.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
     }
 }

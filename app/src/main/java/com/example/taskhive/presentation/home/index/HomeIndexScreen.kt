@@ -31,8 +31,8 @@ import com.example.taskhive.presentation.analytics.AnalyticsScreen
 import com.example.taskhive.presentation.analytics.AnalyticsViewModel
 import com.example.taskhive.presentation.home.HomeScreen
 import com.example.taskhive.presentation.home.HomeViewModel
-import com.example.taskhive.presentation.profile.SettingsScreen
-import com.example.taskhive.presentation.profile.SettingsViewModel
+import com.example.taskhive.presentation.settings.SettingsScreen
+import com.example.taskhive.presentation.settings.SettingsViewModel
 import com.example.taskhive.presentation.task.list.TaskListScreen
 import com.example.taskhive.presentation.task.list.TaskListViewModel
 
@@ -146,7 +146,7 @@ fun HomeIndexScreenSkeleton(
                     viewModel = viewModel,
                     goBack = {
                         navController.popBackStack()
-                    }
+                    },
                 )
             }
         }

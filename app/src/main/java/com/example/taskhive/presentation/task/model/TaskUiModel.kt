@@ -1,7 +1,6 @@
 package com.example.taskhive.presentation.task.model
 
 import com.example.taskhive.domain.model.Project
-import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.model.TaskStatus
 import java.util.Date
 
@@ -16,5 +15,5 @@ data class TaskUiModel(
     val actualEndTime: Date? = null,
     val project: Project,
     var taskStatus: TaskStatus = TaskStatus.TODO,
-    var totalTimeSpend:Long = 0L
+    var totalTimeSpend: Long = 0L,
 )

@@ -96,8 +96,10 @@ class TimerService : Service() {
                 startTime = localDateToDate(LocalDate.now()),
             )
         updateNotification(taskName, projectId, plannedDate, stopPendingIntent)
-        startForeground(NOTIFICATION_ID, updateNotification(taskName, projectId, plannedDate, stopPendingIntent))
-
+        startForeground(
+            NOTIFICATION_ID,
+            updateNotification(taskName, projectId, plannedDate, stopPendingIntent),
+        )
 
         coroutineScope.launch {
             while (_timerItem.value?.isRunning == true) {

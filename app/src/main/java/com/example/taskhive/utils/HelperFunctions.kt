@@ -17,6 +17,7 @@ object HelperFunctions {
         // Format the Date object to the desired output format
         return outputFormat.format(date)
     }
+
     fun isAfter12AM(date: Date): Boolean {
         val calendar = Calendar.getInstance()
         calendar.time = date
@@ -33,9 +34,11 @@ object HelperFunctions {
         return calendar.after(midnightCalendar)
     }
 
-    fun getDateTimeFromMillis(millis: Long, pattern: String): String {
+    fun getDateTimeFromMillis(
+        millis: Long,
+        pattern: String,
+    ): String {
         val simpleDateFormat = SimpleDateFormat(pattern, Locale.getDefault())
         return simpleDateFormat.format(Date(millis))
     }
-
 }

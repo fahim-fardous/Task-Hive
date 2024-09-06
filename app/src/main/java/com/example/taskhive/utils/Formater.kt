@@ -77,6 +77,4 @@ fun formatDateToDDMMYYYY(date: Date): String {
     return formatter.format(date)
 }
 
-
-
 fun localDateToDate(date: LocalDate): Date = Date.from(date.atStartOfDay(ZoneOffset.UTC).toInstant())

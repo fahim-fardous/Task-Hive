@@ -22,13 +22,19 @@ class MainActivityViewModel
                 val entries = taskRepository.getAllEntry()
                 entries.forEach { entry ->
                     val task = taskRepository.getTaskById(entry.taskId)
-                    if (task.taskStatus != TaskStatus.DONE &&
+                    println("${entry.taskId} is $task")
+                    if (task != null &&
+                        task.taskStatus != TaskStatus.DONE &&
                         task.plannedStartDate?.before(
                             localDateToDate(LocalDate.now()),
                         ) == true
                     ) {
-                        val entryCount = taskRepository.getEntryByDate(localDateToDate(LocalDate.now()), taskId = task.id)
-                        if(entryCount==0){
+                        val entryCount =
+                            taskRepository.getEntryByDate(
+                                localDateToDate(LocalDate.now()),
+                                taskId = task.id,
+                            )
+                        if (entryCount == 0) {
                             taskRepository.saveEntry(
                                 Entry(
                                     date = localDateToDate(LocalDate.now()),

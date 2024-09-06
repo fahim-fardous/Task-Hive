@@ -9,9 +9,7 @@ import com.example.taskhive.MainNavHost
 import com.example.taskhive.Screen
 
 @Composable
-fun MainScreen(
-    startDestination: String = Screen.OnBoard.route,
-) {
+fun MainScreen(startDestination: String = Screen.OnBoard.route) {
     val navController = rememberNavController()
     Surface(modifier = Modifier.fillMaxSize()) {
         MainNavHost(

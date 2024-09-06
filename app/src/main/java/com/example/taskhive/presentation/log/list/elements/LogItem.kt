@@ -59,13 +59,13 @@ fun LogItem(
                     startTime.getReadableTime(),
                     maxLines = 1,
                     modifier = Modifier.padding(top = 4.dp),
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onBackground,
                 )
                 Text(
                     text = " - ${endTime.getReadableTime()}",
                     maxLines = 1,
                     modifier = Modifier.padding(top = 4.dp),
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onBackground,
                 )
             }
         }
@@ -85,14 +85,15 @@ private fun LogItemPreview() {
         LogItem(isFirst = false, startTime = Date(), endTime = Date(), duration = 12)
     }
 }
+
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun LogItemPreviewDark() {
     Column(
         modifier =
-        Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp),
     ) {
         LogItem(isFirst = true, startTime = Date(), endTime = Date(), duration = 10)
         LogItem(isFirst = false, startTime = Date(), endTime = Date(), duration = 12)

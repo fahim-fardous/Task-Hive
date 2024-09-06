@@ -55,11 +55,11 @@ fun CommonCard(
                     unfocusedIndicatorColor = Color.Transparent,
                 ),
             modifier =
-            Modifier
-                .fillMaxWidth()
-                .then(
-                    if (lines > 1) Modifier.height(height) else Modifier,
-                ),
+                Modifier
+                    .fillMaxWidth()
+                    .then(
+                        if (lines > 1) Modifier.height(height) else Modifier,
+                    ),
             textStyle =
                 TextStyle(
                     fontSize = 16.sp,
@@ -76,7 +76,11 @@ fun CommonCard(
             },
             maxLines = lines,
             readOnly = readOnly,
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Next)
+            keyboardOptions =
+                KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences,
+                    imeAction = ImeAction.Next,
+                ),
         )
     }
 }

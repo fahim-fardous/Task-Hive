@@ -14,16 +14,18 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommonDatePicker(title:String, onDateSelected: (Long) -> Unit, onDismiss: () -> Unit) {
+fun CommonDatePicker(
+    title: String,
+    onDateSelected: (Long) -> Unit,
+    onDismiss: () -> Unit,
+) {
     val initialSelectedDate =
         remember {
             val localCalender = Calendar.getInstance()
@@ -41,13 +43,13 @@ fun CommonDatePicker(title:String, onDateSelected: (Long) -> Unit, onDismiss: ()
         rememberDatePickerState(
             initialSelectedDateMillis = initialSelectedDate,
             selectableDates =
-            object : SelectableDates {
-                val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                object : SelectableDates {
+                    val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 
-                override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis >= calendar.timeInMillis
+                    override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis >= calendar.timeInMillis
 
-                override fun isSelectableYear(year: Int): Boolean = year >= calendar.get(Calendar.YEAR)
-            },
+                    override fun isSelectableYear(year: Int): Boolean = year >= calendar.get(Calendar.YEAR)
+                },
         )
     val datePickerConfirmButtonEnabled =
         remember {
@@ -78,5 +80,4 @@ fun CommonDatePicker(title:String, onDateSelected: (Long) -> Unit, onDismiss: ()
             )
         })
     }
-    
 }

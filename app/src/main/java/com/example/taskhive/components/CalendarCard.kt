@@ -8,7 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import java.time.LocalDate
 import java.util.Date
 
 @Composable
@@ -27,7 +26,7 @@ fun CalendarCard(
         Header(
             data = calendarUiModel,
             onCalendarClick = onCalendarClick,
-            onRangeClick = onRangeClick
+            onRangeClick = onRangeClick,
         )
         Content(data = calendarUiModel, onDateClick = { date ->
             calendarUiModel =

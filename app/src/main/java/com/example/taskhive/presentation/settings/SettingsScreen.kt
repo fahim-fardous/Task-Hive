@@ -1,4 +1,4 @@
-package com.example.taskhive.presentation.profile
+package com.example.taskhive.presentation.settings
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.Backup
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,6 +27,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,7 +40,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.taskhive.MainActivity
 import com.example.taskhive.R
+import com.example.taskhive.components.AlertDialog
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
 
@@ -45,20 +52,31 @@ fun SettingsScreen(
     goBack: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val activity = context as MainActivity
     SettingsScreenSkeleton(
+        goBack = goBack,
         backup = {
-            viewModel.backupDatabase(context)
+            viewModel.backupDatabase()
         },
+        restore = {
+            viewModel.restoreDatabase()
+        },
+        activity = activity,
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreenSkeleton(
-    modifier: Modifier = Modifier,
     goBack: () -> Unit = {},
     backup: () -> Unit = {},
+    restore: () -> Unit = {},
+    scheduleBackup: () -> Unit = {},
+    restart: () -> Unit = {},
+    activity: MainActivity? = null,
 ) {
+    var backupClicked by remember { mutableStateOf(false) }
+    var restoreClicked by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -123,7 +141,7 @@ fun SettingsScreenSkeleton(
                         .fillMaxWidth()
                         .padding(top = 24.dp)
                         .clickable {
-                            backup()
+                            backupClicked = true
                         },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -152,7 +170,66 @@ fun SettingsScreenSkeleton(
                     contentDescription = "click",
                 )
             }
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp)
+                        .clickable {
+                            restoreClicked = true
+                        },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier =
+                        Modifier
+                            .size(40.dp)
+                            .background(color = appColor, shape = CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Restore,
+                        contentDescription = "restore",
+                        tint = Color.White,
+                    )
+                }
+                Text(
+                    text = "Restore",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 16.dp),
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                    contentDescription = "click",
+                )
+            }
         }
+    }
+
+    if (backupClicked) {
+        AlertDialog(
+            showDialog = { backupClicked = it },
+            title = "Please restart your app to apply changes",
+            confirmText = "Restart",
+            onClicked = {
+                backup()
+                activity?.finish()
+            },
+        )
+    }
+
+    if (restoreClicked) {
+        AlertDialog(
+            showDialog = { restoreClicked = it },
+            title = "Please restart your app to apply changes",
+            confirmText = "Restart",
+            onClicked = {
+                restore()
+                activity?.finish()
+            },
+        )
     }
 }
 

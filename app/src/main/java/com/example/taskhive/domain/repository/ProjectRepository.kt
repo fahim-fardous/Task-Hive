@@ -1,10 +1,6 @@
 package com.example.taskhive.domain.repository
 
 import com.example.taskhive.domain.model.Project
-import com.example.taskhive.domain.model.TaskStatus
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.util.Date
 
 interface ProjectRepository {
     suspend fun saveProject(project: Project): Long
@@ -17,5 +13,5 @@ interface ProjectRepository {
 
     suspend fun getTaskCountByProject(project: Project): Int
 
-    suspend fun getInProgressProjects():List<Project>
+    suspend fun getInProgressProjects(): List<Project>
 }

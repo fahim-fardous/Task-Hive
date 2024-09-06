@@ -5,8 +5,9 @@ import android.content.SharedPreferences
 import android.util.Log
 import java.time.LocalDate
 
-class CalendarPreferences(context: Context) {
-
+class CalendarPreferences(
+    context: Context,
+) {
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("calendar_preferences", Context.MODE_PRIVATE)
 
@@ -24,10 +25,10 @@ class CalendarPreferences(context: Context) {
         val dateString = sharedPreferences.getString(SELECTED_DATE_KEY, null)
         return dateString?.let { LocalDate.parse(it) }
     }
+
     fun clearSelectedDate() {
         Log.d("Prefs", "Before removal: " + sharedPreferences.getString(SELECTED_DATE_KEY, null))
         sharedPreferences.edit().remove(SELECTED_DATE_KEY).apply()
         Log.d("Prefs", "After removal: " + sharedPreferences.getString(SELECTED_DATE_KEY, null))
     }
-
 }

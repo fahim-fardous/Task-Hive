@@ -1,7 +1,6 @@
 package com.example.taskhive.domain.model
 
 import androidx.room.Embedded
-import androidx.room.Junction
 import androidx.room.Relation
 
 data class TaskWithEntries(
@@ -10,5 +9,5 @@ data class TaskWithEntries(
         parentColumn = "id",
         entityColumn = "taskId",
     )
-    val entries: List<Entry>
+    val entries: List<Entry>,
 )

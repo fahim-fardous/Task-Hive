@@ -2,7 +2,6 @@ package com.example.taskhive.presentation.task.add
 
 import android.content.res.Configuration
 import android.icu.util.Calendar
-import android.icu.util.TimeZone
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,23 +17,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -109,7 +103,7 @@ private fun TaskAddScreenSkeletonPreviewDark() {
 @Composable
 fun TaskAddScreenSkeleton(
     goBack: () -> Unit = {},
-    saveTask: (String, String, Date?, Date?, Date?) -> Unit = { _, _, _, _,_ -> },
+    saveTask: (String, String, Date?, Date?, Date?) -> Unit = { _, _, _, _, _ -> },
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
