@@ -17,26 +17,31 @@ fun CalendarCard(
     onCalendarClick: () -> Unit = {},
     onRangeClick: () -> Unit,
 ) {
+    // Getting the saved date from preferences
     val savedSelectedDate = remember { calendarPreferences.getSelectedDate() }
     val dataSource = CalendarDataSource()
+
+    // Updating the UI state with the data
     var calendarUiModel by remember {
         mutableStateOf(dataSource.getData(lastSelectedDate = savedSelectedDate ?: dataSource.today))
     }
+
+    // Update column layout
     Column(modifier = Modifier.fillMaxWidth()) {
         Header(
             data = calendarUiModel,
             onCalendarClick = onCalendarClick,
             onRangeClick = onRangeClick,
         )
+
+        // Updating the selected date and saving it in preferences
         Content(data = calendarUiModel, onDateClick = { date ->
-            calendarUiModel =
-                calendarUiModel.copy(
-                    selectedDate = date,
-                    visibleDates =
-                        calendarUiModel.visibleDates.map {
-                            it.copy(isSelected = it.date.isEqual(date.date))
-                        },
-                )
+            calendarUiModel = calendarUiModel.copy(
+                selectedDate = date,
+                visibleDates = calendarUiModel.visibleDates.map {
+                    it.copy(isSelected = it.date.isEqual(date.date))
+                }
+            )
             selectedDate(date)
             calendarPreferences.saveSelectedDate(date.date)
         })
