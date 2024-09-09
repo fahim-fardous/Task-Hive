@@ -1,5 +1,7 @@
 package com.example.taskhive.presentation.settings
 
+import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -71,8 +73,7 @@ fun SettingsScreenSkeleton(
     goBack: () -> Unit = {},
     backup: () -> Unit = {},
     restore: () -> Unit = {},
-    scheduleBackup: () -> Unit = {},
-    restart: () -> Unit = {},
+    context: Context = LocalContext.current,
     activity: MainActivity? = null,
 ) {
     var backupClicked by remember { mutableStateOf(false) }
@@ -215,7 +216,11 @@ fun SettingsScreenSkeleton(
             confirmText = "Restart",
             onClicked = {
                 backup()
-                activity?.finish()
+                activity?.let {
+                    val intent = Intent(context, it::class.java)
+                    it.finish()
+                    context.startActivity(intent)
+                }
             },
         )
     }
@@ -227,7 +232,11 @@ fun SettingsScreenSkeleton(
             confirmText = "Restart",
             onClicked = {
                 restore()
-                activity?.finish()
+                activity?.let {
+                    val intent = Intent(context, it::class.java)
+                    it.finish()
+                    context.startActivity(intent)
+                }
             },
         )
     }

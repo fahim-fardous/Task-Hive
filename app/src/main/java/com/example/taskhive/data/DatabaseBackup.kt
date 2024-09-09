@@ -4,6 +4,7 @@ import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_AUDIO
 import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.Manifest.permission.READ_MEDIA_VIDEO
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -606,6 +607,21 @@ class DatabaseBackup(
             Log.e(TAG, "File copy failed: ${e.message}", e)
             throw RuntimeException("Failed to copy file: ${e.message}")
         }
+    }
+
+    fun restartApp(restartIntent: Intent): DatabaseBackup {
+        this.restartIntent = restartIntent
+        restartApp()
+        return this
+    }
+
+    private fun restartApp() {
+        restartIntent!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(restartIntent)
+        if (context is Activity) {
+            (context as Activity).finish()
+        }
+        Runtime.getRuntime().exit(0)
     }
 
     private fun getDateTimeFromMillis(
