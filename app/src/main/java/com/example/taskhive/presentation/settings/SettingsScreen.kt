@@ -1,9 +1,13 @@
 package com.example.taskhive.presentation.settings
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,7 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,13 +54,18 @@ import androidx.compose.ui.unit.dp
 import com.example.taskhive.MainActivity
 import com.example.taskhive.R
 import com.example.taskhive.components.AlertDialog
-import com.example.taskhive.data.remote.User
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
-import com.example.taskhive.utils.AuthResultContract
-import com.example.taskhive.utils.getGoogleSignInClient
+import com.example.taskhive.utils.Constants.CLIENT_ID
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SettingsScreen(
@@ -65,7 +74,6 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val activity = context as MainActivity
-    val user by viewModel.user.collectAsState()
     SettingsScreenSkeleton(
         goBack = goBack,
         backup = {
@@ -75,10 +83,6 @@ fun SettingsScreen(
             viewModel.restoreDatabase()
         },
         activity = activity,
-        user = user,
-        setValue = { email, name ->
-            viewModel.setSignInValue(email, name)
-        }
     )
 }
 
@@ -90,33 +94,68 @@ fun SettingsScreenSkeleton(
     restore: () -> Unit = {},
     context: Context = LocalContext.current,
     activity: MainActivity? = null,
-    user: User? = null,
-    setValue: (String, String) -> Unit = { _, _ -> },
 ) {
     var backupClicked by remember { mutableStateOf(false) }
     var restoreClicked by remember { mutableStateOf(false) }
+    var signInClicked by remember { mutableStateOf(false) }
+
     val scope = rememberCoroutineScope()
-    var text by remember { mutableStateOf<String?>(null) }
-    val signInRequestCode = 1
 
-    val authResultLauncher = rememberLauncherForActivityResult(
-        contract = AuthResultContract(
-            googleSignInClient = getGoogleSignInClient(context)
-        )
-    ) { task ->
-        try {
-            val account = task?.getResult(ApiException::class.java)
-            if (account == null) {
-                text = "Google sign in failed"
-            } else {
-                scope.launch {
-                    setValue(account.email!!, account.displayName!!)
+    val oneTapClient = remember { Identity.getSignInClient(context) }
+    val signInRequest =
+        remember {
+            BeginSignInRequest
+                .builder()
+                .setGoogleIdTokenRequestOptions(
+                    BeginSignInRequest.GoogleIdTokenRequestOptions
+                        .builder()
+                        .setSupported(true)
+                        .setServerClientId(CLIENT_ID) // Replace with your actual client ID
+                        .setFilterByAuthorizedAccounts(false)
+                        .build(),
+                ).setAutoSelectEnabled(true)
+                .build()
+        }
 
+    val signInLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartIntentSenderForResult(),
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                try {
+                    // Retrieve the sign-in credentials
+                    val signInCredential = oneTapClient.getSignInCredentialFromIntent(result.data)
+                    val idToken = signInCredential.googleIdToken
+                    val email = signInCredential.id
+
+                    // Use the Google ID token to sign in with Firebase
+                    if (idToken != null) {
+                        firebaseAuthWithGoogle(idToken)
+                    } else {
+                        // Handle the case where the ID token is null
+                    }
+                } catch (e: ApiException) {
+                    // Handle the exception
+                    Log.e("SignInError", "Sign-in failed", e)
                 }
             }
         }
-        catch (e:ApiException){
-            text = e.localizedMessage
+
+    LaunchedEffect(signInClicked) {
+        if (signInClicked) {
+            try {
+                val response =
+                    withContext(Dispatchers.IO) {
+                        oneTapClient.beginSignIn(signInRequest).await()
+                    }
+                val intentSenderRequest =
+                    IntentSenderRequest.Builder(response.pendingIntent.intentSender).build()
+                signInLauncher.launch(intentSenderRequest)
+            } catch (e: ApiException) {
+                // Handle the exception
+                Log.e("SignInError", "Sign-in request failed", e)
+            }
+            signInClicked = false
         }
     }
 
@@ -140,24 +179,24 @@ fun SettingsScreenSkeleton(
     ) { innerPadding ->
         Column(
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .padding(16.dp)
-                .fillMaxSize(),
+                Modifier
+                    .padding(innerPadding)
+                    .padding(16.dp)
+                    .fillMaxSize(),
         ) {
             Box(
                 modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-                    .background(color = Color(0xFFE7E1FA), shape = RoundedCornerShape(32.dp)),
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .background(color = Color(0xFFE7E1FA), shape = RoundedCornerShape(32.dp)),
                 contentAlignment = Alignment.Center,
             ) {
                 Row(
                     modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Image(
@@ -180,19 +219,19 @@ fun SettingsScreenSkeleton(
 
             Row(
                 modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp)
-                    .clickable {
-                        backupClicked = true
-                    },
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp)
+                        .clickable {
+                            backupClicked = true
+                        },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
                     modifier =
-                    Modifier
-                        .size(40.dp)
-                        .background(color = appColor, shape = CircleShape),
+                        Modifier
+                            .size(40.dp)
+                            .background(color = appColor, shape = CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
@@ -215,19 +254,19 @@ fun SettingsScreenSkeleton(
             }
             Row(
                 modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp)
-                    .clickable {
-                        restoreClicked = true
-                    },
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp)
+                        .clickable {
+                            restoreClicked = true
+                        },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
                     modifier =
-                    Modifier
-                        .size(40.dp)
-                        .background(color = appColor, shape = CircleShape),
+                        Modifier
+                            .size(40.dp)
+                            .background(color = appColor, shape = CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
@@ -250,19 +289,19 @@ fun SettingsScreenSkeleton(
             }
             Row(
                 modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp)
-                    .clickable {
-                        restoreClicked = true
-                    },
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp)
+                        .clickable {
+                            signInClicked = true
+                        },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
                     modifier =
-                    Modifier
-                        .size(40.dp)
-                        .background(color = appColor, shape = CircleShape),
+                        Modifier
+                            .size(40.dp)
+                            .background(color = appColor, shape = CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
@@ -317,6 +356,22 @@ fun SettingsScreenSkeleton(
             },
         )
     }
+}
+
+private fun firebaseAuthWithGoogle(idToken: String) {
+    val credential = GoogleAuthProvider.getCredential(idToken, null)
+    FirebaseAuth
+        .getInstance()
+        .signInWithCredential(credential)
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                // Sign-in success
+                Log.d("SignInSuccess", "Sign-in successful")
+            } else {
+                // Sign-in failure
+                Log.e("SignInError", "Sign-in with credential failed", task.exception)
+            }
+        }
 }
 
 @Preview(showBackground = true)

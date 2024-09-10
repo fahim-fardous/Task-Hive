@@ -3,17 +3,13 @@ package com.example.taskhive.presentation.settings
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.taskhive.data.DatabaseBackup
 import com.example.taskhive.data.local.AppDatabase
-import com.example.taskhive.data.remote.User
+import com.example.taskhive.utils.Constants.CLIENT_ID
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,15 +18,22 @@ class SettingsViewModel
     constructor(
         @ApplicationContext private val context: Context,
     ) : ViewModel() {
-        private val _user = MutableStateFlow<User?>(null)
-        val user: StateFlow<User?> = _user.asStateFlow()
+        private val oneTap = Identity.getSignInClient(context)
+        private val signInRequest =
+            BeginSignInRequest
+                .builder()
+                .setGoogleIdTokenRequestOptions(
+                    BeginSignInRequest.GoogleIdTokenRequestOptions
+                        .builder()
+                        .setSupported(true)
+                        .setServerClientId(
+                            CLIENT_ID,
+                        ).setFilterByAuthorizedAccounts(false)
+                        .build(),
+                ).setAutoSelectEnabled(true)
+                .build()
 
         private val backup = DatabaseBackup(context)
-
-    fun setSignInValue(email:String, name:String) = viewModelScope.launch{
-        delay(2000)
-        _user.value = User(email, name)
-    }
 
         fun backupDatabase() {
             backup

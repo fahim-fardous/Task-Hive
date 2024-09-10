@@ -45,9 +45,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.taskhive.components.AlertDialog
 import com.example.taskhive.components.CalendarCard
 import com.example.taskhive.components.CalendarPreferences
-import com.example.taskhive.components.AlertDialog
 import com.example.taskhive.components.NoTaskCard
 import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.TaskCard
@@ -251,7 +251,10 @@ fun TaskListScreenSkeleton(
         topBar =
             {
                 TopBar(
-                    onClick = { goBack() },
+                    onClick = {
+                        calendarPreferences.clearSelectedDate()
+                        goBack()
+                    },
                     leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
                     title = "Today's Task",
                     trailingIcon = Icons.Filled.Notifications,
