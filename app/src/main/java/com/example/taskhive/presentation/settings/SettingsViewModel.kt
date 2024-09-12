@@ -3,13 +3,18 @@ package com.example.taskhive.presentation.settings
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.taskhive.data.DatabaseBackup
 import com.example.taskhive.data.local.AppDatabase
-import com.example.taskhive.utils.Constants.CLIENT_ID
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.drive.Drive
+import com.google.api.services.drive.DriveScopes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,21 +23,6 @@ class SettingsViewModel
     constructor(
         @ApplicationContext private val context: Context,
     ) : ViewModel() {
-        private val oneTap = Identity.getSignInClient(context)
-        private val signInRequest =
-            BeginSignInRequest
-                .builder()
-                .setGoogleIdTokenRequestOptions(
-                    BeginSignInRequest.GoogleIdTokenRequestOptions
-                        .builder()
-                        .setSupported(true)
-                        .setServerClientId(
-                            CLIENT_ID,
-                        ).setFilterByAuthorizedAccounts(false)
-                        .build(),
-                ).setAutoSelectEnabled(true)
-                .build()
-
         private val backup = DatabaseBackup(context)
 
         fun backupDatabase() {
@@ -65,4 +55,47 @@ class SettingsViewModel
                     }
                 }.restore()
         }
+
+        private fun getGoogleDriveInstance(): Drive? {
+            // Check if the user is signed in with Google
+            val googleAccount = GoogleSignIn.getLastSignedInAccount(context)
+            // If there's no signed-in account, return null
+            if (googleAccount == null) {
+                println("No google account found")
+            }
+            else{
+                println("Google account found")
+            }
+            return googleAccount?.let {
+                val credential =
+                    GoogleAccountCredential.usingOAuth2(
+                        context,
+                        listOf(DriveScopes.DRIVE, DriveScopes.DRIVE_FILE),
+                    )
+                credential.selectedAccount = googleAccount.account
+
+                // Build and return the Drive instance
+                Drive
+                    .Builder(
+                        NetHttpTransport(),
+                        GsonFactory.getDefaultInstance(),
+                        credential,
+                    ).setApplicationName("Task Hive")
+                    .build()
+            }
+        }
+
+        fun createGoogleDriveFolder() =
+            viewModelScope.launch {
+                println("Coming to create drive folder")
+                val drive = getGoogleDriveInstance()
+                val driveFolder =
+                    com.google.api.services.drive.model
+                        .File()
+                driveFolder.name = "Backup Folder"
+                driveFolder.mimeType = "application/vnd.google-apps.folder"
+
+                val folder = drive?.files()?.create(driveFolder)?.execute()
+                Log.d("Folder", folder.toString())
+            }
     }

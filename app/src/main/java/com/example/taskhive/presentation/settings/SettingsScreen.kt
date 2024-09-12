@@ -4,9 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,11 +35,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,16 +53,11 @@ import com.example.taskhive.R
 import com.example.taskhive.components.AlertDialog
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
-import com.example.taskhive.utils.Constants.CLIENT_ID
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import kotlinx.coroutines.Dispatchers
+import com.example.taskhive.utils.getGoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 
 @Composable
 fun SettingsScreen(
@@ -77,7 +69,7 @@ fun SettingsScreen(
     SettingsScreenSkeleton(
         goBack = goBack,
         backup = {
-            viewModel.backupDatabase()
+            viewModel.createGoogleDriveFolder()
         },
         restore = {
             viewModel.restoreDatabase()
@@ -97,67 +89,24 @@ fun SettingsScreenSkeleton(
 ) {
     var backupClicked by remember { mutableStateOf(false) }
     var restoreClicked by remember { mutableStateOf(false) }
-    var signInClicked by remember { mutableStateOf(false) }
-
-    val scope = rememberCoroutineScope()
-
-    val oneTapClient = remember { Identity.getSignInClient(context) }
-    val signInRequest =
-        remember {
-            BeginSignInRequest
-                .builder()
-                .setGoogleIdTokenRequestOptions(
-                    BeginSignInRequest.GoogleIdTokenRequestOptions
-                        .builder()
-                        .setSupported(true)
-                        .setServerClientId(CLIENT_ID) // Replace with your actual client ID
-                        .setFilterByAuthorizedAccounts(false)
-                        .build(),
-                ).setAutoSelectEnabled(true)
-                .build()
-        }
-
-    val signInLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.StartIntentSenderForResult(),
-        ) { result ->
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
+            val intent = result.data
+            println("Result code is ${result.resultCode}")
             if (result.resultCode == Activity.RESULT_OK) {
-                try {
-                    // Retrieve the sign-in credentials
-                    val signInCredential = oneTapClient.getSignInCredentialFromIntent(result.data)
-                    val idToken = signInCredential.googleIdToken
-                    val email = signInCredential.id
-
-                    // Use the Google ID token to sign in with Firebase
-                    if (idToken != null) {
-                        firebaseAuthWithGoogle(idToken)
+                if (result.data != null) {
+                    val task: Task<GoogleSignInAccount> =
+                        GoogleSignIn.getSignedInAccountFromIntent(intent)
+                    if (task.isSuccessful) {
+                        Toast.makeText(context, "Sign in successful", Toast.LENGTH_SHORT).show()
                     } else {
-                        // Handle the case where the ID token is null
+                        Toast.makeText(context, "Sign in failed", Toast.LENGTH_SHORT).show()
                     }
-                } catch (e: ApiException) {
-                    // Handle the exception
-                    Log.e("SignInError", "Sign-in failed", e)
                 }
+            } else {
+                Toast.makeText(context, "Sign in failed", Toast.LENGTH_SHORT).show()
             }
         }
-
-    LaunchedEffect(signInClicked) {
-        if (signInClicked) {
-            try {
-                val response =
-                    withContext(Dispatchers.IO) {
-                        oneTapClient.beginSignIn(signInRequest).await()
-                    }
-                val intentSenderRequest =
-                    IntentSenderRequest.Builder(response.pendingIntent.intentSender).build()
-                signInLauncher.launch(intentSenderRequest)
-            } catch (e: ApiException) {
-                // Handle the exception
-                Log.e("SignInError", "Sign-in request failed", e)
-            }
-            signInClicked = false
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -293,7 +242,13 @@ fun SettingsScreenSkeleton(
                         .fillMaxWidth()
                         .padding(top = 24.dp)
                         .clickable {
-                            signInClicked = true
+                            val existingAccount = GoogleSignIn.getLastSignedInAccount(context)
+                            if (existingAccount != null) {
+                                Toast.makeText(context, "Already signed in", Toast.LENGTH_SHORT).show()
+                            } else {
+                                val googleSignInClient = getGoogleSignInClient(context)
+                                launcher.launch(googleSignInClient.signInIntent)
+                            }
                         },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -356,22 +311,6 @@ fun SettingsScreenSkeleton(
             },
         )
     }
-}
-
-private fun firebaseAuthWithGoogle(idToken: String) {
-    val credential = GoogleAuthProvider.getCredential(idToken, null)
-    FirebaseAuth
-        .getInstance()
-        .signInWithCredential(credential)
-        .addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                // Sign-in success
-                Log.d("SignInSuccess", "Sign-in successful")
-            } else {
-                // Sign-in failure
-                Log.e("SignInError", "Sign-in with credential failed", task.exception)
-            }
-        }
 }
 
 @Preview(showBackground = true)

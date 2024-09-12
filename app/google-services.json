@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "847487674930",
+    "project_id": "task-hive-a09f0",
+    "storage_bucket": "task-hive-a09f0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:847487674930:android:166688a095324c9a14ea2b",
+        "android_client_info": {
+          "package_name": "com.example.taskhive"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkOADU-VfFFk4X39Tx_UcbeeSPNkOl8-8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

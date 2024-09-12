@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
-    //id("com.google.gms.google-services")
 }
 
 android {
@@ -48,6 +47,7 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/DEPENDENCIES"
         }
     }
 }
@@ -85,23 +85,13 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     // Lazy Table
     implementation(libs.lazytable)
-    // Firebase
-    // Import the Firebase BoM
-//    implementation(platform("com.google.firebase:firebase-bom:33.2.0"))
-//    implementation("com.google.firebase:firebase-analytics")
-//    implementation("com.google.firebase:firebase-auth")
-//    implementation("com.google.firebase:firebase-firestore")
     // Google Drive API
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
-//    implementation ("com.google.api-client:google-api-client:2.0.0")
-//    implementation("com.google.api-client:google-api-client-android:1.34.0")
-//    implementation("com.google.apis:google-api-services-drive:v3-rev20230908-1.34.0")
-//    implementation("com.google.oauth-client:google-oauth-client-jetty:1.34.1")
-//    implementation ("com.google.auth:google-auth-library-oauth2-http:1.19.0")
-
-    // Credential Manager
-    implementation("androidx.credentials:credentials:1.2.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.0.0-alpha04")
+    implementation(libs.play.services.auth)
+    implementation(libs.google.api.client.android)
+    implementation(libs.google.api.services.drive)
+//    implementation("androidx.credentials:credentials:1.5.0-alpha05")
+//    implementation("androidx.credentials:credentials-play-services-auth:1.5.0-alpha05")
+//    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

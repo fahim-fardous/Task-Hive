@@ -1,6 +1,8 @@
 [versions]
 agp = "8.5.0"
 coreSplashscreen = "1.0.1"
+googleApiClientAndroid = "2.7.0"
+googleApiServicesDrive = "v3-rev20230815-2.0.0"
 hiltAndroidCompiler = "2.48"
 hiltNavigationCompose = "1.1.0"
 coilCompose = "2.6.0"
@@ -16,6 +18,7 @@ activityCompose = "1.9.0"
 composeBom = "2024.04.01"
 navigationCompose = "2.7.7"
 playServicesAuth = "20.6.0"
+playServicesAuthVersion = "21.2.0"
 roomCompiler = "2.6.1"
 roomKtx = "2.6.1"
 roomRuntime = "2.6.1"
@@ -28,6 +31,8 @@ androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-com
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+google-api-client-android = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClientAndroid" }
+google-api-services-drive = { module = "com.google.apis:google-api-services-drive", version.ref = "googleApiServicesDrive" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroidCompiler" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
@@ -50,6 +55,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 lazytable = { module = "io.github.oleksandrbalan:lazytable", version.ref = "lazytable" }
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuthVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

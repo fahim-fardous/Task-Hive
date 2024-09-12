@@ -36,22 +36,22 @@ fun ProgressCard(
 ) {
     Row(
         modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-                .background(color = appColor, shape = RoundedCornerShape(32.dp))
-                .padding(32.dp),
+        Modifier
+            .fillMaxWidth()
+            .height(180.dp)
+            .background(color = appColor, shape = RoundedCornerShape(32.dp))
+            .padding(32.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(.5f), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            println("showing progress: $progress")
             Text(
                 text =
                     if (progress ==
                         1f
                     ) {
                         "Your today's tasks are done"
-                    } else if (progress <=
-                        0.5f
+                    } else if (progress in 0.0f..0.5f|| progress.isNaN()
                     ) {
                         "Please complete your today's tasks"
                     } else {
@@ -65,12 +65,12 @@ fun ProgressCard(
             Spacer(modifier = Modifier.weight(1f))
             Box(
                 modifier =
-                    Modifier
-                        .background(color = Color(0xFFEDE8FE), shape = RoundedCornerShape(8.dp))
-                        .padding(horizontal = 24.dp, vertical = 10.dp)
-                        .clickable {
-                            onViewTaskClick()
-                        },
+                Modifier
+                    .background(color = Color(0xFFEDE8FE), shape = RoundedCornerShape(8.dp))
+                    .padding(horizontal = 24.dp, vertical = 10.dp)
+                    .clickable {
+                        onViewTaskClick()
+                    },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(text = "View Task", color = appColor, fontWeight = FontWeight.Bold)
