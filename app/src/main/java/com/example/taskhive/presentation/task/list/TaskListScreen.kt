@@ -45,9 +45,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.taskhive.components.AlertDialog
 import com.example.taskhive.components.CalendarCard
 import com.example.taskhive.components.CalendarPreferences
+import com.example.taskhive.components.Dialog
 import com.example.taskhive.components.NoTaskCard
 import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.TaskCard
@@ -451,7 +451,7 @@ fun TaskListScreenSkeleton(
             )
         }
         if (showDeleteDialog) {
-            AlertDialog(
+            Dialog(
                 showDialog = {
                     showDeleteDialog = it
                 },

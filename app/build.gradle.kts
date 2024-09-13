@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -86,12 +87,13 @@ dependencies {
     // Lazy Table
     implementation(libs.lazytable)
     // Google Drive API
-    implementation(libs.play.services.auth)
-    implementation(libs.google.api.client.android)
-    implementation(libs.google.api.services.drive)
-//    implementation("androidx.credentials:credentials:1.5.0-alpha05")
-//    implementation("androidx.credentials:credentials-play-services-auth:1.5.0-alpha05")
-//    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    implementation("com.google.firebase:firebase-bom:33.2.0")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    implementation ("com.google.api-client:google-api-client-android:1.33.2")
+    implementation ("com.google.api-client:google-api-client-gson:1.33.2")
+    implementation ("com.google.apis:google-api-services-drive:v3-rev197-1.25.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

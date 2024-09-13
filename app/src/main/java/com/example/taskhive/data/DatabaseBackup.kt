@@ -348,10 +348,10 @@ class DatabaseBackup(
      *
      * if custom storage ist selected, the [openBackupfileChooser] will be launched
      */
-    fun restore() {
+    fun restore():Array<String> {
         if (enableLogDebug) Log.d(TAG, "Starting Restore ...")
         val success = initRoomBackup()
-        if (!success) return
+        if (!success) return emptyArray()
 
         // Needed for storage permissions request
         currentProcess = PROCESS_RESTORE
@@ -374,10 +374,10 @@ class DatabaseBackup(
                     "backupLocationCustomFile!!.exists()? : ${backupLocationCustomFile!!.exists()}",
                 )
                 doRestore(backupLocationCustomFile!!)
-                return
+                return emptyArray()
             }
 
-            else -> return
+            else -> return emptyArray()
         }
 
         // All Files in an Array of type File
@@ -393,7 +393,7 @@ class DatabaseBackup(
                 OnCompleteListener.EXIT_CODE_ERROR_RESTORE_NO_BACKUPS_AVAILABLE
             )
             Toast.makeText(context, "No backups available to restore", Toast.LENGTH_SHORT).show()
-            return
+            return emptyArray()
         }
 
         // New empty MutableList of String
@@ -407,8 +407,8 @@ class DatabaseBackup(
         }
 
         // Convert MutableList to Array
-        val filesStringArray = mutableListOfFilesAsString.toTypedArray().sortedArrayDescending()
-        restoreSelectedInternalExternalFile(filesStringArray[0])
+        return mutableListOfFilesAsString.toTypedArray().sortedArrayDescending()
+        //restoreSelectedInternalExternalFile(filesStringArray[0])
     }
 
     /**

@@ -14,88 +14,64 @@ import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel
-    @Inject
-    constructor(
-        @ApplicationContext private val context: Context,
-    ) : ViewModel() {
-        private val backup = DatabaseBackup(context)
+@Inject
+constructor(
+    @ApplicationContext private val context: Context,
+) : ViewModel() {
+    private val backup = DatabaseBackup(context)
+    private val _backupFiles = MutableStateFlow<Array<String>>(emptyArray())
+    val backupFiles = _backupFiles.asStateFlow()
 
-        fun backupDatabase() {
-            backup
-                .database(AppDatabase.getInstance(context))
-                .enableLogDebug(true)
-                .backupLocation(DatabaseBackup.BACKUP_FILE_LOCATION_INTERNAL)
-                .maxFileCount(1000)
-                .apply {
-                    onCompleteListener { success, message, exitCode ->
-                        Log.d(
-                            "debug_RoomBackup",
-                            "success: $success, message: $message, exitCode: $exitCode",
-                        )
-                    }
-                }.backup()
-        }
-
-        fun restoreDatabase() {
-            backup
-                .database(AppDatabase.getInstance(context))
-                .enableLogDebug(true)
-                .backupLocation(DatabaseBackup.BACKUP_FILE_LOCATION_INTERNAL)
-                .apply {
-                    onCompleteListener { success, message, exitCode ->
-                        Log.d(
-                            "debug_RoomBackup",
-                            "success: $success, message: $message, exitCode: $exitCode",
-                        )
-                    }
-                }.restore()
-        }
-
-        private fun getGoogleDriveInstance(): Drive? {
-            // Check if the user is signed in with Google
-            val googleAccount = GoogleSignIn.getLastSignedInAccount(context)
-            // If there's no signed-in account, return null
-            if (googleAccount == null) {
-                println("No google account found")
-            }
-            else{
-                println("Google account found")
-            }
-            return googleAccount?.let {
-                val credential =
-                    GoogleAccountCredential.usingOAuth2(
-                        context,
-                        listOf(DriveScopes.DRIVE, DriveScopes.DRIVE_FILE),
+    fun backupDatabase(fileName:String){
+        backup
+            .database(AppDatabase.getInstance(context))
+            .enableLogDebug(true)
+            .backupLocation(DatabaseBackup.BACKUP_FILE_LOCATION_INTERNAL)
+            .maxFileCount(1000)
+            .apply {
+                onCompleteListener { success, message, exitCode ->
+                    Log.d(
+                        "debug_RoomBackup",
+                        "success: $success, message: $message, exitCode: $exitCode",
                     )
-                credential.selectedAccount = googleAccount.account
-
-                // Build and return the Drive instance
-                Drive
-                    .Builder(
-                        NetHttpTransport(),
-                        GsonFactory.getDefaultInstance(),
-                        credential,
-                    ).setApplicationName("Task Hive")
-                    .build()
-            }
-        }
-
-        fun createGoogleDriveFolder() =
-            viewModelScope.launch {
-                println("Coming to create drive folder")
-                val drive = getGoogleDriveInstance()
-                val driveFolder =
-                    com.google.api.services.drive.model
-                        .File()
-                driveFolder.name = "Backup Folder"
-                driveFolder.mimeType = "application/vnd.google-apps.folder"
-
-                val folder = drive?.files()?.create(driveFolder)?.execute()
-                Log.d("Folder", folder.toString())
-            }
+                }
+            }.backup()
     }
+
+    fun restoreDatabase() {
+        _backupFiles.value = backup
+            .database(AppDatabase.getInstance(context))
+            .enableLogDebug(true)
+            .backupLocation(DatabaseBackup.BACKUP_FILE_LOCATION_INTERNAL)
+            .apply {
+                onCompleteListener { success, message, exitCode ->
+                    Log.d(
+                        "debug_RoomBackup",
+                        "success: $success, message: $message, exitCode: $exitCode",
+                    )
+                }
+            }.restore()
+    }
+
+    fun backupDatabaseGoogleDrive() = viewModelScope.launch {
+        backup
+            .database(AppDatabase.getInstance(context))
+            .enableLogDebug(true)
+            .maxFileCount(1000)
+            .apply {
+                onCompleteListener { success, message, exitCode ->
+                    Log.d(
+                        "debug_RoomBackup",
+                        "success: $success, message: $message, exitCode: $exitCode",
+                    )
+                }
+            }.backup()
+    }
+}
