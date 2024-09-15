@@ -1,12 +1,10 @@
 package com.example.taskhive.presentation.settings
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
 import android.util.Log
-import android.widget.Space
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -14,7 +12,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,21 +27,16 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.Backup
-import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Restore
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,7 +48,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.taskhive.MainActivity
@@ -64,14 +55,12 @@ import com.example.taskhive.R
 import com.example.taskhive.components.Dialog
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
-import com.example.taskhive.utils.getGoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.Scopes
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
-import com.google.android.gms.tasks.Task
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.InputStreamContent
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -94,8 +83,8 @@ fun SettingsScreen(
     val activity = context as MainActivity
     SettingsScreenSkeleton(
         goBack = goBack,
-        backup = { backupFileName ->
-            viewModel.backupDatabase(fileName = backupFileName)
+        backup = {
+            viewModel.backupDatabase()
         },
         restore = {
             viewModel.restoreDatabase()
@@ -108,16 +97,14 @@ fun SettingsScreen(
 @Composable
 fun SettingsScreenSkeleton(
     goBack: () -> Unit = {},
-    backup: (String) -> Unit = {},
+    backup: () -> Unit = {},
     restore: () -> Unit = {},
     context: Context = LocalContext.current,
     activity: MainActivity? = null,
 ) {
     var backupClicked by remember { mutableStateOf(false) }
     var restoreClicked by remember { mutableStateOf(false) }
-    var showRestartDialog by remember { mutableStateOf(false) }
-    var backupFileName by remember { mutableStateOf("") }
-    var showWarning by remember { mutableStateOf("") }
+    val showRestartDialog by remember { mutableStateOf(false) }
     val signInLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (activity != null) {
@@ -301,46 +288,59 @@ fun SettingsScreenSkeleton(
     }
 
     if (backupClicked) {
-        AlertDialog(
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    OutlinedTextField(
-                        value = backupFileName,
-                        onValueChange = {
-                            showWarning = if (it.last() == ' ') {
-                                "White-space is not allowed"
-                            } else {
-                                ""
-                            }
-                            backupFileName = it
-                        },
-                        label = {
-                            Text("Backup File name")
-                        },
-                        supportingText = {
-                            Text(text = showWarning, color = Color.Red)
-                        }
-                    )
-                }
-            },
-            onDismissRequest = {
-                backupClicked = false
-                backupFileName = ""
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    backupClicked = false
-                    showRestartDialog = true
-                }) {
-                    Text(text = "Save")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    backupClicked = false
-                    backupFileName = ""
-                }) {
-                    Text(text = "Cancel", color = Color.Red)
+//        AlertDialog(
+//            text = {
+//                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+//                    OutlinedTextField(
+//                        value = backupFileName,
+//                        onValueChange = {
+//                            showWarning = if (it.last() == ' ') {
+//                                "White-space is not allowed"
+//                            } else {
+//                                ""
+//                            }
+//                            backupFileName = it
+//                        },
+//                        label = {
+//                            Text("Backup File name")
+//                        },
+//                        supportingText = {
+//                            Text(text = showWarning, color = Color.Red)
+//                        }
+//                    )
+//                }
+//            },
+//            onDismissRequest = {
+//                backupClicked = false
+//                backupFileName = ""
+//            },
+//            confirmButton = {
+//                TextButton(onClick = {
+//                    backupClicked = false
+//                    showRestartDialog = true
+//                }) {
+//                    Text(text = "Save")
+//                }
+//            },
+//            dismissButton = {
+//                TextButton(onClick = {
+//                    backupClicked = false
+//                    backupFileName = ""
+//                }) {
+//                    Text(text = "Cancel", color = Color.Red)
+//                }
+//            },
+//        )
+        Dialog(
+            showDialog = { backupClicked = it },
+            title = "Please restart your app to apply changes",
+            confirmText = "Restart",
+            onClicked = {
+                backup()
+                activity?.let {
+                    val intent = Intent(context, it::class.java)
+                    it.finish()
+                    context.startActivity(intent)
                 }
             },
         )
@@ -368,7 +368,7 @@ fun SettingsScreenSkeleton(
             title = "Please restart your app to apply changes",
             confirmText = "Restart",
             onClicked = {
-                backup(backupFileName)
+                backup()
                 activity?.let {
                     val intent = Intent(context, it::class.java)
                     it.finish()

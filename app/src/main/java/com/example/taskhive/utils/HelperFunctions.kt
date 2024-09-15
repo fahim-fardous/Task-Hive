@@ -3,6 +3,9 @@ package com.example.taskhive.utils
 import android.app.Activity
 import android.content.Intent
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -42,6 +45,14 @@ object HelperFunctions {
     ): String {
         val simpleDateFormat = SimpleDateFormat(pattern, Locale.getDefault())
         return simpleDateFormat.format(Date(millis))
+    }
+
+    fun toLocalDate(date:Date?):LocalDate{
+        return LocalDateTime
+            .ofInstant(
+                date?.toInstant() ?: Date().toInstant(),
+                ZoneOffset.UTC,
+            ).toLocalDate()
     }
 
 }

@@ -72,39 +72,21 @@ class DatabaseBackup(
     private var backupLocation: Int = BACKUP_FILE_LOCATION_INTERNAL
     private var backupLocationCustomFile: File? = null
 
-    /**
-     * Set RoomDatabase Instance
-     */
-
     fun database(roomDatabase: RoomDatabase): DatabaseBackup {
         this.roomDatabase = roomDatabase
         return this
     }
-
-    /**
-     * Set LogDebug enabled / disabled
-     */
 
     fun enableLogDebug(enableLogDebug: Boolean): DatabaseBackup {
         this.enableLogDebug = enableLogDebug
         return this
     }
 
-    /**
-     * Set onCompleteListener, to run code when tasks completed
-     *
-     * @param onCompleteListener OnCompleteListener
-     */
     fun onCompleteListener(onCompleteListener: OnCompleteListener): DatabaseBackup {
         this.onCompleteListener = onCompleteListener
         return this
     }
 
-    /**
-     * Set onCompleteListener, to run code when tasks completed
-     *
-     * @param listener (success: Boolean, message: String) -> Unit
-     */
     fun onCompleteListener(
         listener: (success: Boolean, message: String, exitCode: Int) -> Unit
     ): DatabaseBackup {
@@ -117,39 +99,21 @@ class DatabaseBackup(
         return this
     }
 
-    /**
-     * Set you backup location. Available values see: [BACKUP_FILE_LOCATION_INTERNAL],
-     */
-
     fun backupLocation(backupLocation: Int): DatabaseBackup {
         this.backupLocation = backupLocation
         return this
     }
 
-    /**
-     * Set a custom file where to save or restore a backup. can be used for backup and restore
-     *
-     * Only available if [backupLocation] is set to [BACKUP_FILE_LOCATION_CUSTOM_FILE]
-     *
-     * @param backupLocationCustomFile File
-     */
     fun backupLocationCustomFile(backupLocationCustomFile: File): DatabaseBackup {
         this.backupLocationCustomFile = backupLocationCustomFile
         return this
     }
 
-    /**
-     * Set max backup files count if fileCount is > maxFileCount the oldest backup file will be
-     * deleted is for both internal and external storage
-     *
-     * @param maxFileCount Int, default = null
-     */
     fun maxFileCount(maxFileCount: Int): DatabaseBackup {
         this.maxFileCount = maxFileCount
         return this
     }
 
-    /** Init vars, and return true if no error occurred */
     private fun initRoomBackup(): Boolean {
         if (roomDatabase == null) {
             if (enableLogDebug) Log.d(TAG, "roomDatabase is missing")
@@ -158,7 +122,6 @@ class DatabaseBackup(
                 "roomDatabase is missing",
                 OnCompleteListener.EXIT_CODE_ERROR_ROOM_DATABASE_MISSING
             )
-            //       throw IllegalArgumentException("roomDatabase is not initialized")
             return false
         }
 
@@ -196,10 +159,6 @@ class DatabaseBackup(
             return false
         }
 
-        // Initialize/open an instance of EncryptedSharedPreferences
-        // Encryption key is stored in plain text in an EncryptedSharedPreferences --> it is saved
-        // encrypted
-
         dbName = roomDatabase!!.openHelper.databaseName!!
         INTERNAL_BACKUP_PATH = File("${context.filesDir}/databasebackup/")
         TEMP_BACKUP_PATH = File("${context.filesDir}/databasebackup-temp/")
@@ -207,7 +166,6 @@ class DatabaseBackup(
         EXTERNAL_BACKUP_PATH = File(context.getExternalFilesDir("backup")!!.toURI())
         DATABASE_FILE = File(context.getDatabasePath(dbName).toURI())
 
-        // Create internal and temp backup directory if does not exist
         try {
             INTERNAL_BACKUP_PATH.mkdirs()
             TEMP_BACKUP_PATH.mkdirs()
@@ -227,22 +185,13 @@ class DatabaseBackup(
         return true
     }
 
-    /**
-     * Start Backup process, and set onComplete Listener to success, if no error occurred, else
-     * onComplete Listener success is false and error message is passed
-     *
-     * if custom storage ist selected, the [openBackupfileCreator] will be launched
-     */
     fun backup() {
         if (enableLogDebug) Log.d(TAG, "Starting Backup ...")
         val success = initRoomBackup()
         if (!success) return
 
-        // Needed for storage permissions request
         currentProcess = PROCESS_BACKUP
 
-        // Create name for backup file, if no custom name is set: Database name + currentTime +
-        // .sqlite3
         var filename =
             if (customBackupFileName == null) {
                 "$dbName-${
@@ -254,7 +203,7 @@ class DatabaseBackup(
             } else {
                 customBackupFileName as String
             }
-        // Add .aes extension to filename, if file is encrypted
+
         if (backupIsEncrypted) filename += ".aes"
         if (enableLogDebug) Log.d(TAG, "backupFilename: $filename")
 
@@ -292,11 +241,6 @@ class DatabaseBackup(
         }
     }
 
-    /**
-     * This method will do the backup action
-     *
-     * @param destination File
-     */
     private fun doBackup(destination: File) {
         // Close the database
         roomDatabase!!.close()
@@ -321,37 +265,27 @@ class DatabaseBackup(
         }
     }
 
-    private fun doBackup(destination: OutputStream) {
-        // Close the database
-        roomDatabase!!.close()
-        roomDatabase = null
-        // Copy current database to save location (/files dir)
-        copy(DATABASE_FILE, destination)
+    fun getBackupFiles(): List<String> {
+        val backupDirectory:File = INTERNAL_BACKUP_PATH
+        val listOfFiles = backupDirectory.listFiles()
 
-        // If maxFileCount is set and is reached, delete oldest file
-        if (maxFileCount != null) {
-            val deleted = deleteOldBackup()
-            if (!deleted) return
+        val backupFiles = mutableListOf<String>()
+        runBlocking {
+            if (listOfFiles != null) {
+                for (i in listOfFiles.indices){
+                    backupFiles.add(listOfFiles[i].name)
+                }
+            }
         }
-        if (enableLogDebug) {
-            Log.d(TAG, "Backup done, encrypted($backupIsEncrypted) and saved to $destination")
-        }
+        return backupFiles
+
+
     }
 
-    /**
-     * Start Restore process, and set onComplete Listener to success, if no error occurred, else
-     * onComplete Listener success is false and error message is passed
-     *
-     * if internal or external storage is selected, this function shows a list of all available
-     * backup files in a MaterialAlertDialog and calls [restoreSelectedInternalExternalFile] to
-     * restore selected file
-     *
-     * if custom storage ist selected, the [openBackupfileChooser] will be launched
-     */
-    fun restore():Array<String> {
+    fun restore(){
         if (enableLogDebug) Log.d(TAG, "Starting Restore ...")
         val success = initRoomBackup()
-        if (!success) return emptyArray()
+        if (!success) return
 
         // Needed for storage permissions request
         currentProcess = PROCESS_RESTORE
@@ -374,17 +308,15 @@ class DatabaseBackup(
                     "backupLocationCustomFile!!.exists()? : ${backupLocationCustomFile!!.exists()}",
                 )
                 doRestore(backupLocationCustomFile!!)
-                return emptyArray()
+                return
             }
 
-            else -> return emptyArray()
+            else -> return
         }
 
-        // All Files in an Array of type File
         val arrayOfFiles = backupDirectory.listFiles()
         if (enableLogDebug) Log.d(TAG, "arrayOfFiles: $arrayOfFiles")
 
-        // If array is null or empty show "error" and return
         if (arrayOfFiles.isNullOrEmpty()) {
             if (enableLogDebug) Log.d(TAG, "No backups available to restore")
             onCompleteListener?.onComplete(
@@ -393,7 +325,7 @@ class DatabaseBackup(
                 OnCompleteListener.EXIT_CODE_ERROR_RESTORE_NO_BACKUPS_AVAILABLE
             )
             Toast.makeText(context, "No backups available to restore", Toast.LENGTH_SHORT).show()
-            return emptyArray()
+            return
         }
 
         // New empty MutableList of String
@@ -407,15 +339,10 @@ class DatabaseBackup(
         }
 
         // Convert MutableList to Array
-        return mutableListOfFilesAsString.toTypedArray().sortedArrayDescending()
-        //restoreSelectedInternalExternalFile(filesStringArray[0])
+        val filesStringArray = mutableListOfFilesAsString.toTypedArray().sortedArrayDescending()
+        restoreSelectedInternalExternalFile(filesStringArray[0])
     }
 
-    /**
-     * This method will do the restore action
-     *
-     * @param source File
-     */
     private fun doRestore(source: File) {
         // Close the database
         roomDatabase!!.close()
@@ -450,47 +377,6 @@ class DatabaseBackup(
         }
     }
 
-    /**
-     * This method will do the restore action
-     *
-     * @param source InputStream
-     */
-    private fun doRestore(source: InputStream) {
-        if (backupIsEncrypted) {
-            // Save inputstream to temp file
-            source.use { input ->
-                TEMP_BACKUP_FILE.outputStream().use { output -> input.copyTo(output) }
-            }
-
-            // Close the database if decryption is succesfull
-            roomDatabase!!.close()
-            roomDatabase = null
-
-            val bos = BufferedOutputStream(FileOutputStream(DATABASE_FILE, false))
-            bos.flush()
-            bos.close()
-        } else {
-            // Close the database
-            roomDatabase!!.close()
-            roomDatabase = null
-
-            // Copy back database and replace current database
-            source.use { input ->
-                DATABASE_FILE.outputStream().use { output -> input.copyTo(output) }
-            }
-        }
-
-        if (enableLogDebug) {
-            Log.d(TAG, "Restore done, decrypted($backupIsEncrypted) and restored from $source")
-        }
-        onCompleteListener?.onComplete(true, "success", OnCompleteListener.EXIT_CODE_SUCCESS)
-    }
-
-    /**
-     * Restores the selected file from internal or external storage
-     *
-     * @param filename String
-     */
     private fun restoreSelectedInternalExternalFile(filename: String) {
         if (enableLogDebug) Log.d(TAG, "Restore selected file...")
 
@@ -507,12 +393,6 @@ class DatabaseBackup(
         }
     }
 
-    /**
-     * If maxFileCount is set, and reached, all old files will be deleted. Only if
-     * [BACKUP_FILE_LOCATION_INTERNAL] or [BACKUP_FILE_LOCATION_EXTERNAL]
-     *
-     * @return true if old files deleted or nothing to do
-     */
     private fun deleteOldBackup(): Boolean {
         // Path of Backup Directory
 
@@ -557,11 +437,6 @@ class DatabaseBackup(
         return true
     }
 
-    /**
-     * Copies a file from source to destination.
-     * @param sourceFile The file to be copied.
-     * @param destFile The destination file.
-     */
     private fun copy(
         sourceFile: File,
         destFile: File,
@@ -583,46 +458,7 @@ class DatabaseBackup(
         }
     }
 
-    /**
-     * Copies a file from source to an OutputStream destination.
-     * @param sourceFile The file to be copied.
-     * @param outputStream The destination output stream.
-     */
-    private fun copy(
-        sourceFile: File,
-        outputStream: OutputStream,
-    ) {
-        try {
-            FileInputStream(sourceFile).use { input ->
-                outputStream.use { output ->
-                    val buffer = ByteArray(1024) // Buffer for efficient copying
-                    var length: Int
-                    while (input.read(buffer).also { length = it } > 0) {
-                        output.write(buffer, 0, length)
-                    }
-                }
-            }
-            Log.d(TAG, "File copied from ${sourceFile.path}")
-        } catch (e: IOException) {
-            Log.e(TAG, "File copy failed: ${e.message}", e)
-            throw RuntimeException("Failed to copy file: ${e.message}")
-        }
-    }
 
-    fun restartApp(restartIntent: Intent): DatabaseBackup {
-        this.restartIntent = restartIntent
-        restartApp()
-        return this
-    }
-
-    private fun restartApp() {
-        restartIntent!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(restartIntent)
-        if (context is Activity) {
-            (context as Activity).finish()
-        }
-        Runtime.getRuntime().exit(0)
-    }
 
     private fun getDateTimeFromMillis(
         millis: Long,

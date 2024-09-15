@@ -45,9 +45,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.taskhive.components.CalendarCard
+import com.example.taskhive.components.CalendarDataSource
 import com.example.taskhive.components.CalendarPreferences
+import com.example.taskhive.components.CalendarUiModel
+import com.example.taskhive.components.Content
 import com.example.taskhive.components.Dialog
+import com.example.taskhive.components.Header
 import com.example.taskhive.components.NoTaskCard
 import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.TaskCard
@@ -59,6 +62,7 @@ import com.example.taskhive.domain.model.TaskStatus
 import com.example.taskhive.presentation.task.model.TaskUiModel
 import com.example.taskhive.service.TimerService
 import com.example.taskhive.ui.theme.TaskHiveTheme
+import com.example.taskhive.utils.HelperFunctions.toLocalDate
 import com.example.taskhive.utils.MockData
 import com.example.taskhive.utils.localDateToDate
 import java.time.Instant
@@ -78,7 +82,6 @@ fun TaskListScreen(
     viewModel: TaskListViewModel,
 ) {
     val context = LocalContext.current
-
     LaunchedEffect(Unit) {
         if (projectId != null) {
             if (plannedDate != null) {
@@ -146,32 +149,6 @@ fun TaskListScreen(
         getTasks = { fromDate, toDate ->
             viewModel.getTasks(fromDate, toDate, projectId)
         },
-        getTaskByRange = { start, end ->
-            if (projectId != null) {
-                viewModel.getTaskByRange(
-                    Instant
-                        .ofEpochMilli(start)
-                        .atZone(ZoneOffset.UTC)
-                        .toLocalDate(),
-                    Instant
-                        .ofEpochMilli(end)
-                        .atZone(ZoneOffset.UTC)
-                        .toLocalDate(),
-                    projectId,
-                )
-            } else {
-                viewModel.getTaskByRange(
-                    Instant
-                        .ofEpochMilli(start)
-                        .atZone(ZoneOffset.UTC)
-                        .toLocalDate(),
-                    Instant
-                        .ofEpochMilli(end)
-                        .atZone(ZoneOffset.UTC)
-                        .toLocalDate(),
-                )
-            }
-        },
     )
 }
 
@@ -191,75 +168,59 @@ fun TaskListScreenSkeleton(
     onDateChange: (LocalDate, LocalDate?) -> Unit = { _, _ -> },
     addTime: (Long, LocalDate) -> Unit = { _, _ -> },
     getTasks: (LocalDate, LocalDate?) -> Unit = { _, _ -> },
-    getTaskByRange: (Long, Long) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
-    var logTaskId by remember {
-        mutableIntStateOf(-1)
-    }
+    var logTaskId by remember { mutableIntStateOf(-1) }
     var selectedTaskStatus by remember { mutableIntStateOf(0) }
-    var totalTimeSpend by remember {
-        mutableLongStateOf(0L)
-    }
-    var logSpendTime by remember {
-        mutableLongStateOf(0L)
-    }
-    var showTaskChangeDialog by remember {
-        mutableStateOf(false)
-    }
-    var showDeleteDialog by remember {
-        mutableStateOf(false)
-    }
-    var showCalendarDialog by remember {
-        mutableStateOf(false)
-    }
-    var showDateRangePicker by remember {
-        mutableStateOf(false)
-    }
-    var currentStatus by remember {
-        mutableStateOf(TaskStatus.TODO)
-    }
-    var currentDate by remember {
-        mutableStateOf(LocalDate.now(ZoneOffset.UTC))
-    }
-    var startDate by remember {
-        mutableStateOf<LocalDate?>(null)
-    }
-    var endDate by remember {
-        mutableStateOf<LocalDate?>(null)
-    }
+    var totalTimeSpend by remember { mutableLongStateOf(0L) }
+    var logSpendTime by remember { mutableLongStateOf(0L) }
+    var isCalendarClicked by remember { mutableStateOf(false) }
+    var isRangeSelected by remember { mutableStateOf(false) }
+    var showTaskChangeDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showCalendarDialog by remember { mutableStateOf(false) }
+    var showDateRangePicker by remember { mutableStateOf(false) }
+    var currentStatus by remember { mutableStateOf(TaskStatus.TODO) }
+    var currentDate by remember { mutableStateOf(LocalDate.now(ZoneOffset.UTC)) }
+    var startDate by remember { mutableStateOf<LocalDate?>(null) }
+    var endDate by remember { mutableStateOf<LocalDate?>(null) }
     val calendarPreferences = remember { CalendarPreferences(context) }
     var selectedDate by remember {
         mutableStateOf(calendarPreferences.getSelectedDate() ?: LocalDate.now(ZoneOffset.UTC))
     }
-    var calendarSelectedDate by remember {
-        mutableStateOf<Date?>(null)
-    }
+    var calendarSelectedDate by remember { mutableStateOf<Date?>(null) }
     var logStartDate by remember { mutableStateOf(localDateToDate(LocalDate.now())) }
     var logEndDate by remember { mutableStateOf(localDateToDate(LocalDate.now())) }
 
     val timerState by TimerService.timerItem.collectAsState()
+
+    val savedSelectedDate = remember { calendarPreferences.getSelectedDate() }
+    val dataSource = CalendarDataSource()
+    var calendarUiModel by remember {
+        mutableStateOf(dataSource.getData(lastSelectedDate = savedSelectedDate ?: dataSource.today))
+    }
+
+    println("Tasks: $tasks")
+
     LaunchedEffect(key1 = timerState) {
-        snapshotFlow { timerState?.isRunning }
-            .collect { isRunning ->
-                if (isRunning == null) {
-                    getTasks(selectedDate, null)
-                }
+        snapshotFlow { timerState?.isRunning }.collect { isRunning ->
+            if (isRunning == null) {
+                getTasks(selectedDate, null)
             }
+        }
     }
     Scaffold(
-        topBar =
-            {
-                TopBar(
-                    onClick = {
-                        calendarPreferences.clearSelectedDate()
-                        goBack()
-                    },
-                    leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                    title = "Today's Task",
-                    trailingIcon = Icons.Filled.Notifications,
-                )
-            },
+        topBar = {
+            TopBar(
+                onClick = {
+                    calendarPreferences.clearSelectedDate()
+                    goBack()
+                },
+                leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                title = "Today's Task",
+                trailingIcon = Icons.Filled.Notifications,
+            )
+        },
         floatingActionButtonPosition = FabPosition.End,
         floatingActionButton = {
             if (projectId != null) {
@@ -275,36 +236,45 @@ fun TaskListScreenSkeleton(
         },
     ) { innerPadding ->
         Column(
-            modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .padding(16.dp),
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            CalendarCard(
-                selectedDate = { date ->
-                    selectedTaskStatus = 0
-                    startDate = date.date
-                    selectedDate = date.date
-                    onDateChange(date.date, null)
-                },
+            Header(
+                data = calendarUiModel,
                 onCalendarClick = {
                     showCalendarDialog = true
+                    if (isRangeSelected) isRangeSelected = false
                 },
-                calendarPreferences = calendarPreferences,
                 onRangeClick = {
                     showDateRangePicker = true
+                    if (isCalendarClicked) isCalendarClicked = false
                 },
             )
+
+            Content(data = calendarUiModel, onDateClick = { date ->
+                isRangeSelected = false
+                calendarUiModel = calendarUiModel.copy(selectedDate = date,
+                    visibleDates = calendarUiModel.visibleDates.map {
+                        it.copy(isSelected = it.date.isEqual(date.date))
+                    })
+                selectedTaskStatus = 0
+                startDate = date.date
+                selectedDate = date.date
+                onDateChange(date.date, null)
+                calendarPreferences.saveSelectedDate(date.date)
+            })
+
             Spacer(modifier = Modifier.height(16.dp))
-            val filteredTasks =
-                when (selectedTaskStatus) {
-                    0 -> tasks
-                    1 -> tasks.filter { it.taskStatus == TaskStatus.TODO }
-                    2 -> tasks.filter { it.taskStatus == TaskStatus.IN_PROGRESS }
-                    3 -> tasks.filter { it.taskStatus == TaskStatus.DONE }
-                    else -> tasks
-                }
+
+            val filteredTasks = when (selectedTaskStatus) {
+                0 -> tasks
+                1 -> tasks.filter { it.taskStatus == TaskStatus.TODO }
+                2 -> tasks.filter { it.taskStatus == TaskStatus.IN_PROGRESS }
+                3 -> tasks.filter { it.taskStatus == TaskStatus.DONE }
+                else -> tasks
+            }
 
             LazyRow {
                 item {
@@ -336,7 +306,9 @@ fun TaskListScreenSkeleton(
                     )
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
+
             if (filteredTasks.isEmpty()) {
                 NoTaskCard(selectedStatus = selectedTaskStatus)
             } else {
@@ -396,21 +368,13 @@ fun TaskListScreenSkeleton(
                                 goToLogScreen(task.id)
                             },
                             onPlayClicked = {
-                                if (timerState?.taskId == null &&
-                                    (
-                                        (
-                                            task.plannedStartDate?.equals(
-                                                localDateToDate(LocalDate.now()),
-                                            ) == true
-                                        ) ||
-                                            (
-                                                task.plannedStartDate?.before(
-                                                    localDateToDate(
-                                                        LocalDate.now(),
-                                                    ),
-                                                ) == true
-                                            )
-                                    )
+                                if (timerState?.taskId == null && ((task.plannedStartDate?.equals(
+                                        localDateToDate(LocalDate.now()),
+                                    ) == true) || (task.plannedStartDate?.before(
+                                        localDateToDate(
+                                            LocalDate.now(),
+                                        ),
+                                    ) == true))
                                 ) {
                                     logStartDate = Date()
                                     context.startService(
@@ -422,12 +386,11 @@ fun TaskListScreenSkeleton(
                                         },
                                     )
                                 } else {
-                                    Toast
-                                        .makeText(
-                                            context,
-                                            "This task is for future",
-                                            Toast.LENGTH_SHORT,
-                                        ).show()
+                                    Toast.makeText(
+                                        context,
+                                        "This task is for future",
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
                                 }
                             },
                         )
@@ -467,27 +430,24 @@ fun TaskListScreenSkeleton(
             )
         }
         if (showCalendarDialog) {
-            val initialSelectedDate =
-                remember {
-                    val localCalender = Calendar.getInstance()
-                    val utcCalender = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-                    utcCalender.clear()
-                    utcCalender.set(
-                        localCalender.get(Calendar.YEAR),
-                        localCalender.get(Calendar.MONTH),
-                        localCalender.get(Calendar.DATE),
-                    )
-                    utcCalender.timeInMillis
-                }
-
-            val datePickerState =
-                rememberDatePickerState(
-                    initialSelectedDateMillis = initialSelectedDate,
+            val initialSelectedDate = remember {
+                val localCalender = Calendar.getInstance()
+                val utcCalender = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                utcCalender.clear()
+                utcCalender.set(
+                    localCalender.get(Calendar.YEAR),
+                    localCalender.get(Calendar.MONTH),
+                    localCalender.get(Calendar.DATE),
                 )
-            val datePickerConfirmButtonEnabled =
-                remember {
-                    derivedStateOf { datePickerState.selectedDateMillis != null }
-                }
+                utcCalender.timeInMillis
+            }
+
+            val datePickerState = rememberDatePickerState(
+                initialSelectedDateMillis = initialSelectedDate,
+            )
+            val datePickerConfirmButtonEnabled = remember {
+                derivedStateOf { datePickerState.selectedDateMillis != null }
+            }
 
             DatePickerDialog(onDismissRequest = { showCalendarDialog = false }, confirmButton = {
                 TextButton(
@@ -495,16 +455,25 @@ fun TaskListScreenSkeleton(
                         showCalendarDialog = false
 
                         datePickerState.selectedDateMillis?.let {
+                            selectedDate = toLocalDate(Date(it))
                             calendarSelectedDate = Date(it)
                             onDateChange(
-                                LocalDateTime
-                                    .ofInstant(
-                                        Date(it).toInstant(),
-                                        ZoneOffset.UTC,
-                                    ).toLocalDate(),
+                                LocalDateTime.ofInstant(
+                                    Date(it).toInstant(),
+                                    ZoneOffset.UTC,
+                                ).toLocalDate(),
                                 endDate,
                             )
                         }
+                        isCalendarClicked = true
+                        calendarUiModel = calendarUiModel.copy(selectedDate = CalendarUiModel.Date(
+                            selectedDate,
+                            isSelected = true,
+                            isToday = selectedDate.isEqual(LocalDate.now())
+                        ),
+                            visibleDates = calendarUiModel.visibleDates.map {
+                                it.copy(isSelected = it.date.isEqual(selectedDate))
+                            })
                     },
                     enabled = datePickerConfirmButtonEnabled.value,
                 ) {
@@ -533,19 +502,20 @@ fun TaskListScreenSkeleton(
                         onClick = {
                             showDateRangePicker = false
                             startDate =
-                                Instant
-                                    .ofEpochMilli(dateRangePickerState.selectedStartDateMillis!!)
-                                    .atZone(ZoneOffset.UTC)
-                                    .toLocalDate()
+                                Instant.ofEpochMilli(dateRangePickerState.selectedStartDateMillis!!)
+                                    .atZone(ZoneOffset.UTC).toLocalDate()
                             endDate =
-                                Instant
-                                    .ofEpochMilli(dateRangePickerState.selectedEndDateMillis!!)
-                                    .atZone(ZoneOffset.UTC)
-                                    .toLocalDate()
-                            getTaskByRange(
-                                dateRangePickerState.selectedStartDateMillis!!,
-                                dateRangePickerState.selectedEndDateMillis!!,
+                                Instant.ofEpochMilli(dateRangePickerState.selectedEndDateMillis!!)
+                                    .atZone(ZoneOffset.UTC).toLocalDate()
+                            getTasks(
+                                startDate ?: selectedDate,
+                                endDate
                             )
+                            isRangeSelected = true
+                            calendarUiModel =
+                                calendarUiModel.copy(visibleDates = calendarUiModel.visibleDates.map {
+                                    it.copy(isSelected = false)
+                                })
                         },
                     ) {
                         Text("OK")
@@ -565,11 +535,10 @@ fun TaskListScreenSkeleton(
                         )
                     },
                     showModeToggle = false,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .height(500.dp)
-                            .padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(500.dp)
+                        .padding(16.dp),
                 )
             }
         }

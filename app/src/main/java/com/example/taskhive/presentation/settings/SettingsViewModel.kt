@@ -26,10 +26,7 @@ constructor(
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
     private val backup = DatabaseBackup(context)
-    private val _backupFiles = MutableStateFlow<Array<String>>(emptyArray())
-    val backupFiles = _backupFiles.asStateFlow()
-
-    fun backupDatabase(fileName:String){
+    fun backupDatabase() {
         backup
             .database(AppDatabase.getInstance(context))
             .enableLogDebug(true)
@@ -46,7 +43,7 @@ constructor(
     }
 
     fun restoreDatabase() {
-        _backupFiles.value = backup
+        backup
             .database(AppDatabase.getInstance(context))
             .enableLogDebug(true)
             .backupLocation(DatabaseBackup.BACKUP_FILE_LOCATION_INTERNAL)
@@ -58,20 +55,5 @@ constructor(
                     )
                 }
             }.restore()
-    }
-
-    fun backupDatabaseGoogleDrive() = viewModelScope.launch {
-        backup
-            .database(AppDatabase.getInstance(context))
-            .enableLogDebug(true)
-            .maxFileCount(1000)
-            .apply {
-                onCompleteListener { success, message, exitCode ->
-                    Log.d(
-                        "debug_RoomBackup",
-                        "success: $success, message: $message, exitCode: $exitCode",
-                    )
-                }
-            }.backup()
     }
 }
