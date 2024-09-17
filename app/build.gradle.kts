@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -7,11 +10,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.taskhive"
+    namespace = "com.example.taskhiveapp"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.taskhive"
+        applicationId = "com.example.taskhiveapp"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -28,7 +31,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -41,6 +44,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -77,7 +81,7 @@ dependencies {
     // optional - Kotlin Extensions and Coroutines support for Room
     implementation(libs.androidx.room.ktx)
     // Gson
-    implementation (libs.google.gson)
+    implementation(libs.google.gson)
     // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
@@ -91,9 +95,9 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 
-    implementation ("com.google.api-client:google-api-client-android:1.33.2")
-    implementation ("com.google.api-client:google-api-client-gson:1.33.2")
-    implementation ("com.google.apis:google-api-services-drive:v3-rev197-1.25.0")
+    implementation("com.google.api-client:google-api-client-android:1.33.2")
+    implementation("com.google.api-client:google-api-client-gson:1.33.2")
+    implementation("com.google.apis:google-api-services-drive:v3-rev197-1.25.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

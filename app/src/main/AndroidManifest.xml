@@ -12,7 +12,7 @@
 
 
     <application
-        android:name=".base.TaskHive"
+        android:name="com.example.taskhiveapp.base.TaskHive"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -32,7 +32,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.taskhiveapp.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
@@ -44,7 +44,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".service.TimerService"
+            android:name="com.example.taskhiveapp.service.TimerService"
             android:foregroundServiceType="specialUse" />
     </application>
 
