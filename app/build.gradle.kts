@@ -1,16 +1,20 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.taskhive"
+    namespace = "com.example.taskhiveapp"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.taskhive"
+        applicationId = "com.example.taskhiveapp"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -27,7 +31,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -40,6 +44,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -47,6 +52,7 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/DEPENDENCIES"
         }
     }
 }
@@ -68,13 +74,14 @@ dependencies {
     // Navigation
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.room.runtime)
+    implementation(libs.firebase.auth.ktx)
     annotationProcessor(libs.androidx.room.compiler)
     // To use Kotlin annotation processing tool (kapt)
     kapt("androidx.room:room-compiler:2.6.1")
     // optional - Kotlin Extensions and Coroutines support for Room
     implementation(libs.androidx.room.ktx)
     // Gson
-    implementation (libs.google.gson)
+    implementation(libs.google.gson)
     // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
@@ -83,6 +90,16 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     // Lazy Table
     implementation(libs.lazytable)
+    // Google Drive API
+    implementation("com.google.firebase:firebase-bom:33.2.0")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    implementation("com.google.api-client:google-api-client-android:1.33.2")
+    implementation("com.google.api-client:google-api-client-gson:1.33.2")
+    implementation("com.google.apis:google-api-services-drive:v3-rev197-1.25.0")
+    //Coil
+    implementation("io.coil-kt:coil:2.7.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
