@@ -98,6 +98,8 @@ dependencies {
     implementation("com.google.api-client:google-api-client-android:1.33.2")
     implementation("com.google.api-client:google-api-client-gson:1.33.2")
     implementation("com.google.apis:google-api-services-drive:v3-rev197-1.25.0")
+    //Coil
+    implementation("io.coil-kt:coil:2.7.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

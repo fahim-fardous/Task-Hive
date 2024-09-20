@@ -12,8 +12,12 @@ import android.util.Log
 import android.widget.Toast
 import androidx.room.RoomDatabase
 import com.example.taskhiveapp.core.OnCompleteListener
+import com.example.taskhiveapp.utils.GoogleDriveHelper.getAllBackupFiles
+import com.example.taskhiveapp.utils.GoogleDriveHelper.getLastBackupFile
+import com.google.api.services.drive.Drive
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import java.io.BufferedOutputStream
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -50,6 +54,8 @@ class DatabaseBackup(
 
         /** Code for custom backup file location, used for [backupLocation] */
         const val BACKUP_FILE_LOCATION_CUSTOM_FILE = 4
+
+        const val BACKUP_FILE_LOCATION_CLOUD = 5
     }
 
     private lateinit var sharedPreferences: SharedPreferences
@@ -127,6 +133,7 @@ class DatabaseBackup(
                 BACKUP_FILE_LOCATION_EXTERNAL,
                 BACKUP_FILE_LOCATION_CUSTOM_DIALOG,
                 BACKUP_FILE_LOCATION_CUSTOM_FILE,
+                BACKUP_FILE_LOCATION_CLOUD,
             )
         ) {
             if (enableLogDebug) Log.d(TAG, "backupLocation is missing")
@@ -181,16 +188,16 @@ class DatabaseBackup(
         return true
     }
 
-    fun backup(): String {
+    fun backup(fileName:String = "New-Task"): File? {
         if (enableLogDebug) Log.d(TAG, "Starting Backup ...")
         val success = initRoomBackup()
-        if (!success) return ""
+        if (!success) return null
 
         currentProcess = PROCESS_BACKUP
 
         val filename =
             if (customBackupFileName == null) {
-                "$dbName-${
+                "$fileName-${
                     getDateTimeFromMillis(
                         Calendar.getInstance().timeInMillis,
                         pattern = "yyyy-MM-dd_HH:mm",
@@ -201,6 +208,8 @@ class DatabaseBackup(
             }
 
         if (enableLogDebug) Log.d(TAG, "backupFilename: $filename")
+
+        val backupFileForCloud = File(context.cacheDir, filename)
 
         when (backupLocation) {
             BACKUP_FILE_LOCATION_INTERNAL -> {
@@ -224,61 +233,41 @@ class DatabaseBackup(
                 } else {
                     arrayOf(READ_EXTERNAL_STORAGE)
                 }
-                return ""
+                return null
             }
 
             BACKUP_FILE_LOCATION_CUSTOM_FILE -> {
                 doBackup(backupLocationCustomFile!!)
             }
 
-            else -> return ""
+            BACKUP_FILE_LOCATION_CLOUD -> {
+                doBackup(backupFileForCloud)
+                return backupFileForCloud
+            }
+
+            else -> return null
         }
-        return filename
+        return null
     }
 
     private fun doBackup(destination: File) {
-        // Close the database
         roomDatabase!!.close()
         roomDatabase = null
-
-        // Copy current database to save location (/files dir)
         copy(DATABASE_FILE, destination)
-
-        // If maxFileCount is set and is reached, delete oldest file
         if (maxFileCount != null) {
             val deleted = deleteOldBackup()
             if (!deleted) return
         }
-
         if (enableLogDebug) {
             Log.d(TAG, "Backup done, encrypted($backupIsEncrypted) and saved to $destination")
         }
     }
 
-    fun getBackupFiles(): List<String> {
-        val backupDirectory: File = INTERNAL_BACKUP_PATH
-        val listOfFiles = backupDirectory.listFiles()
-
-        val backupFiles = mutableListOf<String>()
-        runBlocking {
-            if (listOfFiles != null) {
-                for (i in listOfFiles.indices) {
-                    backupFiles.add(listOfFiles[i].name)
-                }
-            }
-        }
-        return backupFiles
-    }
-
-    fun restore() {
+    fun restore(filename:File? = null) {
         if (enableLogDebug) Log.d(TAG, "Starting Restore ...")
         val success = initRoomBackup()
         if (!success) return
-
-        // Needed for storage permissions request
         currentProcess = PROCESS_RESTORE
-
-        // Path of Backup Directory
         val backupDirectory: File
 
         when (backupLocation) {
@@ -296,6 +285,11 @@ class DatabaseBackup(
                     "backupLocationCustomFile!!.exists()? : ${backupLocationCustomFile!!.exists()}",
                 )
                 doRestore(backupLocationCustomFile!!)
+                return
+            }
+
+            BACKUP_FILE_LOCATION_CLOUD -> {
+                doRestore(filename!!)
                 return
             }
 
@@ -327,40 +321,14 @@ class DatabaseBackup(
             }
         }
 
-        // Convert MutableList to Array
         val filesStringArray = mutableListOfFilesAsString.toTypedArray().sortedArrayDescending()
         restoreSelectedInternalExternalFile(filesStringArray[0])
     }
 
     private fun doRestore(source: File) {
-        // Close the database
         roomDatabase!!.close()
         roomDatabase = null
-        val fileExtension = source.extension
-        if (backupIsEncrypted) {
-            copy(source, TEMP_BACKUP_FILE)
-            val bos = BufferedOutputStream(FileOutputStream(DATABASE_FILE, false))
-            bos.flush()
-            bos.close()
-        } else {
-            if (fileExtension == "aes") {
-                if (enableLogDebug) {
-                    Log.d(
-                        TAG,
-                        "Cannot restore database, it is encrypted. Maybe you forgot to add the property .fileIsEncrypted(true)",
-                    )
-                }
-                onCompleteListener?.onComplete(
-                    false,
-                    "cannot restore database, see Log for more details (if enabled)",
-                    OnCompleteListener.EXIT_CODE_ERROR_RESTORE_BACKUP_IS_ENCRYPTED,
-                )
-                return
-            }
-            // Copy back database and replace current database
-            copy(source, DATABASE_FILE)
-        }
-
+        copy(source, DATABASE_FILE)
         if (enableLogDebug) {
             Log.d(TAG, "Restore done, decrypted($backupIsEncrypted) and restored from $source")
             onCompleteListener?.onComplete(true, "success", OnCompleteListener.EXIT_CODE_SUCCESS)
@@ -379,13 +347,17 @@ class DatabaseBackup(
                 doRestore(File("$EXTERNAL_BACKUP_PATH/$filename"))
             }
 
+            BACKUP_FILE_LOCATION_CUSTOM_FILE -> {
+                doRestore(backupLocationCustomFile!!)
+            }
+
+
             else -> return
         }
     }
 
-    private fun deleteOldBackup(): Boolean {
-        // Path of Backup Directory
 
+    private fun deleteOldBackup(): Boolean {
         val backupDirectory: File =
             when (backupLocation) {
                 BACKUP_FILE_LOCATION_INTERNAL -> {
@@ -397,14 +369,16 @@ class DatabaseBackup(
                 }
 
                 BACKUP_FILE_LOCATION_CUSTOM_DIALOG -> {
-                    // In custom backup location no backups will be removed
+                    return true
+                }
+
+                BACKUP_FILE_LOCATION_CLOUD -> {
                     return true
                 }
 
                 else -> return true
             }
 
-        // All Files in an Array of type File
         val arrayOfFiles = backupDirectory.listFiles()
 
         // If array is null or empty nothing to do and return
@@ -416,7 +390,6 @@ class DatabaseBackup(
             val fileCountToDelete = arrayOfFiles.size - maxFileCount!!
 
             for (i in 1..fileCountToDelete) {
-                // Delete all old files (i-1 because array starts a 0)
                 arrayOfFiles[i - 1].delete()
 
                 if (enableLogDebug) {
@@ -431,6 +404,11 @@ class DatabaseBackup(
         sourceFile: File,
         destFile: File,
     ) {
+        if (!sourceFile.exists()) {
+            Log.e(TAG, "Source file does not exist: ${sourceFile.path}")
+            return
+        }
+
         try {
             FileInputStream(sourceFile).use { input ->
                 FileOutputStream(destFile).use { output ->

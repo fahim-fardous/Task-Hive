@@ -69,7 +69,7 @@ fun HomeIndexScreenSkeleton(
             HomeTabScreen.Home,
             HomeTabScreen.TaskList,
             HomeTabScreen.Notes,
-            HomeTabScreen.Profile,
+            HomeTabScreen.Settings,
         )
 
     Scaffold(
@@ -140,7 +140,7 @@ fun HomeIndexScreenSkeleton(
                 val viewModel: AnalyticsViewModel = hiltViewModel()
                 AnalyticsScreen(goBack = { navController.popBackStack() }, viewModel = viewModel)
             }
-            composable(HomeTabScreen.Profile.route) {
+            composable(HomeTabScreen.Settings.route) {
                 val viewModel: SettingsViewModel = hiltViewModel()
                 SettingsScreen(
                     viewModel = viewModel,
@@ -175,5 +175,5 @@ private sealed class HomeTabScreen(
 
     data object Notes : HomeTabScreen("notes_screen", "Analytics", Icons.Default.Analytics)
 
-    data object Profile : HomeTabScreen("settings_screen", "Setting", Icons.Filled.Settings)
+    data object Settings : HomeTabScreen("settings_screen", "Setting", Icons.Filled.Settings)
 }

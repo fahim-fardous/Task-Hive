@@ -1,7 +1,7 @@
 package com.example.taskhiveapp.presentation.home
 
+import android.content.Context
 import android.content.res.Configuration
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,16 +34,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.taskhiveapp.R
 import com.example.taskhiveapp.components.InProgressCard
 import com.example.taskhiveapp.components.ProgressCard
@@ -99,6 +103,10 @@ fun HomeScreenSkeleton(
     goToTaskList: (Int?) -> Unit = {},
     progress: Float = 0.0f,
 ) {
+    val context = LocalContext.current
+    val loginPrefs = context.getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
+//    val name by remember { mutableStateOf(loginPrefs.getString("name", "John Doe") ?: "John Doe") }
+//    val photoUrl by remember { mutableStateOf(loginPrefs.getString("photo", null)) }
     Scaffold(
         topBar = {
             Row(
@@ -108,16 +116,11 @@ fun HomeScreenSkeleton(
                         .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.my_img),
-                    contentDescription = "my photo",
-                    modifier =
-                        Modifier
-                            .size(48.dp)
-                            .clip(
-                                CircleShape,
-                            ),
+                AsyncImage(
+                    model = R.drawable.placeholder,
+                    contentDescription = "profile pic",
                     contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(48.dp).clip(CircleShape)
                 )
                 Column(
                     modifier =

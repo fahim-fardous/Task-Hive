@@ -49,15 +49,6 @@ class TaskListViewModel
             println("Calling project block from get tasks")
         }
 
-        fun getTaskByRange(
-            fromDate: LocalDate,
-            toDate: LocalDate? = null,
-            projectId: Int? = null,
-        ) = viewModelScope.launch {
-            getTaskByProject(fromDate, toDate, projectId)
-            println("Calling project block from get task by range")
-        }
-
         private suspend fun getTaskByProject(
             fromDate: LocalDate,
             toDate: LocalDate? = null,
@@ -93,8 +84,11 @@ class TaskListViewModel
                     println("Coming home top")
                     val taskWithEntries = taskRepository.getTaskWithEntries(localDateToDate(fromDate))
                     _tasks.value =
-                        taskWithEntries.filter { it.task.project.id == project.id }.map {
-                            it.task.toUiModel()
+                        taskWithEntries.groupBy { it.task.title }.map {
+                            it.value
+                                .first()
+                                .task
+                                .toUiModel()
                         }
                 }
             }
