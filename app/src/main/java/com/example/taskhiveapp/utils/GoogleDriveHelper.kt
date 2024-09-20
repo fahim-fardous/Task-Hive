@@ -1,10 +1,12 @@
 package com.example.taskhiveapp.utils
 
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
-import android.content.Intent
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import com.example.taskhiveapp.MainActivity
+import com.example.taskhiveapp.R
 import com.example.taskhiveapp.utils.HelperFunctions.getGoogleAccountCredential
 import com.google.api.client.http.FileContent
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -122,9 +124,11 @@ object GoogleDriveHelper {
                     googleAccountCredential,
                 ).setApplicationName("Task Hive")
                 .build()
+
         withContext(Dispatchers.IO) {
             checkOrCreateFolderInGoogleDrive(driveService, activity)
         }
+
         val folderId = getFolderIdFromSharedPreferences(activity)
         val fileMetadata =
             File().apply {
@@ -133,17 +137,53 @@ object GoogleDriveHelper {
             }
 
         val mediaContent = FileContent("application/x-sqlite3", file)
+
+        val notificationId = 1
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationBuilder =
+            NotificationCompat
+                .Builder(context, "upload_channel_id")
+                .setContentTitle("Uploading Backup to Google Drive")
+                .setContentText("Upload in progress")
+                .setSmallIcon(R.drawable.ic_stat_name)
+                .setPriority(
+                    NotificationCompat.PRIORITY_HIGH,
+                ).setProgress(100, 0, false)
+
+        notificationManager.notify(notificationId, notificationBuilder.build())
+
         try {
             withContext(Dispatchers.IO) {
-                driveService
-                    .files()
-                    .create(fileMetadata, mediaContent)
-                    .setFields("id")
-                    .execute()
-            }
+                val request = driveService.files().create(fileMetadata, mediaContent)
+                request.mediaHttpUploader.apply {
+                    isDirectUploadEnabled = false
+                    chunkSize = 1024 * 1024
 
+                    setProgressListener { uploader ->
+                        val progress = (uploader.progress * 100).toInt()
+
+                        notificationBuilder.setProgress(100, progress, false)
+                        notificationManager.notify(notificationId, notificationBuilder.build())
+
+                        Log.d("GoogleDrive", "Upload progress: $progress%")
+                    }
+                }
+
+                request.setFields("id").execute()
+
+                notificationBuilder
+                    .setContentText("Upload Complete")
+                    .setProgress(0, 0, false)
+                notificationManager.notify(notificationId, notificationBuilder.build())
+            }
         } catch (e: Exception) {
             Log.e("GoogleDrive", "Error uploading file: ${e.message}")
+
+            notificationBuilder
+                .setContentText("Upload Failed")
+                .setProgress(0, 0, false)
+            notificationManager.notify(notificationId, notificationBuilder.build())
         }
     }
 
@@ -163,35 +203,6 @@ object GoogleDriveHelper {
         }
     }
 
-    suspend fun getAllBackupFiles(
-        context: Context,
-        outputStream: FileOutputStream,
-    ) {
-        val drive = getDriveService(context)
-        return withContext(Dispatchers.IO) {
-            val result =
-                drive
-                    .files()
-                    .list()
-                    .setSpaces("drive")
-                    .setFields("*")
-                    .execute()
-
-            val files = result.files
-            if (files.isNullOrEmpty()) {
-                throw RuntimeException("No backup file found in Google Drive")
-            }
-
-            val lastBackupFile = files.last()
-            drive.files().get(lastBackupFile.id).executeMediaAndDownloadTo(outputStream)
-
-            outputStream.flush()
-            outputStream.close()
-
-            Log.d("debug_RoomBackup", "Backup file downloaded successfully")
-        }
-    }
-
     private fun checkIfFolderExists(driveService: Drive): Boolean {
         val query =
             "mimeType = 'application/vnd.google-apps.folder' and name = 'Backup Folder' and trashed = false"
@@ -208,7 +219,7 @@ object GoogleDriveHelper {
         return result.files.size > 0
     }
 
-    fun getDriveService(context: Context): Drive =
+    private fun getDriveService(context: Context): Drive =
         Drive
             .Builder(
                 NetHttpTransport(),

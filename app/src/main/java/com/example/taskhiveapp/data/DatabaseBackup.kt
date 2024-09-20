@@ -12,12 +12,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.room.RoomDatabase
 import com.example.taskhiveapp.core.OnCompleteListener
-import com.example.taskhiveapp.utils.GoogleDriveHelper.getAllBackupFiles
-import com.example.taskhiveapp.utils.GoogleDriveHelper.getLastBackupFile
-import com.google.api.services.drive.Drive
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -310,14 +305,11 @@ class DatabaseBackup(
             return
         }
 
-        // New empty MutableList of String
         val mutableListOfFilesAsString = mutableListOf<String>()
 
-        // Add each filename to mutablelistOfFilesAsString
         runBlocking {
             for (i in arrayOfFiles.indices) {
                 mutableListOfFilesAsString.add(arrayOfFiles[i].name)
-                println("BackupFiles: ${arrayOfFiles[i].name}")
             }
         }
 
@@ -330,7 +322,6 @@ class DatabaseBackup(
         roomDatabase = null
         copy(source, DATABASE_FILE)
         if (enableLogDebug) {
-            Log.d(TAG, "Restore done, decrypted($backupIsEncrypted) and restored from $source")
             onCompleteListener?.onComplete(true, "success", OnCompleteListener.EXIT_CODE_SUCCESS)
         }
     }
@@ -380,18 +371,13 @@ class DatabaseBackup(
             }
 
         val arrayOfFiles = backupDirectory.listFiles()
-
-        // If array is null or empty nothing to do and return
         if (arrayOfFiles.isNullOrEmpty()) {
             if (enableLogDebug) Log.d(TAG, "")
             return false
         } else if (arrayOfFiles.size > maxFileCount!!) {
-            // Get count of files to delete
             val fileCountToDelete = arrayOfFiles.size - maxFileCount!!
-
             for (i in 1..fileCountToDelete) {
                 arrayOfFiles[i - 1].delete()
-
                 if (enableLogDebug) {
                     Log.d(TAG, "maxFileCount reached: ${arrayOfFiles[i - 1]} deleted")
                 }
@@ -405,7 +391,6 @@ class DatabaseBackup(
         destFile: File,
     ) {
         if (!sourceFile.exists()) {
-            Log.e(TAG, "Source file does not exist: ${sourceFile.path}")
             return
         }
 
@@ -419,9 +404,7 @@ class DatabaseBackup(
                     }
                 }
             }
-            Log.d(TAG, "File copied from ${sourceFile.path} to ${destFile.path}")
         } catch (e: IOException) {
-            Log.e(TAG, "File copy failed: ${e.message}", e)
             throw RuntimeException("Failed to copy file: ${e.message}")
         }
     }
